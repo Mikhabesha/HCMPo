@@ -1,0 +1,104 @@
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container">
+    <h2 class="mb-4">Dashboard</h2>
+
+    @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+    {
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Employees</h5>
+                        <p class="display-4">@ViewBag.EmployeeCount</p>
+                        <a asp-controller="Employees" asp-action="Index" class="btn btn-light">View All</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Departments</h5>
+                        <p class="display-4">@ViewBag.DepartmentCount</p>
+                        <a asp-controller="Employees" asp-action="Index" class="btn btn-light">View All</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-warning text-dark">
+                    <div class="card-body">
+                        <h5 class="card-title">Pending Leave Requests</h5>
+                        <p class="display-4">@ViewBag.PendingLeaveRequests</p>
+                        <a asp-controller="LeaveRequests" asp-action="Index" class="btn btn-light">View All</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            <a asp-controller="Employees" asp-action="Create" class="list-group-item list-group-item-action">
+                                Add New Employee
+                            </a>
+                            <a asp-controller="LeaveRequests" asp-action="Index" class="list-group-item list-group-item-action">
+                                Review Leave Requests
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">System Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Welcome to the HCM Portal administration dashboard.</p>
+                        <p>Here you can manage employees, handle leave requests, and view system statistics.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            <a asp-controller="LeaveRequests" asp-action="Create" class="list-group-item list-group-item-action">
+                                Submit Leave Request
+                            </a>
+                            <a asp-controller="LeaveRequests" asp-action="Index" class="list-group-item list-group-item-action">
+                                View My Leave Requests
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Employee Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Welcome to your employee dashboard.</p>
+                        <p>Here you can submit and track leave requests, and view your information.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div> 

@@ -1,0 +1,207 @@
+﻿@using HCMPo
+@using HCMPo.Models
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - HCM Portal</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/ethiopian-datepicker.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <!-- Page Loader -->
+    <div id="pageLoader" class="page-loader">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="~/images/logo.png" alt="Logo" class="logo" />
+            <h4>HCM Portal</h4>
+        </div>
+        <div class="sidebar-user">
+            @if (User.Identity.IsAuthenticated)
+            {
+                <img src="@ViewBag.UserPhoto" alt="Profile" class="user-photo" />
+                <div class="user-info">
+                    <h6>@ViewBag.UserName</h6>
+                    <small>@ViewBag.UserRole</small>
+                </div>
+            }
+        </div>
+        <nav class="sidebar-nav">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Home" ? "active" : "")" 
+                       asp-controller="Home" asp-action="Index">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                @if (User.IsInRole("HR") || User.IsInRole("Admin"))
+                {
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Employees" ? "active" : "")" 
+                           asp-controller="Employees" asp-action="Index">
+                            <i class="fas fa-users"></i>
+                            <span>Employees</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Attendance" ? "active" : "")" 
+                           asp-controller="Attendance" asp-action="Index">
+                            <i class="fas fa-clock"></i>
+                            <span>Attendance</span>
+                            @if (ViewBag.MissedAttendanceCount > 0)
+                            {
+                                <span class="badge bg-danger">@ViewBag.MissedAttendanceCount</span>
+                            }
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Payroll" ? "active" : "")" 
+                           asp-controller="Payroll" asp-action="Index">
+                            <i class="fas fa-money-bill-wave"></i>
+                            <span>Payroll</span>
+                        </a>
+                    </li>
+                }
+                <li class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Leave" ? "active" : "")" 
+                       asp-controller="Leave" asp-action="Index">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Leave</span>
+                        @if (ViewBag.PendingLeaveCount > 0)
+                        {
+                            <span class="badge bg-warning">@ViewBag.PendingLeaveCount</span>
+                        }
+                    </a>
+                </li>
+                @if (User.IsInRole("HR") || User.IsInRole("Admin"))
+                {
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Reports" ? "active" : "")" 
+                           asp-controller="Reports" asp-action="Index">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Reports</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Settings" ? "active" : "")" 
+                           asp-controller="Settings" asp-action="Index">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+            <div class="container-fluid">
+                <button class="btn btn-link sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="navbar-nav ms-auto">
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="notificationsDropdown" role="button" 
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-bell"></i>
+                            @if (ViewBag.NotificationCount > 0)
+                            {
+                                <span class="badge bg-danger">@ViewBag.NotificationCount</span>
+                            }
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end notifications-dropdown" 
+                             aria-labelledby="notificationsDropdown">
+                            @await Component.InvokeAsync("NotificationsDropdown")
+                        </div>
+                    </div>
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" 
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="@ViewBag.UserPhoto" alt="Profile" class="user-photo-small" />
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <a class="dropdown-item" asp-controller="Profile" asp-action="Index">
+                                <i class="fas fa-user"></i> Profile
+                            </a>
+                            <a class="dropdown-item" asp-controller="Profile" asp-action="Settings">
+                                <i class="fas fa-cog"></i> Settings
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <form asp-controller="Account" asp-action="Logout" method="post">
+                                <button type="submit" class="dropdown-item">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Page Content -->
+        <div class="container-fluid py-4">
+            @RenderBody()
+        </div>
+    </div>
+
+    <!-- Task Spinner -->
+    <div id="taskSpinner" class="task-spinner">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/font-awesome/js/all.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+
+    <script>
+        // Page loader
+        $(window).on('load', function() {
+            $('#pageLoader').fadeOut('slow');
+        });
+
+        // Task spinner
+        function showTaskSpinner() {
+            $('#taskSpinner').fadeIn('fast');
+        }
+
+        function hideTaskSpinner() {
+            $('#taskSpinner').fadeOut('fast');
+        }
+
+        // Sidebar toggle
+        $('.sidebar-toggle').click(function() {
+            $('body').toggleClass('sidebar-collapsed');
+        });
+
+        // Add loading indicator to forms
+        $('form').submit(function() {
+            showTaskSpinner();
+        });
+
+        // Add loading indicator to links
+        $('a:not([data-bs-toggle])').click(function() {
+            showTaskSpinner();
+        });
+    </script>
+</body>
+</html>

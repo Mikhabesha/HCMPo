@@ -1,0 +1,35 @@
+.ethiopian-date-picker {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.ethiopian-date-picker select {
+    width: 100%;
+    padding: 6px 12px;
+    margin-bottom: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.ethiopian-date-picker select:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.ethiopian-date-picker .row {
+    margin: 0 -5px;
+}
+
+.ethiopian-date-picker .col-md-4 {
+    padding: 0 5px;
+}
+
+/* Custom styles for Ethiopian text */
+.ethiopian-date-picker option {
+    font-family: "Nyala", "Ebrima", sans-serif;
+    font-size: 14px;
+} 

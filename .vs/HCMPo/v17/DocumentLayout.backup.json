@@ -1,0 +1,222 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Mik\\source\\repos\\HCMPo\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{FEFE2628-FB39-4102-964B-A49EA88BDBD1}|HCMPo\\HCMPo.csproj|c:\\users\\mik\\source\\repos\\hcmpo\\hcmpo\\models\\applicationdbcontextfactory.cs||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{FEFE2628-FB39-4102-964B-A49EA88BDBD1}|HCMPo\\HCMPo.csproj|solutionrelative:hcmpo\\models\\applicationdbcontextfactory.cs||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FEFE2628-FB39-4102-964B-A49EA88BDBD1}|HCMPo\\HCMPo.csproj|c:\\users\\mik\\source\\repos\\hcmpo\\hcmpo\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FEFE2628-FB39-4102-964B-A49EA88BDBD1}|HCMPo\\HCMPo.csproj|solutionrelative:hcmpo\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FEFE2628-FB39-4102-964B-A49EA88BDBD1}|HCMPo\\HCMPo.csproj|c:\\users\\mik\\source\\repos\\hcmpo\\hcmpo\\models\\dbinitializer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FEFE2628-FB39-4102-964B-A49EA88BDBD1}|HCMPo\\HCMPo.csproj|solutionrelative:hcmpo\\models\\dbinitializer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FEFE2628-FB39-4102-964B-A49EA88BDBD1}|HCMPo\\HCMPo.csproj|c:\\users\\mik\\source\\repos\\hcmpo\\hcmpo\\models\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FEFE2628-FB39-4102-964B-A49EA88BDBD1}|HCMPo\\HCMPo.csproj|solutionrelative:hcmpo\\models\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FEFE2628-FB39-4102-964B-A49EA88BDBD1}|HCMPo\\HCMPo.csproj|c:\\users\\mik\\source\\repos\\hcmpo\\hcmpo\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{FEFE2628-FB39-4102-964B-A49EA88BDBD1}|HCMPo\\HCMPo.csproj|solutionrelative:hcmpo\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FEFE2628-FB39-4102-964B-A49EA88BDBD1}|HCMPo\\HCMPo.csproj|c:\\users\\mik\\source\\repos\\hcmpo\\hcmpo\\views\\default.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{FEFE2628-FB39-4102-964B-A49EA88BDBD1}|HCMPo\\HCMPo.csproj|solutionrelative:hcmpo\\views\\default.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FEFE2628-FB39-4102-964B-A49EA88BDBD1}|HCMPo\\HCMPo.csproj|c:\\users\\mik\\source\\repos\\hcmpo\\hcmpo\\views\\shared\\components\\ethiopiandatepicker\\default.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{FEFE2628-FB39-4102-964B-A49EA88BDBD1}|HCMPo\\HCMPo.csproj|solutionrelative:hcmpo\\views\\shared\\components\\ethiopiandatepicker\\default.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FEFE2628-FB39-4102-964B-A49EA88BDBD1}|HCMPo\\HCMPo.csproj|c:\\users\\mik\\source\\repos\\hcmpo\\hcmpo\\views\\employees\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{FEFE2628-FB39-4102-964B-A49EA88BDBD1}|HCMPo\\HCMPo.csproj|solutionrelative:hcmpo\\views\\employees\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FEFE2628-FB39-4102-964B-A49EA88BDBD1}|HCMPo\\HCMPo.csproj|c:\\users\\mik\\source\\repos\\hcmpo\\hcmpo\\models\\leave.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FEFE2628-FB39-4102-964B-A49EA88BDBD1}|HCMPo\\HCMPo.csproj|solutionrelative:hcmpo\\models\\leave.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FEFE2628-FB39-4102-964B-A49EA88BDBD1}|HCMPo\\HCMPo.csproj|c:\\users\\mik\\source\\repos\\hcmpo\\hcmpo\\models\\leavetype.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FEFE2628-FB39-4102-964B-A49EA88BDBD1}|HCMPo\\HCMPo.csproj|solutionrelative:hcmpo\\models\\leavetype.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FEFE2628-FB39-4102-964B-A49EA88BDBD1}|HCMPo\\HCMPo.csproj|c:\\users\\mik\\source\\repos\\hcmpo\\hcmpo\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FEFE2628-FB39-4102-964B-A49EA88BDBD1}|HCMPo\\HCMPo.csproj|solutionrelative:hcmpo\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FEFE2628-FB39-4102-964B-A49EA88BDBD1}|HCMPo\\HCMPo.csproj|c:\\users\\mik\\source\\repos\\hcmpo\\hcmpo\\services\\exportservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FEFE2628-FB39-4102-964B-A49EA88BDBD1}|HCMPo\\HCMPo.csproj|solutionrelative:hcmpo\\services\\exportservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ApplicationDbContextFactory.cs",
+              "DocumentMoniker": "C:\\Users\\Mik\\source\\repos\\HCMPo\\HCMPo\\Models\\ApplicationDbContextFactory.cs",
+              "RelativeDocumentMoniker": "HCMPo\\Models\\ApplicationDbContextFactory.cs",
+              "ToolTip": "C:\\Users\\Mik\\source\\repos\\HCMPo\\HCMPo\\Models\\ApplicationDbContextFactory.cs",
+              "RelativeToolTip": "HCMPo\\Models\\ApplicationDbContextFactory.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAABEAAAA6AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-18T21:49:35.29Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "ApplicationDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\Mik\\source\\repos\\HCMPo\\HCMPo\\Models\\ApplicationDbContext.cs",
+              "RelativeDocumentMoniker": "HCMPo\\Models\\ApplicationDbContext.cs",
+              "ToolTip": "C:\\Users\\Mik\\source\\repos\\HCMPo\\HCMPo\\Models\\ApplicationDbContext.cs",
+              "RelativeToolTip": "HCMPo\\Models\\ApplicationDbContext.cs",
+              "ViewState": "AgIAAGEAAAAAAAAAAAAkwHYAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-18T21:47:48.04Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Mik\\source\\repos\\HCMPo\\HCMPo\\Program.cs",
+              "RelativeDocumentMoniker": "HCMPo\\Program.cs",
+              "ToolTip": "C:\\Users\\Mik\\source\\repos\\HCMPo\\HCMPo\\Program.cs",
+              "RelativeToolTip": "HCMPo\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAGAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-18T21:42:26.572Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\Mik\\source\\repos\\HCMPo\\HCMPo\\appsettings.json",
+              "RelativeDocumentMoniker": "HCMPo\\appsettings.json",
+              "ToolTip": "C:\\Users\\Mik\\source\\repos\\HCMPo\\HCMPo\\appsettings.json",
+              "RelativeToolTip": "HCMPo\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAABeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-04-18T21:32:30.878Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{fbcae063-e2c0-4ab1-a516-996ea3dafb72}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Default.cshtml",
+              "DocumentMoniker": "C:\\Users\\Mik\\source\\repos\\HCMPo\\HCMPo\\Views\\Default.cshtml",
+              "RelativeDocumentMoniker": "HCMPo\\Views\\Default.cshtml",
+              "ToolTip": "C:\\Users\\Mik\\source\\repos\\HCMPo\\HCMPo\\Views\\Default.cshtml",
+              "RelativeToolTip": "HCMPo\\Views\\Default.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-04-18T20:46:20.189Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Leave.cs",
+              "DocumentMoniker": "C:\\Users\\Mik\\source\\repos\\HCMPo\\HCMPo\\Models\\Leave.cs",
+              "RelativeDocumentMoniker": "HCMPo\\Models\\Leave.cs",
+              "ToolTip": "C:\\Users\\Mik\\source\\repos\\HCMPo\\HCMPo\\Models\\Leave.cs",
+              "RelativeToolTip": "HCMPo\\Models\\Leave.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAEBVwAcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-18T20:10:17.109Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "LeaveType.cs",
+              "DocumentMoniker": "C:\\Users\\Mik\\source\\repos\\HCMPo\\HCMPo\\Models\\LeaveType.cs",
+              "RelativeDocumentMoniker": "HCMPo\\Models\\LeaveType.cs",
+              "ToolTip": "C:\\Users\\Mik\\source\\repos\\HCMPo\\HCMPo\\Models\\LeaveType.cs",
+              "RelativeToolTip": "HCMPo\\Models\\LeaveType.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-18T20:09:23.619Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Default.cshtml",
+              "DocumentMoniker": "C:\\Users\\Mik\\source\\repos\\HCMPo\\HCMPo\\Views\\Shared\\Components\\EthiopianDatePicker\\Default.cshtml",
+              "RelativeDocumentMoniker": "HCMPo\\Views\\Shared\\Components\\EthiopianDatePicker\\Default.cshtml",
+              "ToolTip": "C:\\Users\\Mik\\source\\repos\\HCMPo\\HCMPo\\Views\\Shared\\Components\\EthiopianDatePicker\\Default.cshtml",
+              "RelativeToolTip": "HCMPo\\Views\\Shared\\Components\\EthiopianDatePicker\\Default.cshtml",
+              "ViewState": "AgIAAAQAAAAAAAAAAAAgwA8AAABMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-04-18T20:08:20.999Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "DbInitializer.cs",
+              "DocumentMoniker": "C:\\Users\\Mik\\source\\repos\\HCMPo\\HCMPo\\Models\\DbInitializer.cs",
+              "RelativeDocumentMoniker": "HCMPo\\Models\\DbInitializer.cs",
+              "ToolTip": "C:\\Users\\Mik\\source\\repos\\HCMPo\\HCMPo\\Models\\DbInitializer.cs",
+              "RelativeToolTip": "HCMPo\\Models\\DbInitializer.cs",
+              "ViewState": "AgIAAD4AAAAAAAAAAAAhwFgAAAApAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-18T13:31:30.461Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Create.cshtml",
+              "DocumentMoniker": "C:\\Users\\Mik\\source\\repos\\HCMPo\\HCMPo\\Views\\Employees\\Create.cshtml",
+              "RelativeDocumentMoniker": "HCMPo\\Views\\Employees\\Create.cshtml",
+              "ToolTip": "C:\\Users\\Mik\\source\\repos\\HCMPo\\HCMPo\\Views\\Employees\\Create.cshtml",
+              "RelativeToolTip": "HCMPo\\Views\\Employees\\Create.cshtml",
+              "ViewState": "AgIAAIEAAAAAAAAAAAAAADkAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-04-18T20:31:24.669Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "HomeController.cs",
+              "DocumentMoniker": "C:\\Users\\Mik\\source\\repos\\HCMPo\\HCMPo\\Controllers\\HomeController.cs",
+              "RelativeDocumentMoniker": "HCMPo\\Controllers\\HomeController.cs",
+              "ToolTip": "C:\\Users\\Mik\\source\\repos\\HCMPo\\HCMPo\\Controllers\\HomeController.cs",
+              "RelativeToolTip": "HCMPo\\Controllers\\HomeController.cs",
+              "ViewState": "AgIAABQAAAAAAAAAAAAswCAAAABHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-18T19:28:10.949Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "ExportService.cs",
+              "DocumentMoniker": "C:\\Users\\Mik\\source\\repos\\HCMPo\\HCMPo\\Services\\ExportService.cs",
+              "RelativeDocumentMoniker": "HCMPo\\Services\\ExportService.cs",
+              "ToolTip": "C:\\Users\\Mik\\source\\repos\\HCMPo\\HCMPo\\Services\\ExportService.cs",
+              "RelativeToolTip": "HCMPo\\Services\\ExportService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-18T15:03:06.365Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
