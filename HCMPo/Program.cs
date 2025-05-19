@@ -6,14 +6,6 @@ using OfficeOpenXml;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure EPPlus license
-//ExcelPackage.License.SetNonCommercialPersonal("MikyasD") = LicenseContext.NonCommercial;
-
-// Corrected code to fix the reported errors
-
-// Configure EPPlus license
-ExcelPackage.License.SetNonCommercialPersonal("MikyasD"); // Removed invalid assignment
-
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? 
     throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
