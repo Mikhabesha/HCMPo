@@ -1,0 +1,24 @@
+@model HCMPo.Models.PayrollConfiguration
+
+@{
+    ViewData["Title"] = "Payroll Configuration";
+}
+
+<h2>Payroll Configuration</h2>
+
+@if (Model == null)
+{
+    <div class="alert alert-warning">
+        No payroll configuration found. Please add one in the database or via migration.
+    </div>
+}
+else
+{
+    <table class="table">
+        <tr><th>Employee Pension Rate (%)</th><td>@Model.EmployeePensionRate</td></tr>
+        <tr><th>Employer Pension Rate (%)</th><td>@Model.EmployerPensionRate</td></tr>
+        <tr><th>Late Deduction Rate</th><td>@Model.LateDeductionRate</td></tr>
+        <tr><th>Absent Deduction Rate</th><td>@Model.AbsentDeductionRate</td></tr>
+    </table>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
+} 

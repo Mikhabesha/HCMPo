@@ -1,0 +1,18 @@
+@{
+    var ethiopianDate = new HCMPo.Models.EthiopianCalendar(DateTime.Now);
+}
+
+<div class="form-group">
+    <div class="row">
+        <div class="col-md-4">
+            <select class="form-control eth-month" id="ethMonth">
+                @for (int i = 1; i <= 13; i++)
+                {
+                    <option value="@i" asp-selected="@(ethiopianDate.Month == i)">
+                        @HCMPo.Models.EthiopianCalendar.GetEthiopianMonthName(i)
+                    </option>
+                }
+            </select>
+        </div>
+    </div>
+</div> 

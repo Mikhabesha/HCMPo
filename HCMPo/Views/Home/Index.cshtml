@@ -1,0 +1,77 @@
+﻿@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome to HCM Portal</h1>
+    <p class="lead">Your comprehensive Human Capital Management solution</p>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Employee Management</h5>
+                <p class="card-text">Manage employee information, departments, and positions efficiently.</p>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-controller="Employees" asp-action="Index" class="btn btn-primary">View Employees</a>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-primary">Login to Access</a>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Leave Management</h5>
+                <p class="card-text">Submit and manage leave requests with ease.</p>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-controller="LeaveRequests" asp-action="Index" class="btn btn-primary">View Leave Requests</a>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-primary">Login to Access</a>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Dashboard</h5>
+                <p class="card-text">Access your personalized dashboard and analytics.</p>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-controller="Home" asp-action="Dashboard" class="btn btn-primary">Go to Dashboard</a>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-primary">Login to Access</a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!User.Identity?.IsAuthenticated == true)
+{
+    <div class="row mt-4">
+        <div class="col-md-6 offset-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Get Started</h5>
+                    <p class="card-text">Create an account or log in to access the HCM Portal features.</p>
+                    <div class="btn-group">
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-primary">Register</a>
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary">Login</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

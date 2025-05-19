@@ -1,0 +1,33 @@
+@{
+    ViewData["Title"] = "Replace Payroll Declaration";
+    var startDateStr = Context.Request.Query["startDate"].FirstOrDefault();
+    var endDateStr = Context.Request.Query["endDate"].FirstOrDefault();
+    var employeeIds = ViewBag.ReplaceEmployeeIds as string;
+    var startDate = !string.IsNullOrEmpty(startDateStr) ? DateTime.Parse(startDateStr) : (DateTime?)null;
+    var endDate = !string.IsNullOrEmpty(endDateStr) ? DateTime.Parse(endDateStr) : (DateTime?)null;
+    var employeeCount = !string.IsNullOrEmpty(employeeIds) ? employeeIds.Split(",").Length : 0;
+}
+
+@if (startDate == null || endDate == null)
+{
+    <div class="alert alert-danger mt-4">No payroll declaration data found to replace. Please try again from the summary page.</div>
+}
+else
+{
+<div class="container mt-4">
+    <div class="alert alert-warning">
+        <strong>Warning:</strong> A payroll declaration for the selected period already exists.<br />
+        Do you want to <b>replace</b> the existing summary with the new one?
+    </div>
+    <div class="mb-3">
+        <b>Period:</b> @startDate?.ToString("yyyy-MM-dd") - @endDate?.ToString("yyyy-MM-dd")<br />
+        <b>Employees:</b> @employeeCount
+    </div>
+    <form asp-action="ConfirmReplacePayrollDeclaration" method="post">
+        <input type="hidden" name="startDate" value="@startDateStr" />
+        <input type="hidden" name="endDate" value="@endDateStr" />
+        <button type="submit" class="btn btn-danger">Replace</button>
+        <a asp-action="Summary" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
+</div>
+} 

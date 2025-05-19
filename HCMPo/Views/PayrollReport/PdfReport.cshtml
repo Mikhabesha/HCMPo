@@ -1,0 +1,24 @@
+@model IEnumerable<HCMPo.Models.Payroll>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Employee</th>
+            <th>Basic Salary</th>
+            <th>Net Salary</th>
+            <th>Total Deductions</th>
+            <th>Pay Period</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.Employee?.FullName</td>
+                <td>@p.BasicSalary.ToString("N2")</td>
+                <td>@p.NetSalary.ToString("N2")</td>
+                <td>@p.TotalDeductions.ToString("N2")</td>
+                <td>@p.PayPeriodStart.ToString("yyyy-MM-dd") - @p.PayPeriodEnd.ToString("yyyy-MM-dd")</td>
+            </tr>
+        }
+    </tbody>
+</table> 

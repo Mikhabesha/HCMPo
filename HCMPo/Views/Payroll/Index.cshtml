@@ -1,0 +1,58 @@
+@model IEnumerable<HCMPo.ViewModels.PayrollPeriodGroupViewModel>
+@using HCMPo.Models
+
+@{
+    ViewData["Title"] = "Payroll Periods";
+    var etMonthNames = new[] { "መስከረም", "ጥቅምት", "ኅዳር", "ታኅሳስ", "ጥር", "የካቲት", "መጋቢት", "ሚያዝያ", "ግንቦት", "ሰኔ", "ሐምሌ", "ነሐሴ", "ጳጉሜን" };
+    string FormatEtDate(string etOrGregorian)
+    {
+        // If already in Ethiopian format (contains Amharic), return as is
+        if (etOrGregorian.Any(c => c >= 0x1200 && c <= 0x137F)) return etOrGregorian;
+        // If in yyyy-MM-dd, convert
+        if (DateTime.TryParse(etOrGregorian, out var gDate))
+        {
+            var et = new EthiopianCalendar(gDate);
+            return $"{et.Year} {etMonthNames[et.Month-1]} {et.Day:D2}";
+        }
+        return etOrGregorian;
+    }
+}
+
+<h1>Payroll Periods</h1>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Payroll Period (Ethiopian)</th>
+            <th>Sent Date</th>
+            <th>Status</th>
+            <th>Approved By</th>
+            <th>Payroll Count</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var period in Model)
+        {
+            <tr>
+                <td>@FormatEtDate(period.PayPeriodStartEt) - @FormatEtDate(period.PayPeriodEndEt)</td>
+                <td>@(period.SentDate.HasValue ? period.SentDate.Value.ToString("yyyy-MM-dd HH:mm") : "-")</td>
+                <td>
+                    @if (!period.IsOpened)
+                    {
+                        <span class="badge" style="background-color:#f8d7da;color:#721c24;">In Progress</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Payment Ordered</span>
+                    }
+                </td>
+                <td>@period.ApprovedBy</td>
+                <td>@period.PayrollCount</td>
+                <td>
+                    <a asp-action="PayrollList" asp-route-periodId="@period.PeriodId" class="btn btn-primary btn-sm">See List</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

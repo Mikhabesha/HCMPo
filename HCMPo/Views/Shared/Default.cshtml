@@ -1,0 +1,12 @@
+@model dynamic
+
+<div class="form-group">
+    <label class="control-label">Select Option</label>
+    <select class="form-control">
+        <option value="">-- Select --</option>
+        @foreach (var item in Model)
+        {
+            <option value="@item.Value">@item.Text</option>
+        }
+    </select>
+</div> 

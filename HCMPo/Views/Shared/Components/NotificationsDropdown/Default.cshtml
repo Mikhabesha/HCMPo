@@ -1,0 +1,96 @@
+@using Humanizer
+@model IEnumerable<HCMPo.Models.Notification>
+
+<div class="dropdown-menu dropdown-menu-end notifications-dropdown" aria-labelledby="notificationsDropdown">
+    <div class="notifications-header d-flex justify-content-between align-items-center p-3">
+        <h6 class="mb-0">Notifications</h6>
+        @if (Model.Any())
+        {
+            <a href="#" class="text-muted small mark-all-read">Mark all as read</a>
+        }
+    </div>
+    
+    <div class="notifications-body">
+        @if (!Model.Any())
+        {
+            <div class="text-center p-3">
+                <p class="text-muted mb-0">No new notifications</p>
+            </div>
+        }
+        else
+        {
+            foreach (var notification in Model)
+            {
+                <a href="@notification.Url" class="dropdown-item notification-item @(!notification.IsRead ? "unread" : "")">
+                    <div class="d-flex">
+                        <div class="notification-icon me-3">
+                            @switch (notification.Type)
+                            {
+                                case "Leave":
+                                    <i class="fas fa-calendar text-primary"></i>
+                                    break;
+                                case "Performance":
+                                    <i class="fas fa-chart-line text-success"></i>
+                                    break;
+                                case "Attendance":
+                                    <i class="fas fa-clock text-warning"></i>
+                                    break;
+                                default:
+                                    <i class="fas fa-bell text-info"></i>
+                                    break;
+                            }
+                        </div>
+                        <div class="notification-content flex-grow-1">
+                            <p class="mb-1">@notification.Message</p>
+                            <small class="text-muted">@notification.CreatedAt.Humanize()</small>
+                        </div>
+                    </div>
+                </a>
+            }
+        }
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="notifications-footer text-center p-2 border-top">
+            <a href="/Notifications" class="text-primary">View all notifications</a>
+        </div>
+    }
+</div>
+
+<style>
+    .notifications-dropdown {
+        width: 350px;
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    .notification-item {
+        padding: 0.75rem 1rem;
+        border-left: 3px solid transparent;
+    }
+
+    .notification-item:hover {
+        background-color: var(--bs-light);
+    }
+
+    .notification-item.unread {
+        background-color: rgba(var(--bs-primary-rgb), 0.05);
+        border-left-color: var(--bs-primary);
+    }
+
+    .notification-icon {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background-color: rgba(var(--bs-primary-rgb), 0.1);
+    }
+
+    .notifications-body {
+        max-height: 350px;
+        overflow-y: auto;
+    }
+</style> 

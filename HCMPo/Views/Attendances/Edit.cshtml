@@ -1,0 +1,77 @@
+@model HCMPo.Models.Attendance
+@using HCMPo.Models // For AttendanceStatus enum
+
+@{
+    ViewData["Title"] = "Edit Attendance Record";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<h4>Record ID: @Model.Id</h4>
+<hr />
+<div class="row">
+    <div class="col-md-8">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            @* Keep EmployeeId hidden or display-only, but don't bind it for edit *@
+            <input type="hidden" asp-for="EmployeeId" /> 
+
+            <div class="mb-3">
+                <label class="form-label">Employee</label>
+                @* Display the Employee Name - disable the dropdown *@
+                <select asp-for="EmployeeId" class="form-select" asp-items="ViewBag.EmployeeId" disabled>
+                </select>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="CheckInTime" class="form-label"></label>
+                    <input asp-for="CheckInTime" class="form-control" type="datetime-local" />
+                    <span asp-validation-for="CheckInTime" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="CheckOutTime" class="form-label"></label>
+                    <input asp-for="CheckOutTime" class="form-control" type="datetime-local" />
+                    <span asp-validation-for="CheckOutTime" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="Status" class="form-label"></label>
+                    <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<AttendanceStatus>()">
+                         <option value="">-- Select Status --</option>
+                    </select>
+                    <span asp-validation-for="Status" class="text-danger"></span>
+                </div>
+                 <div class="col-md-6">
+                    <label asp-for="StatusReason" class="form-label">Status Reason (Optional)</label>
+                    <input asp-for="StatusReason" class="form-control" />
+                    <span asp-validation-for="StatusReason" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="ManualEntryReason" class="form-label">Reason (if Manual/Edited)</label>
+                <textarea asp-for="ManualEntryReason" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="ManualEntryReason" class="text-danger"></span>
+            </div>
+            
+            @* Display IsManualEntry but don't allow editing via form *@
+            <div class="mb-3">
+                 <label class="form-check-label">Is Manual Entry:</label>
+                 <input class="form-check-input ms-2" type="checkbox" asp-for="IsManualEntry" disabled />
+            </div>
+
+            <div class="form-group mt-4">
+                <input type="submit" value="Save Changes" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

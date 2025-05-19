@@ -1,0 +1,43 @@
+@model HCMPo.ViewModels.PayrollGenerationViewModel
+@using HCMPo.Models
+
+@{
+    ViewData["Title"] = "Generate Payroll";
+    var deductionTypes = Enum.GetValues(typeof(DeductionType)).Cast<DeductionType>();
+}
+
+<h2>Generate Payroll</h2>
+
+<form asp-action="GeneratePayroll" method="post">
+    <div class="mb-3">
+        <label for="EmployeeId" class="form-label">Employee</label>
+        <input asp-for="EmployeeId" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label for="BasicSalary" class="form-label">Basic Salary</label>
+        <input asp-for="BasicSalary" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label for="Allowance" class="form-label">Allowance</label>
+        <input asp-for="Allowance" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label for="StartDate" class="form-label">Start Date</label>
+        <input asp-for="StartDate" class="form-control" type="date" />
+    </div>
+    <div class="mb-3">
+        <label for="EndDate" class="form-label">End Date</label>
+        <input asp-for="EndDate" class="form-control" type="date" />
+    </div>
+    <h4>Deductions</h4>
+    <div class="row">
+        @foreach (var type in deductionTypes)
+        {
+            <div class="col-md-3 mb-3">
+                <label class="form-label">@type.ToString()</label>
+                <input name="Deductions[@type]" class="form-control" type="number" step="0.01" value="@(Model.Deductions.ContainsKey(type) ? Model.Deductions[type] : 0)" />
+            </div>
+        }
+    </div>
+    <button type="submit" class="btn btn-primary">Generate Payroll</button>
+</form> 

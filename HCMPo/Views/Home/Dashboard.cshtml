@@ -1,0 +1,177 @@
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container">
+    <h2 class="mb-4">Dashboard</h2>
+
+    @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+    {
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Employees</h5>
+                        <p class="display-4">@ViewBag.EmployeeCount</p>
+                        <a asp-controller="Employees" asp-action="Index" class="btn btn-light">View All</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Departments</h5>
+                        <p class="display-4">@ViewBag.DepartmentCount</p>
+                        <a asp-controller="Employees" asp-action="Index" class="btn btn-light">View All</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-warning text-dark">
+                    <div class="card-body">
+                        <h5 class="card-title">Pending Leave Requests</h5>
+                        <p class="display-4">@ViewBag.PendingLeaveRequests</p>
+                        <a asp-controller="LeaveRequests" asp-action="Index" class="btn btn-light">View All</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            <a asp-controller="Employees" asp-action="Create" class="list-group-item list-group-item-action">
+                                Add New Employee
+                            </a>
+                            <a asp-controller="LeaveRequests" asp-action="Index" class="list-group-item list-group-item-action">
+                                Review Leave Requests
+                            </a>
+                            <button id="syncEmployeesBtn" class="btn btn-primary mt-3 w-100">
+                                <span class="spinner-border spinner-border-sm d-none" id="spinnerEmployees" role="status" aria-hidden="true"></span>
+                                Sync Employees from Att_db
+                            </button>
+                            <div class="progress mt-2 d-none" id="progressEmployees">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" id="progressBarEmployees" style="width: 0%"></div>
+                            </div>
+                            <button id="syncAttendanceBtn" class="btn btn-success mt-2 w-100">
+                                <span class="spinner-border spinner-border-sm d-none" id="spinnerAttendance" role="status" aria-hidden="true"></span>
+                                Sync Attendance from Att_db
+                            </button>
+                            <div class="progress mt-2 d-none" id="progressAttendance">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" id="progressBarAttendance" style="width: 0%"></div>
+                            </div>
+                            <div id="syncResult" class="mt-3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">System Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Welcome to the HCM Portal administration dashboard.</p>
+                        <p>Here you can manage employees, handle leave requests, and view system statistics.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            <a asp-controller="LeaveRequests" asp-action="Create" class="list-group-item list-group-item-action">
+                                Submit Leave Request
+                            </a>
+                            <a asp-controller="LeaveRequests" asp-action="Index" class="list-group-item list-group-item-action">
+                                View My Leave Requests
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Employee Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Welcome to your employee dashboard.</p>
+                        <p>Here you can submit and track leave requests, and view your information.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+<script>
+    function generateProgressKey() {
+        return 'sync-' + Date.now() + '-' + Math.floor(Math.random() * 100000);
+    }
+    function pollProgress(progressKey, progressBarId, progressDivId, btn) {
+        var interval = setInterval(function() {
+            fetch('/Attendances/GetSyncProgress?progressKey=' + encodeURIComponent(progressKey))
+                .then(response => response.json())
+                .then(data => {
+                    if (data.total > 0) {
+                        var percent = Math.floor((data.progress / data.total) * 100);
+                        document.getElementById(progressBarId).style.width = percent + '%';
+                        document.getElementById(progressBarId).innerText = percent + '%';
+                        if (data.progress >= data.total) {
+                            clearInterval(interval);
+                            setTimeout(function() {
+                                document.getElementById(progressDivId).classList.add('d-none');
+                                btn.disabled = false;
+                            }, 1000);
+                        }
+                    }
+                });
+        }, 1000);
+    }
+    function postSync(url, btn, spinnerId, progressId, progressBarId) {
+        btn.disabled = true;
+        var spinner = document.getElementById(spinnerId);
+        var progress = document.getElementById(progressId);
+        var progressBar = document.getElementById(progressBarId);
+        spinner.classList.remove('d-none');
+        progress.classList.remove('d-none');
+        progressBar.style.width = '0%';
+        progressBar.innerText = '0%';
+        var progressKey = generateProgressKey();
+        pollProgress(progressKey, progressBarId, progressId, btn);
+        fetch(url + '?progressKey=' + encodeURIComponent(progressKey), { method: 'POST', headers: { 'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() } })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('syncResult').innerText = data.message || 'Sync complete.';
+            })
+            .catch(err => {
+                document.getElementById('syncResult').innerText = 'Error: ' + err;
+            })
+            .finally(() => {
+                spinner.classList.add('d-none');
+                btn.disabled = false;
+            });
+    }
+    document.getElementById('syncEmployeesBtn').onclick = function() {
+        postSync('/Attendances/SyncEmployeesFromAttDb', this, 'spinnerEmployees', 'progressEmployees', 'progressBarEmployees');
+    };
+    document.getElementById('syncAttendanceBtn').onclick = function() {
+        postSync('/Attendances/SyncAttendanceFromAttDb', this, 'spinnerAttendance', 'progressAttendance', 'progressBarAttendance');
+    };
+</script>
+} 

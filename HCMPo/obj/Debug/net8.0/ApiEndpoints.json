@@ -1,0 +1,18 @@
+[
+  {
+    "ContainingType": "HCMPo.Controllers.EthiopianCalendarController",
+    "Method": "ToGregorian",
+    "RelativePath": "api/EthiopianCalendar/ToGregorian",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "HCMPo.Controllers.EthiopianDateRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]

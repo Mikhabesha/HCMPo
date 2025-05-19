@@ -1,0 +1,68 @@
+@model HCMPo.Models.EmployeeDocument
+
+@{
+    ViewData["Title"] = "Upload Document";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <h2>@ViewData["Title"]</h2>
+            <h4>Employee: @ViewData["EmployeeName"]</h4>
+            <hr />
+
+            <form asp-action="Create" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="EmployeeId" />
+
+                <div class="form-group">
+                    <label asp-for="DocumentType" class="control-label"></label>
+                    <input asp-for="DocumentType" class="form-control" />
+                    <span asp-validation-for="DocumentType" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Description" class="control-label"></label>
+                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="ExpiryDate" class="control-label"></label>
+                    <input asp-for="ExpiryDate" class="form-control" type="date" />
+                    <span asp-validation-for="ExpiryDate" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label">Document File</label>
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="DocumentFile" name="DocumentFile" required>
+                        <label class="custom-file-label" for="DocumentFile">Choose file</label>
+                    </div>
+                    <small class="form-text text-muted">Maximum file size: 10MB</small>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload"></i> Upload Document
+                    </button>
+                    <a asp-action="Index" asp-route-employeeId="@Model.EmployeeId" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function () {
+            $('.custom-file-input').on('change', function () {
+                var fileName = $(this).val().split('\\').pop();
+                $(this).next('.custom-file-label').html(fileName);
+            });
+        });
+    </script>
+} 

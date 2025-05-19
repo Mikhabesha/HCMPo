@@ -1,0 +1,107 @@
+@model HCMPo.Models.Employee
+@using System.Collections.Generic
+
+@{
+    ViewData["Title"] = "Manage Taxes for " + Model.FullName;
+    var commonTaxes = new List<string> { "Income Tax", "Pension", "Other" };
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Tax Name</th>
+            <th>Percentage (%)</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var tax in Model.EmployeeTaxes)
+        {
+            <tr>
+                <td>@tax.TaxName</td>
+                <td>@tax.Percentage</td>
+                <td>
+                    <form asp-action="RemoveTax" method="post" style="display:inline;">
+                        <input type="hidden" name="taxId" value="@tax.Id" />
+                        <input type="hidden" name="employeeId" value="@Model.Id" />
+                        <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4>Add Tax</h4>
+<form asp-action="AddTax" method="post" class="row g-3" id="taxForm">
+    <input type="hidden" name="employeeId" value="@Model.Id" />
+    <div class="col-md-12 mb-2">
+        <label class="form-label">Select Common Taxes</label><br />
+        @foreach (var tax in commonTaxes)
+        {
+            <div class="form-check form-check-inline">
+                <input class="form-check-input tax-checkbox" type="checkbox" id="@tax.Replace(" ", "")" name="commonTax" value="@tax" />
+                <label class="form-check-label" for="@tax.Replace(" ", "")">@tax</label>
+                <input type="number" class="form-control d-inline-block ms-2 tax-percentage" name="percentage_@tax.Replace(" ", "")" min="0" max="100" step="0.01" style="width:100px; display:none;" placeholder="%" />
+            </div>
+        }
+    </div>
+    <div class="col-md-4">
+        <label for="taxName" class="form-label">Custom Tax Name</label>
+        <input type="text" class="form-control" name="taxName" />
+    </div>
+    <div class="col-md-4">
+        <label for="percentage" class="form-label">Custom Percentage (%)</label>
+        <input type="number" class="form-control" name="percentage" min="0" max="100" step="0.01" />
+    </div>
+    <div class="col-md-4 align-self-end">
+        <button type="submit" class="btn btn-primary">Add Tax</button>
+    </div>
+</form>
+
+<a asp-action="Index" class="btn btn-secondary mt-3">Back to Employee List</a>
+
+@section Scripts {
+    <script>
+        // Show/hide percentage input for checked taxes
+        document.querySelectorAll('.tax-checkbox').forEach(function(checkbox) {
+            checkbox.addEventListener('change', function() {
+                var input = this.parentElement.querySelector('.tax-percentage');
+                if (this.checked) {
+                    input.style.display = 'inline-block';
+                    input.required = true;
+                } else {
+                    input.style.display = 'none';
+                    input.required = false;
+                    input.value = '';
+                }
+            });
+        });
+
+        // On submit, add checked common taxes as separate posts
+        document.getElementById('taxForm').addEventListener('submit', function(e) {
+            var checked = document.querySelectorAll('.tax-checkbox:checked');
+            if (checked.length > 0) {
+                e.preventDefault();
+                var employeeId = document.querySelector('input[name="employeeId"]').value;
+                checked.forEach(function(cb) {
+                    var taxName = cb.value;
+                    var percentInput = cb.parentElement.querySelector('.tax-percentage');
+                    var percentage = percentInput.value;
+                    if (percentage) {
+                        var form = document.createElement('form');
+                        form.method = 'post';
+                        form.action = '/Employees/AddTax';
+                        form.innerHTML = '<input type="hidden" name="employeeId" value="' + employeeId + '" />' +
+                                         '<input type="hidden" name="taxName" value="' + taxName + '" />' +
+                                         '<input type="hidden" name="percentage" value="' + percentage + '" />';
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+            }
+        });
+    </script>
+} 

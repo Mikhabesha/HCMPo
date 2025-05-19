@@ -1,0 +1,54 @@
+@model HCMPo.Models.Employee
+
+@{
+    ViewData["Title"] = "Employee Details";
+}
+
+<h2>Employee Details</h2>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title">Employee Information</h5>
+        <div class="card-tools">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a asp-controller="EmployeeDocuments" asp-action="Index" asp-route-employeeId="@Model.Id" class="btn btn-info btn-sm">
+                <i class="fas fa-file-alt"></i> Documents
+            </a>
+            <a asp-action="Index" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.FullName)</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.FullName)</dd>
+
+            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Email)</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.Email)</dd>
+
+            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Phone)</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.Phone)</dd>
+
+            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Department)</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.Department.Name)</dd>
+
+            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.JobTitle)</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.JobTitle.Title)</dd>
+
+            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.HireDate)</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.HireDate)</dd>
+
+            @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+            {
+                <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Salary)</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.Salary)</dd>
+            }
+
+            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Address)</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.Address)</dd>
+        </dl>
+    </div>
+</div> 

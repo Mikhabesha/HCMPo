@@ -1,0 +1,117 @@
+@model IEnumerable<HCMPo.Models.Payroll>
+@using HCMPo.Models
+@{
+    ViewData["Title"] = "Payroll Report";
+    var employees = ViewBag.Employees as IEnumerable<dynamic>;
+    var departments = ViewBag.Departments as IEnumerable<dynamic>;
+    var deductionTypes = ViewBag.DeductionTypes as List<DeductionType>;
+    string GetDeduction(HCMPo.Models.Payroll p, int deductionTypeId)
+    {
+        var d = p.Deductions?.FirstOrDefault(x => x.DeductionTypeId == deductionTypeId);
+        return d != null ? d.Amount.ToString("N2") : "";
+    }
+}
+<h2>Payroll Report</h2>
+<form method="get" class="row mb-3">
+    <div class="col-md-2">
+        <label>Start Date</label>
+        <input type="date" name="start" class="form-control" value="@Context.Request.Query["start"]" />
+    </div>
+    <div class="col-md-2">
+        <label>End Date</label>
+        <input type="date" name="end" class="form-control" value="@Context.Request.Query["end"]" />
+    </div>
+    <div class="col-md-3">
+        <label>Employee</label>
+        <select name="employeeId" class="form-control">
+            <option value="">All</option>
+            @if (employees != null)
+            {
+                foreach (var e in employees)
+                {
+                    if (Context.Request.Query["employeeId"] == (string)e.Id)
+                    {
+                        <option value="@e.Id" selected="selected">@e.FullName</option>
+                    }
+                    else
+                    {
+                        <option value="@e.Id">@e.FullName</option>
+                    }
+                }
+            }
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label>Department</label>
+        <select name="departmentId" class="form-control">
+            <option value="">All</option>
+            @if (departments != null)
+            {
+                foreach (var d in departments)
+                {
+                    if (Context.Request.Query["departmentId"] == (string)d.Id)
+                    {
+                        <option value="@d.Id" selected="selected">@d.Name</option>
+                    }
+                    else
+                    {
+                        <option value="@d.Id">@d.Name</option>
+                    }
+                }
+            }
+        </select>
+    </div>
+    <div class="col-md-2 align-self-end">
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </div>
+</form>
+<div class="mb-3">
+    <a asp-action="ExportExcel" asp-route-start="@Context.Request.Query["start"]" asp-route-end="@Context.Request.Query["end"]" asp-route-employeeId="@Context.Request.Query["employeeId"]" asp-route-departmentId="@Context.Request.Query["departmentId"]" class="btn btn-success">Export to Excel</a>
+    <a asp-action="ExportCsv" asp-route-start="@Context.Request.Query["start"]" asp-route-end="@Context.Request.Query["end"]" asp-route-employeeId="@Context.Request.Query["employeeId"]" asp-route-departmentId="@Context.Request.Query["departmentId"]" class="btn btn-info">Export to CSV</a>
+    <a asp-action="ExportPdf" asp-route-start="@Context.Request.Query["start"]" asp-route-end="@Context.Request.Query["end"]" asp-route-employeeId="@Context.Request.Query["employeeId"]" asp-route-departmentId="@Context.Request.Query["departmentId"]" class="btn btn-danger">Export to PDF</a>
+</div>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Basic Salary</th>
+            <th>Attendance Deducted Salary</th>
+            <th>Pension 11% (Employer)</th>
+            <th>Allowance</th>
+            <th>Total Salary</th>
+            <th>Income Tax</th>
+            <th>Pension Tax (Employee 7%)</th>
+            @if (deductionTypes != null)
+            {
+                foreach (var dt in deductionTypes)
+                {
+                    <th>@dt.DisplayName</th>
+                }
+            }
+            <th>Total Deduction</th>
+            <th>Net Pay Salary</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.BasicSalary.ToString("N2")</td>
+                <td>@p.AttendanceDeductedSalary.ToString("N2")</td>
+                <td>@p.PensionEmployer.ToString("N2")</td>
+                <td>@p.Allowance.ToString("N2")</td>
+                <td>@p.TotalSalary.ToString("N2")</td>
+                <td>@p.IncomeTax.ToString("N2")</td>
+                <td>@p.PensionEmployee.ToString("N2")</td>
+                @if (deductionTypes != null)
+                {
+                    foreach (var dt in deductionTypes)
+                    {
+                        <td>@GetDeduction(p, dt.Id)</td>
+                    }
+                }
+                <td>@p.TotalDeduction.ToString("N2")</td>
+                <td>@p.NetPaySalary.ToString("N2")</td>
+            </tr>
+        }
+    </tbody>
+</table> 

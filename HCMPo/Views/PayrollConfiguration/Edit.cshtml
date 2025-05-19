@@ -1,0 +1,28 @@
+@model HCMPo.Models.PayrollConfiguration
+
+@{
+    ViewData["Title"] = "Edit Payroll Configuration";
+}
+
+<h2>Edit Payroll Configuration</h2>
+<form asp-action="Edit">
+    <input type="hidden" asp-for="Id" />
+    <div class="mb-3">
+        <label asp-for="EmployeePensionRate" class="form-label"></label>
+        <input asp-for="EmployeePensionRate" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="EmployerPensionRate" class="form-label"></label>
+        <input asp-for="EmployerPensionRate" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="LateDeductionRate" class="form-label"></label>
+        <input asp-for="LateDeductionRate" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="AbsentDeductionRate" class="form-label"></label>
+        <input asp-for="AbsentDeductionRate" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form> 

@@ -1,0 +1,84 @@
+@model HCMPo.Models.Employee
+
+@{
+    ViewData["Title"] = "Employee Documents";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>@ViewData["Title"] - @Model.FullName</h2>
+            
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+            
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+
+            <p>
+                <a asp-action="Create" asp-route-employeeId="@Model.Id" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Upload New Document
+                </a>
+                <a asp-controller="Employees" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Employee
+                </a>
+            </p>
+
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Document Type</th>
+                            <th>File Name</th>
+                            <th>Upload Date</th>
+                            <th>Uploaded By</th>
+                            <th>Expiry Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var document in Model.Documents)
+                        {
+                            <tr>
+                                <td>@document.DocumentType</td>
+                                <td>@document.FileName</td>
+                                <td>@document.UploadDate.ToString("dd/MM/yyyy")</td>
+                                <td>@document.UploadedBy</td>
+                                <td>@(document.ExpiryDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                <td>
+                                    @if (document.IsActive)
+                                    {
+                                        <span class="badge badge-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">Inactive</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a asp-action="Download" asp-route-id="@document.Id" class="btn btn-sm btn-info">
+                                            <i class="fas fa-download"></i> Download
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@document.Id" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div> 

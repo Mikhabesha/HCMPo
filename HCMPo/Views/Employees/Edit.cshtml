@@ -1,0 +1,223 @@
+@model HCMPo.Models.Employee
+
+@{
+    ViewData["Title"] = "Edit Employee";
+    var taxSettings = ViewBag.TaxSettings as List<HCMPo.Models.TaxSetting>;
+    var pensionSetting = ViewBag.Pension as HCMPo.Models.TaxSetting ?? new HCMPo.Models.TaxSetting { Percentage = 7 };
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Edit Employee</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" id="employeeForm">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="UserId" />
+                        <input type="hidden" asp-for="BadgeNumber" />
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="FirstName" class="control-label"></label>
+                                    <input asp-for="FirstName" class="form-control" />
+                                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="LastName" class="control-label"></label>
+                                    <input asp-for="LastName" class="form-control" />
+                                    <span asp-validation-for="LastName" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Email" class="control-label"></label>
+                                    <input asp-for="Email" class="form-control" />
+                                    <span asp-validation-for="Email" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="PhoneNumber" class="control-label"></label>
+                                    <input asp-for="PhoneNumber" class="form-control" />
+                                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="DepartmentId" class="control-label">Department</label>
+                                    <select asp-for="DepartmentId" class="form-control" asp-items="ViewBag.DepartmentId"></select>
+                                    <span asp-validation-for="DepartmentId" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="JobTitleId" class="control-label">Job Title</label>
+                                    <select asp-for="JobTitleId" class="form-control" asp-items="ViewBag.JobTitleId"></select>
+                                    <span asp-validation-for="JobTitleId" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="SupervisorId" class="control-label">Supervisor</label>
+                                    <select asp-for="SupervisorId" class="form-control" asp-items="ViewBag.SupervisorId">
+                                        <option value="">-- Select Supervisor --</option>
+                                    </select>
+                                    <span asp-validation-for="SupervisorId" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="BasicSalary" class="control-label"></label>
+                                    <input asp-for="BasicSalary" class="form-control" type="number" step="0.01" id="basicSalary" />
+                                    <span asp-validation-for="BasicSalary" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <h4>Tax Calculation</h4>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label>Gross Salary</label>
+                                                    <input type="text" class="form-control" id="grossSalary" readonly />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label>Total Tax</label>
+                                                    <input type="text" class="form-control" id="totalTax" readonly />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label>Net Salary</label>
+                                                    <input type="text" class="form-control" id="netSalary" readonly />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mt-3">
+                                            <div class="col-md-12">
+                                                <h5>Tax Breakdown</h5>
+                                                <table class="table table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Tax Type</th>
+                                                            <th>Rate</th>
+                                                            <th>Amount</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="taxBreakdown">
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to List
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function () {
+            // Tax settings from server
+            var taxSettings = @Html.Raw(Json.Serialize(taxSettings));
+            var pensionSetting = @Html.Raw(Json.Serialize(pensionSetting));
+
+            function calculateTaxes() {
+                var gross = parseFloat($('#basicSalary').val()) || 0;
+                var totalTax = 0;
+                var taxBreakdown = [];
+
+                // Calculate income tax
+                var applicableTax = taxSettings.find(t => 
+                    (t.minSalary == null || gross >= t.minSalary) && 
+                    (t.maxSalary == null || gross <= t.maxSalary)
+                );
+
+                if (applicableTax) {
+                    var incomeTax = (gross * applicableTax.percentage / 100) - (applicableTax.subtraction || 0);
+                    if (incomeTax > 0) {
+                        totalTax += incomeTax;
+                        taxBreakdown.push({
+                            type: 'Income Tax',
+                            rate: applicableTax.percentage + '%',
+                            amount: incomeTax.toFixed(2)
+                        });
+                    }
+                }
+
+                // Calculate pension
+                if (pensionSetting) {
+                    var pensionTax = gross * (pensionSetting.percentage / 100);
+                    totalTax += pensionTax;
+                    taxBreakdown.push({
+                        type: 'Pension',
+                        rate: pensionSetting.percentage + '%',
+                        amount: pensionTax.toFixed(2)
+                    });
+                }
+
+                // Update UI
+                $('#grossSalary').val(gross.toFixed(2));
+                $('#totalTax').val(totalTax.toFixed(2));
+                $('#netSalary').val((gross - totalTax).toFixed(2));
+
+                // Update tax breakdown table
+                var tbody = $('#taxBreakdown');
+                tbody.empty();
+                taxBreakdown.forEach(function(tax) {
+                    tbody.append(`
+                        <tr>
+                            <td>${tax.type}</td>
+                            <td>${tax.rate}</td>
+                            <td>${tax.amount}</td>
+                        </tr>
+                    `);
+                });
+            }
+
+            // Calculate taxes when basic salary changes
+            $('#basicSalary').on('input', calculateTaxes);
+
+            // Initial calculation
+            calculateTaxes();
+        });
+    </script>
+} 

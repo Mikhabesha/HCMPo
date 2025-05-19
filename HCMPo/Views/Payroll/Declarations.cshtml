@@ -1,0 +1,39 @@
+@model IEnumerable<HCMPo.Models.PayrollDeclaration>
+@using HCMPo.Models
+
+@{
+    ViewData["Title"] = "Payroll Declarations";
+    var etMonthNames = new[] { "መስከረም", "ጥቅምት", "ኅዳር", "ታኅሳስ", "ጥር", "የካቲት", "መጋቢት", "ሚያዝያ", "ግንቦት", "ሰኔ", "ሐምሌ", "ነሐሴ", "ጳጉሜን" };
+}
+
+<h2>Payroll Declarations</h2>
+
+<table class="table table-bordered table-striped mt-3">
+    <thead>
+        <tr>
+            <th>Period</th>
+            <th>Status</th>
+            <th>Posted By</th>
+            <th>Posted At</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var d in Model)
+        {
+            var etStart = new EthiopianCalendar(d.StartDate);
+            var etEnd = new EthiopianCalendar(d.EndDate);
+            var etStartStr = $"{etStart.Year} {etMonthNames[etStart.Month-1]} {etStart.Day:D2}";
+            var etEndStr = $"{etEnd.Year} {etMonthNames[etEnd.Month-1]} {etEnd.Day:D2}";
+            <tr>
+                <td>@etStartStr - @etEndStr</td>
+                <td>@d.Status</td>
+                <td>@d.CreatedBy</td>
+                <td>@d.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                <td>
+                    <a asp-action="ReviewDeclaration" asp-route-id="@d.Id" class="btn btn-sm btn-primary">Review</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table> 

@@ -1,0 +1,48 @@
+@model HCMPo.ViewModels.GeneratePayrollViewModel
+
+@{
+    ViewData["Title"] = "Generate Payroll";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<h4>Specify Payroll Period and Employees</h4>
+<hr />
+
+<form asp-action="Generate" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="StartDate" class="form-label"></label>
+            <input asp-for="StartDate" class="form-control" type="date" />
+            <span asp-validation-for="StartDate" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="EndDate" class="form-label"></label>
+            <input asp-for="EndDate" class="form-control" type="date" />
+            <span asp-validation-for="EndDate" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="SelectedEmployeeIds" class="form-label"></label>
+        <select asp-for="SelectedEmployeeIds" class="form-select" 
+                asp-items='(IEnumerable<SelectListItem>)ViewData["EmployeeList"]' multiple="multiple" size="10">
+            @* Options are populated from ViewData *@
+        </select>
+        <small class="form-text text-muted">Hold Ctrl (or Cmd on Mac) to select multiple employees. Leave blank to generate for all active employees.</small>
+        <span asp-validation-for="SelectedEmployeeIds" class="text-danger"></span>
+    </div>
+
+    <div class="mt-4">
+        <button type="submit" class="btn btn-primary">Generate & Review</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </div>
+
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @* Add scripts for multi-select enhancement if needed later (e.g., Select2) *@
+} 

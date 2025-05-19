@@ -1,0 +1,68 @@
+@model DateTime?
+
+<div class="ethiopian-date-picker">
+    @{
+        var ethiopianDate = Model.HasValue 
+            ? new HCMPo.Models.EthiopianCalendar(Model.Value)
+            : new HCMPo.Models.EthiopianCalendar(DateTime.Now);
+    }
+    
+    <div class="form-group">
+        <div class="row">
+            <div class="col-md-4">
+                <select class="form-control eth-month" id="ethMonth">
+                    @for (int i = 1; i <= 13; i++)
+                    {
+                        <option value="@i" asp-selected="ethiopianDate.Month == i">
+                            @HCMPo.Models.EthiopianCalendar.GetEthiopianMonthName(i)
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select class="form-control eth-day" id="ethDay">
+                    @for (int i = 1; i <= 30; i++)
+                    {
+                        <option value="@i" asp-selected="ethiopianDate.Day == i">@i</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select class="form-control eth-year" id="ethYear">
+                    @{
+                        int currentEthYear = ethiopianDate.Year;
+                        for (int i = currentEthYear - 10; i <= currentEthYear + 10; i++)
+                        {
+                            <option value="@i" asp-selected="ethiopianDate.Year == i">@i</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" id="gregorianDate" name="gregorianDate" value="@(Model?.ToString("yyyy-MM-dd"))" />
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            function updateGregorianDate() {
+                var year = parseInt($('#ethYear').val());
+                var month = parseInt($('#ethMonth').val());
+                var day = parseInt($('#ethDay').val());
+                
+                $.ajax({
+                    url: '/api/EthiopianCalendar/ToGregorian',
+                    type: 'POST',
+                    data: JSON.stringify({ year: year, month: month, day: day }),
+                    contentType: 'application/json',
+                    success: function(result) {
+                        $('#gregorianDate').val(result);
+                    }
+                });
+            }
+
+            $('.ethiopian-date-picker select').change(updateGregorianDate);
+        });
+    </script>
+} 

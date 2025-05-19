@@ -1,0 +1,44 @@
+@model IEnumerable<HCMPo.Models.Payroll>
+@{
+    ViewData["Title"] = "Payroll List";
+    var period = ViewBag.Period as string;
+}
+
+<div class="container">
+    <h1>Payroll List for @period</h1>
+    <a asp-action="Index" class="btn btn-secondary mb-3">Back to Periods</a>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Employee</th>
+                <th>Payable Days</th>
+                <th>Gross Salary</th>
+                <th>Tax Deductions</th>
+                <th>Attendance Deductions</th>
+                <th>Total Deductions</th>
+                <th>Net Salary</th>
+                <th>Status</th>
+                <th>Approved By</th>
+                <th>Approved At</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Employee?.FullName</td>
+                    <td>@(((decimal)item.DaysWorked).ToString("N2")) / @item.WorkingDays</td>
+                    <td>@item.GrossSalary.ToString("N2")</td>
+                    <td>@((item.IncomeTax + item.PensionDeduction + item.OtherDeductions).ToString("N2"))</td>
+                    <td>@item.AttendanceDeduction.ToString("N2")</td>
+                    <td>@item.TotalDeductions.ToString("N2")</td>
+                    <td>@item.NetSalary.ToString("N2")</td>
+                    <td>@item.Status</td>
+                    <td>@item.ApprovedBy</td>
+                    <td>@(item.ApprovedAt?.ToString("yyyy-MM-dd HH:mm"))</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div> 

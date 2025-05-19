@@ -1,0 +1,115 @@
+@model HCMPo.Models.ViewModels.EmployeeFilterViewModel
+
+@{
+    ViewData["Title"] = "Employees";
+}
+
+<div class="container">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <h2>Employees</h2>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form asp-action="Index" method="get" class="row g-3">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label asp-for="SearchTerm" class="form-label"></label>
+                        <input asp-for="SearchTerm" class="form-control" placeholder="Search by name, email, or badge..." />
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label asp-for="DepartmentId" class="form-label"></label>
+                        <select asp-for="DepartmentId" asp-items="Model.Departments" class="form-select">
+                            <option value="">All Departments</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label asp-for="JobTitleId" class="form-label"></label>
+                        <select asp-for="JobTitleId" asp-items="Model.JobTitles" class="form-select">
+                            <option value="">All Job Titles</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label asp-for="Status" class="form-label"></label>
+                        <select asp-for="Status" asp-items="Model.Statuses" class="form-select">
+                            <option value="">All Statuses</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <div class="form-group d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Filter</button>
+                        <a asp-action="Index" class="btn btn-secondary">Clear</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <p>
+        @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+        {
+            <a asp-action="Create" class="btn btn-primary">Create New</a>
+        }
+    </p>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>@Html.DisplayNameFor(model => model.Employees.First().FullName)</th>
+                    <th>@Html.DisplayNameFor(model => model.Employees.First().Email)</th>
+                    <th>@Html.DisplayNameFor(model => model.Employees.First().Department)</th>
+                    <th>@Html.DisplayNameFor(model => model.Employees.First().JobTitle)</th>
+                    <th>@Html.DisplayNameFor(model => model.Employees.First().Status)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Employees)
+                {
+                    <tr>
+                        <td>@Html.DisplayFor(modelItem => item.FullName)</td>
+                        <td>@Html.DisplayFor(modelItem => item.Email)</td>
+                        <td>@Html.DisplayFor(modelItem => item.Department.Name)</td>
+                        <td>@Html.DisplayFor(modelItem => item.JobTitle.Title)</td>
+                        <td>@Html.DisplayFor(modelItem => item.Status)</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">Details</a>
+                                @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+                                {
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-primary btn-sm">Edit</a>
+                                    <a asp-action="Taxes" asp-route-id="@item.Id" class="btn btn-warning btn-sm">Taxes</a>
+                                }
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">Delete</a>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (!Model.Employees.Any())
+    {
+        <div class="alert alert-info">
+            No employees found matching your search criteria.
+        </div>
+    }
+</div> 

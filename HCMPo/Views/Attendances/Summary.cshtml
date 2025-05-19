@@ -1,0 +1,178 @@
+@model HCMPo.ViewModels.AttendanceSummaryQueryViewModel
+
+@{
+    ViewData["Title"] = "Attendance Summary Query";
+    var request = ViewContext.HttpContext.Request;
+    int? selectedStartYear = request.Query["ethStartYear"].Count > 0 ? int.Parse(request.Query["ethStartYear"]) : (int?)null;
+    int? selectedStartMonth = request.Query["ethStartMonth"].Count > 0 ? int.Parse(request.Query["ethStartMonth"]) : (int?)null;
+    int? selectedStartDay = request.Query["ethStartDay"].Count > 0 ? int.Parse(request.Query["ethStartDay"]) : (int?)null;
+    int? selectedEndYear = request.Query["ethEndYear"].Count > 0 ? int.Parse(request.Query["ethEndYear"]) : (int?)null;
+    int? selectedEndMonth = request.Query["ethEndMonth"].Count > 0 ? int.Parse(request.Query["ethEndMonth"]) : (int?)null;
+    int? selectedEndDay = request.Query["ethEndDay"].Count > 0 ? int.Parse(request.Query["ethEndDay"]) : (int?)null;
+    var etMonthNames = new[] { "መስከረም", "ጥቅምት", "ኅዳር", "ታኅሳስ", "ጥር", "የካቲት", "መጋቢት", "ሚያዝያ", "ግንቦት", "ሰኔ", "ሐምሌ", "ነሐሴ", "ጳጉሜን" };
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<h4>Select Period and Employees</h4>
+<hr />
+
+<form asp-action="Summary" method="post" id="summaryFilterForm">
+    <div id="summaryFilterError" class="alert alert-danger d-none"></div>
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label class="form-label">Start Date (Ethiopian)</label>
+            <div class="row g-1">
+                <div class="col-4">
+                    <select class="form-select" id="ethStartYear" name="ethStartYear">
+                        @for (int y = 2017; y <= 2030; y++)
+                        {
+                            var selected = selectedStartYear == y ? "selected" : "";
+                            @:<option value="@y" @selected>@y</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-4">
+                    <select class="form-select" id="ethStartMonth" name="ethStartMonth">
+                        @for (int m = 1; m <= 13; m++)
+                        {
+                            var selected = selectedStartMonth == m ? "selected" : "";
+                            @:<option value="@m" @selected>@m - @etMonthNames[m-1]</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-4">
+                    <select class="form-select" id="ethStartDay" name="ethStartDay">
+                        @for (int d = 1; d <= 30; d++)
+                        {
+                            var selected = selectedStartDay == d ? "selected" : "";
+                            @:<option value="@d" @selected>@d</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">End Date (Ethiopian)</label>
+            <div class="row g-1">
+                <div class="col-4">
+                    <select class="form-select" id="ethEndYear" name="ethEndYear">
+                        @for (int y = 2017; y <= 2030; y++)
+                        {
+                            var selected = selectedEndYear == y ? "selected" : "";
+                            @:<option value="@y" @selected>@y</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-4">
+                    <select class="form-select" id="ethEndMonth" name="ethEndMonth">
+                        @for (int m = 1; m <= 13; m++)
+                        {
+                            var selected = selectedEndMonth == m ? "selected" : "";
+                            @:<option value="@m" @selected>@m - @etMonthNames[m-1]</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-4">
+                    <select class="form-select" id="ethEndDay" name="ethEndDay">
+                        @for (int d = 1; d <= 30; d++)
+                        {
+                            var selected = selectedEndDay == d ? "selected" : "";
+                            @:<option value="@d" @selected>@d</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group mt-3">
+        <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="selectAllEmployees">
+            <label class="form-check-label" for="selectAllEmployees">Select All Employees</label>
+        </div>
+    </div>
+
+    <div class="form-group mt-3">
+        <label class="control-label">Employees</label>
+        <select asp-for="SelectedEmployeeIds" class="form-control" multiple size="10">
+            @foreach (var employee in ViewData["EmployeeList"] as List<SelectListItem>)
+            {
+                <option value="@employee.Value">@employee.Text</option>
+            }
+        </select>
+        <small class="form-text text-muted">Hold Ctrl (Windows) or Command (Mac) to select multiple employees.</small>
+    </div>
+
+    <div class="mt-4">
+        <button type="submit" class="btn btn-primary">View Summary</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </div>
+
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Handle Select All checkbox
+            $('#selectAllEmployees').change(function() {
+                var isChecked = $(this).prop('checked');
+                $('#SelectedEmployeeIds option').prop('selected', isChecked);
+            });
+
+            // Handle individual selections
+            $('#SelectedEmployeeIds').change(function() {
+                var allSelected = $('#SelectedEmployeeIds option').length === $('#SelectedEmployeeIds option:selected').length;
+                $('#selectAllEmployees').prop('checked', allSelected);
+            });
+        });
+
+        // Adjust day dropdown for 13th month (1-5 days)
+        function adjustEthiopianDayDropdown(monthSelector, daySelector) {
+            var month = parseInt($(monthSelector).val(), 10);
+            var maxDay = (month === 13) ? 5 : 30;
+            var $day = $(daySelector);
+            $day.empty();
+            for (var d = 1; d <= maxDay; d++) {
+                $day.append(`<option value="${d}">${d}</option>`);
+            }
+        }
+        $('#ethStartMonth').on('change', function() {
+            adjustEthiopianDayDropdown('#ethStartMonth', '#ethStartDay');
+        });
+        $('#ethEndMonth').on('change', function() {
+            adjustEthiopianDayDropdown('#ethEndMonth', '#ethEndDay');
+        });
+        $(function() {
+            adjustEthiopianDayDropdown('#ethStartMonth', '#ethStartDay');
+            adjustEthiopianDayDropdown('#ethEndMonth', '#ethEndDay');
+        });
+
+        // Validation for Ethiopian date range
+        function isValidEthiopianDateRangeSummary() {
+            var sy = parseInt($('#ethStartYear').val(), 10);
+            var sm = parseInt($('#ethStartMonth').val(), 10);
+            var sd = parseInt($('#ethStartDay').val(), 10);
+            var ey = parseInt($('#ethEndYear').val(), 10);
+            var em = parseInt($('#ethEndMonth').val(), 10);
+            var ed = parseInt($('#ethEndDay').val(), 10);
+            if (isNaN(sy) || isNaN(sm) || isNaN(sd) || isNaN(ey) || isNaN(em) || isNaN(ed)) return true;
+            if (ey < sy) return false;
+            if (ey === sy && em < sm) return false;
+            if (ey === sy && em === sm && ed < sd) return false;
+            return true;
+        }
+        $('#summaryFilterForm').on('submit', function(e) {
+            if (!isValidEthiopianDateRangeSummary()) {
+                e.preventDefault();
+                $('#summaryFilterError').removeClass('d-none').text('End date cannot be less than start date.');
+            } else {
+                $('#summaryFilterError').addClass('d-none').text('');
+            }
+        });
+    </script>
+} 

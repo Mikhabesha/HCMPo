@@ -1,0 +1,142 @@
+@model List<HCMPo.ViewModels.EmployeeAttendanceSummaryViewModel>
+
+@{
+    ViewData["Title"] = "Attendance Summary Results";
+    // Retrieve dates if passed via ViewData, otherwise show generic title
+    // string startDate = ViewData["StartDate"] as string ?? "Selected Period";
+    // string endDate = ViewData["EndDate"] as string ?? ""; 
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>@ViewData["Title"]</h2>
+        <div>
+            <form asp-action="ExportSummaryToPdf" method="post" class="d-inline">
+                <input type="hidden" name="startDate" value="@ViewData["StartDate"]" />
+                <input type="hidden" name="endDate" value="@ViewData["EndDate"]" />
+                @if (ViewData["SelectedEmployeeIds"] != null)
+                {
+                    var selectedIds = ViewData["SelectedEmployeeIds"].ToString().Split(',');
+                    foreach (var id in selectedIds)
+                    {
+                        <input type="hidden" name="selectedEmployeeIds" value="@id" />
+                    }
+                }
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-file-pdf"></i> Export to PDF
+                </button>
+            </form>
+            <form asp-action="PostSummaryToPayroll" method="post" class="d-inline ms-2">
+                <input type="hidden" name="startDate" value="@ViewData["StartDate"]" />
+                <input type="hidden" name="endDate" value="@ViewData["EndDate"]" />
+                @if (ViewData["SelectedEmployeeIds"] != null)
+                {
+                    var selectedIds = ViewData["SelectedEmployeeIds"].ToString().Split(',');
+                    foreach (var id in selectedIds)
+                    {
+                        <input type="hidden" name="selectedEmployeeIds" value="@id" />
+                    }
+                }
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-check-circle"></i> Post to Payroll
+                </button>
+            </form>
+            <a asp-action="Summary" class="btn btn-secondary ms-2">
+                <i class="fas fa-arrow-left"></i> Back to Summary
+            </a>
+        </div>
+    </div>
+    <div class="mb-3">
+        @{
+            var etMonthNames = new[] { "መስከረም", "ጥቅምት", "ኅዳር", "ታኅሳስ", "ጥር", "የካቲት", "መጋቢት", "ሚያዝያ", "ግንቦት", "ሰኔ", "ሐምሌ", "ነሐሴ", "ጳጉሜን" };
+            
+            // Get Ethiopian date parts from ViewData
+            var ethStartYear = ViewData["EthStartYear"]?.ToString();
+            var ethStartMonth = ViewData["EthStartMonth"]?.ToString();
+            var ethStartDay = ViewData["EthStartDay"]?.ToString();
+            var ethEndYear = ViewData["EthEndYear"]?.ToString();
+            var ethEndMonth = ViewData["EthEndMonth"]?.ToString();
+            var ethEndDay = ViewData["EthEndDay"]?.ToString();
+
+            // Format Ethiopian date range
+            string ethiopianRange = "";
+            if (!string.IsNullOrEmpty(ethStartYear) && !string.IsNullOrEmpty(ethStartMonth) && !string.IsNullOrEmpty(ethStartDay) &&
+                !string.IsNullOrEmpty(ethEndYear) && !string.IsNullOrEmpty(ethEndMonth) && !string.IsNullOrEmpty(ethEndDay))
+            {
+                int startMonthIndex = int.Parse(ethStartMonth) - 1;
+                int endMonthIndex = int.Parse(ethEndMonth) - 1;
+                
+                if (startMonthIndex >= 0 && startMonthIndex < etMonthNames.Length &&
+                    endMonthIndex >= 0 && endMonthIndex < etMonthNames.Length)
+                {
+                    ethiopianRange = $"Ethiopian: {ethStartYear} {etMonthNames[startMonthIndex]} {ethStartDay} - {ethEndYear} {etMonthNames[endMonthIndex]} {ethEndDay}";
+                }
+            }
+
+            // Format Gregorian date range
+            var startDate = ViewData["StartDate"] as DateTime?;
+            var endDate = ViewData["EndDate"] as DateTime?;
+            var gregorianRange = (startDate.HasValue && endDate.HasValue)
+                ? $"Gregorian: {startDate.Value:yyyy-MM-dd} - {endDate.Value:yyyy-MM-dd}"
+                : "";
+        }
+        
+        <div class="date-ranges">
+            @if (!string.IsNullOrEmpty(gregorianRange))
+            {
+                <div>@gregorianRange</div>
+            }
+            @if (!string.IsNullOrEmpty(ethiopianRange))
+            {
+                <div style="font-size: 0.95em; color: #555;">@ethiopianRange</div>
+            }
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-warning">
+            No attendance summary data found for the selected criteria.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Employee Name</th>
+                        <th>Working Days</th>
+                        <th>Present</th>
+                        <th>Absent</th>
+                        <th>Late</th>
+                        <th>Early Departure</th>
+                        <th>On Leave</th>
+                        <th>On Field</th>
+                        <th>Holiday</th>
+                        <th>Weekend</th>
+                        <th>Total Hours</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var summary in Model)
+                    {
+                        <tr>
+                            <td>@summary.EmployeeName</td>
+                            <td>@summary.TotalWorkingDaysInPeriod</td>
+                            <td>@summary.DaysPresent</td>
+                            <td>@summary.DaysAbsent</td>
+                            <td>@summary.DaysLate</td>
+                            <td>@summary.DaysEarlyDeparture</td>
+                            <td>@summary.DaysOnLeave</td>
+                            <td>@summary.DaysOnField</td>
+                            <td>@summary.DaysHoliday</td>
+                            <td>@summary.DaysWeekend</td>
+                            <td>@summary.TotalWorkDuration.TotalHours.ToString("F1")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div> 

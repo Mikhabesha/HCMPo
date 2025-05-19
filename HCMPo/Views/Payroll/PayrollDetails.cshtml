@@ -1,0 +1,25 @@
+@model HCMPo.Models.Payroll
+@using HCMPo.Models
+
+@{
+    ViewData["Title"] = "Payroll Details";
+    var deductionTypes = Enum.GetValues(typeof(DeductionType)).Cast<DeductionType>();
+}
+
+<h2>Payroll Details</h2>
+<table class="table table-bordered">
+    <tr><th>Basic Salary</th><td>@Model.BasicSalary.ToString("N2")</td></tr>
+    <tr><th>Attendance Deducted Salary</th><td>@Model.AttendanceDeductedSalary.ToString("N2")</td></tr>
+    <tr><th>Allowance</th><td>@Model.Allowance.ToString("N2")</td></tr>
+    <tr><th>Total Salary</th><td>@Model.TotalSalary.ToString("N2")</td></tr>
+    <tr><th>Income Tax</th><td>@Model.IncomeTax.ToString("N2")</td></tr>
+    <tr><th>Pension (Employee 7%)</th><td>@Model.PensionEmployee.ToString("N2")</td></tr>
+    <tr><th>Pension (Employer 11%)</th><td>@Model.PensionEmployer.ToString("N2") <span class="text-muted">(Display only)</span></td></tr>
+    @foreach (var type in deductionTypes)
+    {
+        var deduction = Model.Deductions?.FirstOrDefault(d => d.DeductionType == type);
+        <tr><th>@type.ToString()</th><td>@(deduction != null ? deduction.Amount.ToString("N2") : "0.00")</td></tr>
+    }
+    <tr><th>Total Deduction</th><td>@Model.TotalDeduction.ToString("N2")</td></tr>
+    <tr><th>Net Pay Salary</th><td>@Model.NetPaySalary.ToString("N2")</td></tr>
+</table> 

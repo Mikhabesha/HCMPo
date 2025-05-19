@@ -1,0 +1,45 @@
+@model List<HCMPo.Models.Employee>
+@using HCMPo.Models
+@{
+    var declaration = ViewBag.Declaration as PayrollDeclaration;
+    var etMonthNames = new[] { "መስከረም", "ጥቅምት", "ኅዳር", "ታኅሳስ", "ጥር", "የካቲት", "መጋቢት", "ሚያዝያ", "ግንቦት", "ሰኔ", "ሐምሌ", "ነሐሴ", "ጳጉሜን" };
+    var etStart = new EthiopianCalendar(declaration.StartDate);
+    var etEnd = new EthiopianCalendar(declaration.EndDate);
+    var etStartStr = $"{etStart.Year} {etMonthNames[etStart.Month-1]} {etStart.Day:D2}";
+    var etEndStr = $"{etEnd.Year} {etMonthNames[etEnd.Month-1]} {etEnd.Day:D2}";
+}
+
+<h2>Review Payroll Declaration</h2>
+<div class="mb-3">
+    <b>Period:</b> @etStartStr - @etEndStr<br />
+    <b>Status:</b> @declaration.Status<br />
+    <b>Posted By:</b> @declaration.CreatedBy<br />
+    <b>Posted At:</b> @declaration.CreatedAt.ToString("yyyy-MM-dd HH:mm")<br />
+    <b>Employees:</b> @Model.Count
+</div>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Department</th>
+            <th>Job Title</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var emp in Model)
+        {
+            <tr>
+                <td>@emp.FullName</td>
+                <td>@emp.Department?.Name</td>
+                <td>@emp.JobTitle?.Title</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<form asp-action="GeneratePayrollFromDeclaration" method="post">
+    <input type="hidden" name="declarationId" value="@declaration.Id" />
+    <button type="submit" class="btn btn-success">Generate Payroll</button>
+    <a asp-action="Declarations" class="btn btn-secondary ms-2">Back</a>
+</form> 
