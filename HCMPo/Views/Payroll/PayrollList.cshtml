@@ -28,7 +28,7 @@
             {
                 <tr>
                     <td>@item.Employee?.FullName</td>
-                    <td>@(((decimal)item.DaysWorked).ToString("N2")) / @item.WorkingDays</td>
+                    <td>@($"{item.DaysWorked:F2} / {item.WorkingDays}")</td>
                     <td>@item.GrossSalary.ToString("N2")</td>
                     <td>@((item.IncomeTax + item.PensionDeduction + item.OtherDeductions).ToString("N2"))</td>
                     <td>@item.AttendanceDeduction.ToString("N2")</td>

@@ -1,4 +1,5 @@
 wwwroot\css\ethiopian-datepicker.css
+wwwroot\css\payrollreport.css
 wwwroot\css\site.css
 wwwroot\favicon.ico
 wwwroot\images\logo.jpg

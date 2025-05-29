@@ -33,6 +33,7 @@ namespace HCMPo.ViewModels
         public int DaysOnField { get; set; }
         public int DaysHoliday { get; set; }
         public int DaysWeekend { get; set; }
+        public int DaysHalfDay { get; set; }
         public TimeSpan TotalWorkDuration { get; set; }
 
         public EmployeeAttendanceSummaryViewModel()
@@ -46,6 +47,7 @@ namespace HCMPo.ViewModels
             DaysOnField = 0;
             DaysHoliday = 0;
             DaysWeekend = 0;
+            DaysHalfDay = 0;
             TotalWorkDuration = TimeSpan.Zero;
         }
     }

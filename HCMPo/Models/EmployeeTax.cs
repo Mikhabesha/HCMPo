@@ -22,5 +22,7 @@ namespace HCMPo.Models
         public decimal Percentage { get; set; }
 
         public bool IsActive { get; set; } = true;
+
+        public bool IsApplied { get; set; } = true;
     }
 } 

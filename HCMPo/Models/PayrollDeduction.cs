@@ -10,5 +10,7 @@ namespace HCMPo.Models
         public virtual DeductionType DeductionType { get; set; }
         public decimal Amount { get; set; }
         public virtual Payroll Payroll { get; set; }
+        public string Remarks { get; set; }
+        public string CreatedBy { get; set; }
     }
 } 

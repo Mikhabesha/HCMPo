@@ -4,6 +4,7 @@ using HCMPo.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HCMPo.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250519062033_AddAllowanceModels")]
+    partial class AddAllowanceModels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1006,9 +1009,6 @@ namespace HCMPo.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsApplied")
-                        .HasColumnType("bit");
-
                     b.Property<decimal>("Percentage")
                         .HasColumnType("decimal(5,2)");
 
@@ -1330,7 +1330,7 @@ namespace HCMPo.Migrations
                         {
                             Id = "1",
                             AllowHalfDay = true,
-                            CreatedAt = new DateTime(2025, 5, 27, 13, 49, 1, 783, DateTimeKind.Utc).AddTicks(6605),
+                            CreatedAt = new DateTime(2025, 5, 19, 6, 20, 28, 817, DateTimeKind.Utc).AddTicks(9836),
                             DefaultDays = 20,
                             Description = "Paid vacation leave",
                             IsActive = true,
@@ -1345,7 +1345,7 @@ namespace HCMPo.Migrations
                         {
                             Id = "2",
                             AllowHalfDay = true,
-                            CreatedAt = new DateTime(2025, 5, 27, 13, 49, 1, 783, DateTimeKind.Utc).AddTicks(6616),
+                            CreatedAt = new DateTime(2025, 5, 19, 6, 20, 28, 817, DateTimeKind.Utc).AddTicks(9848),
                             DefaultDays = 10,
                             Description = "Paid sick leave",
                             IsActive = true,
@@ -1360,7 +1360,7 @@ namespace HCMPo.Migrations
                         {
                             Id = "3",
                             AllowHalfDay = false,
-                            CreatedAt = new DateTime(2025, 5, 27, 13, 49, 1, 783, DateTimeKind.Utc).AddTicks(6628),
+                            CreatedAt = new DateTime(2025, 5, 19, 6, 20, 28, 817, DateTimeKind.Utc).AddTicks(9863),
                             DefaultDays = 0,
                             Description = "Unpaid leave of absence",
                             IsActive = true,
@@ -1453,8 +1453,8 @@ namespace HCMPo.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("DaysWorked")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<int>("DaysWorked")
+                        .HasColumnType("int");
 
                     b.Property<string>("EmployeeId")
                         .IsRequired()

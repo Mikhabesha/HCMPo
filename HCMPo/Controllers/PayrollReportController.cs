@@ -21,9 +21,34 @@ namespace HCMPo.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index(DateTime? start = null, DateTime? end = null, string employeeId = null, string departmentId = null)
+        public async Task<IActionResult> Index(DateTime? start = null, DateTime? end = null, string employeeId = null, string departmentId = null, string payPeriod = null)
         {
+            // Group by Gregorian dates for uniqueness, display Ethiopian period name
+            var payPeriods = await _context.Payrolls
+                .GroupBy(p => new {
+                    p.PayPeriodStart,
+                    p.PayPeriodEnd
+                })
+                .Select(g => new {
+                    Value = g.Key.PayPeriodStart.ToString("yyyy-MM-dd") + "," + g.Key.PayPeriodEnd.ToString("yyyy-MM-dd"),
+                    Text = g.Select(x => x.PayPeriodStartEt.Trim() + " - " + x.PayPeriodEndEt.Trim()).FirstOrDefault()
+                })
+                .OrderByDescending(p => p.Value)
+                .ToListAsync();
+            ViewBag.PayPeriods = payPeriods;
+
             var payrolls = _context.Payrolls.Include(p => p.Employee).AsQueryable();
+            if (!string.IsNullOrEmpty(payPeriod))
+            {
+                var parts = payPeriod.Split(',');
+                if (parts.Length == 2)
+                {
+                    if (DateTime.TryParse(parts[0], out var startG) && DateTime.TryParse(parts[1], out var endG))
+                    {
+                        payrolls = payrolls.Where(p => p.PayPeriodStart == startG && p.PayPeriodEnd == endG);
+                    }
+                }
+            }
             if (start.HasValue) payrolls = payrolls.Where(p => p.PayPeriodStart >= start);
             if (end.HasValue) payrolls = payrolls.Where(p => p.PayPeriodEnd <= end);
             if (!string.IsNullOrEmpty(employeeId)) payrolls = payrolls.Where(p => p.EmployeeId == employeeId);

@@ -92,6 +92,18 @@
 
                         <div class="row mt-4">
                             <div class="col-md-12">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="incomeTax" name="taxes" value="IncomeTax" @(ViewBag.AppliedTaxes != null && ViewBag.AppliedTaxes.ContainsKey("Income Tax") ? "checked" : "")>
+                                    <label class="form-check-label" for="incomeTax">
+                                        Apply Income Tax
+                                    </label>
+                                </div>
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="pension" name="taxes" value="Pension" @(ViewBag.AppliedTaxes != null && ViewBag.AppliedTaxes.ContainsKey("Pension") ? "checked" : "")>
+                                    <label class="form-check-label" for="pension">
+                                        Apply Pension (7%)
+                                    </label>
+                                </div>
                                 <h4>Tax Calculation</h4>
                                 <div class="card">
                                     <div class="card-body">
@@ -137,6 +149,29 @@
                             </div>
                         </div>
 
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <label class="form-label">Other Deductions</label>
+                                <div id="deductionTypesList" class="row">
+                                    @foreach (var dt in ViewBag.DeductionTypes)
+                                    {
+                                        var checkedAttr = (ViewBag.AppliedTaxes != null && ViewBag.AppliedTaxes.ContainsKey(dt.DisplayName)) ? "checked" : "";
+                                        var valueAttr = (ViewBag.AppliedTaxes != null && ViewBag.AppliedTaxes.ContainsKey(dt.DisplayName)) ? ViewBag.AppliedTaxes[dt.DisplayName].ToString() : "";
+                                        var enabledAttr = (ViewBag.AppliedTaxes != null && ViewBag.AppliedTaxes.ContainsKey(dt.DisplayName)) ? "" : "disabled";
+                                        <div class="col-12 col-md-6 col-lg-4 mb-2">
+                                            <div class="input-group">
+                                                <div class="input-group-text">
+                                                    <input class="form-check-input deduction-checkbox" type="checkbox" id="deduction_@dt.Id" name="deduction_@dt.Id" data-id="@dt.Id" data-name="@dt.DisplayName" @checkedAttr />
+                                                </div>
+                                                <label class="input-group-text flex-grow-1" for="deduction_@dt.Id">@dt.DisplayName</label>
+                                                <input type="number" class="form-control deduction-value" id="deductionValue_@dt.Id" name="deductionValue_@dt.Id" data-id="@dt.Id" min="0" step="0.01" placeholder="Amount" value="@valueAttr" @enabledAttr />
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="form-group mt-4">
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save"></i> Save Changes
@@ -156,68 +191,110 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         $(document).ready(function () {
-            // Tax settings from server
-            var taxSettings = @Html.Raw(Json.Serialize(taxSettings));
-            var pensionSetting = @Html.Raw(Json.Serialize(pensionSetting));
+            var taxSettings = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.TaxSettings ?? new List<HCMPo.Models.TaxSetting>()));
+            var pensionSetting = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Pension ?? new HCMPo.Models.TaxSetting { Percentage = 7 }));
 
-            function calculateTaxes() {
+            function getApplicableIncomeTaxBracket(gross) {
+                if (!taxSettings || taxSettings.length === 0) return null;
+                return taxSettings.find(function(bracket) {
+                    var min = bracket.MinSalary || bracket.minSalary || 0;
+                    var max = bracket.MaxSalary || bracket.maxSalary || Infinity;
+                    return gross >= min && gross <= max;
+                });
+            }
+
+            function updateTaxesAndNetSalary() {
                 var gross = parseFloat($('#basicSalary').val()) || 0;
+                $('#grossSalary').val(gross.toFixed(2));
+
                 var totalTax = 0;
                 var taxBreakdown = [];
 
-                // Calculate income tax
-                var applicableTax = taxSettings.find(t => 
-                    (t.minSalary == null || gross >= t.minSalary) && 
-                    (t.maxSalary == null || gross <= t.maxSalary)
-                );
-
-                if (applicableTax) {
-                    var incomeTax = (gross * applicableTax.percentage / 100) - (applicableTax.subtraction || 0);
+                // Income Tax
+                var incomeTaxBracket = getApplicableIncomeTaxBracket(gross);
+                var incomeTax = 0;
+                if (incomeTaxBracket && $('#incomeTax').is(':checked')) {
+                    var subtraction = incomeTaxBracket.Subtraction || incomeTaxBracket.subtraction || 0;
+                    incomeTax = (gross * incomeTaxBracket.Percentage / 100) - subtraction;
                     if (incomeTax > 0) {
                         totalTax += incomeTax;
                         taxBreakdown.push({
                             type: 'Income Tax',
-                            rate: applicableTax.percentage + '%',
-                            amount: incomeTax.toFixed(2)
+                            rate: incomeTaxBracket.Percentage + '%',
+                            amount: incomeTax.toFixed(2),
+                            subtraction: subtraction
                         });
                     }
                 }
 
-                // Calculate pension
-                if (pensionSetting) {
-                    var pensionTax = gross * (pensionSetting.percentage / 100);
+                // Pension
+                var pensionTax = 0;
+                if (pensionSetting && $('#pension').is(':checked')) {
+                    var pensionPercent = pensionSetting.Percentage || pensionSetting.percentage || 0;
+                    pensionTax = gross * pensionPercent / 100;
                     totalTax += pensionTax;
                     taxBreakdown.push({
                         type: 'Pension',
-                        rate: pensionSetting.percentage + '%',
+                        rate: pensionPercent + '%',
                         amount: pensionTax.toFixed(2)
                     });
                 }
 
-                // Update UI
-                $('#grossSalary').val(gross.toFixed(2));
+                // Multi Other Deductions
+                $('.deduction-checkbox').each(function () {
+                    var id = $(this).data('id');
+                    var name = $(this).data('name');
+                    var valueInput = $('#deductionValue_' + id);
+                    if ($(this).is(':checked')) {
+                        valueInput.prop('disabled', false);
+                        var deductionAmount = parseFloat(valueInput.val()) || 0;
+                        if (deductionAmount > 0) {
+                            totalTax += deductionAmount;
+                            taxBreakdown.push({
+                                type: name,
+                                rate: '',
+                                amount: deductionAmount.toFixed(2)
+                            });
+                        }
+                    } else {
+                        valueInput.prop('disabled', true).val('');
+                    }
+                });
+
+                var net = gross - totalTax;
+                $('#netSalary').val(net.toFixed(2));
                 $('#totalTax').val(totalTax.toFixed(2));
-                $('#netSalary').val((gross - totalTax).toFixed(2));
 
                 // Update tax breakdown table
                 var tbody = $('#taxBreakdown');
                 tbody.empty();
-                taxBreakdown.forEach(function(tax) {
-                    tbody.append(`
-                        <tr>
-                            <td>${tax.type}</td>
-                            <td>${tax.rate}</td>
-                            <td>${tax.amount}</td>
-                        </tr>
-                    `);
+                taxBreakdown.forEach(function (tax) {
+                    var row = `<tr><td>${tax.type}</td><td>${tax.rate}</td><td>${tax.amount}</td></tr>`;
+                    tbody.append(row);
                 });
             }
 
-            // Calculate taxes when basic salary changes
-            $('#basicSalary').on('input', calculateTaxes);
+            // Attach event handlers
+            $('#basicSalary').on('input', updateTaxesAndNetSalary);
+            $('#incomeTax').on('change', updateTaxesAndNetSalary);
+            $('#pension').on('change', updateTaxesAndNetSalary);
 
-            // Initial calculation
-            calculateTaxes();
+            // Enable/disable deduction input immediately on checkbox toggle
+            $(document).on('change', '.deduction-checkbox', function () {
+                var id = $(this).data('id');
+                var valueInput = $('#deductionValue_' + id);
+                if ($(this).is(':checked')) {
+                    valueInput.prop('disabled', false).focus();
+                } else {
+                    valueInput.prop('disabled', true).val('');
+                }
+                updateTaxesAndNetSalary();
+            });
+
+            $(document).on('input', '.deduction-value', updateTaxesAndNetSalary);
+
+            // Initialize calculations
+            updateTaxesAndNetSalary();
         });
     </script>
 } 

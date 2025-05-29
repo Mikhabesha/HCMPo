@@ -3,7 +3,7 @@
 
 @{
     ViewData["Title"] = "Payroll Details";
-    var deductionTypes = Enum.GetValues(typeof(DeductionType)).Cast<DeductionType>();
+    var deductionTypes = ViewBag.DeductionTypes as List<HCMPo.Models.DeductionType>;
 }
 
 <h2>Payroll Details</h2>
@@ -17,8 +17,8 @@
     <tr><th>Pension (Employer 11%)</th><td>@Model.PensionEmployer.ToString("N2") <span class="text-muted">(Display only)</span></td></tr>
     @foreach (var type in deductionTypes)
     {
-        var deduction = Model.Deductions?.FirstOrDefault(d => d.DeductionType == type);
-        <tr><th>@type.ToString()</th><td>@(deduction != null ? deduction.Amount.ToString("N2") : "0.00")</td></tr>
+        var deduction = Model.Deductions?.FirstOrDefault(d => d.DeductionTypeId == type.Id);
+        <tr><th>@type.DisplayName</th><td>@(deduction != null ? deduction.Amount.ToString("N2") : "0.00")</td><td>@(deduction != null ? deduction.Remarks : "")</td></tr>
     }
     <tr><th>Total Deduction</th><td>@Model.TotalDeduction.ToString("N2")</td></tr>
     <tr><th>Net Pay Salary</th><td>@Model.NetPaySalary.ToString("N2")</td></tr>

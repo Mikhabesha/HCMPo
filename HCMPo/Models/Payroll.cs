@@ -48,9 +48,11 @@ namespace HCMPo.Models
 
         // Attendance based calculations
         public int WorkingDays { get; set; }
-        public int DaysWorked { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal DaysWorked { get; set; }
         public int AbsentDays { get; set; }
         public int LateDays { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
         public decimal AttendanceDeduction { get; set; }
 
         // Totals

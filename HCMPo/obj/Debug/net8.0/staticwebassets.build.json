@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "P1gnxvJWsB5af6D2Jq/NhELxFd4w99Mx2XhqYRUpq7s=",
+  "Hash": "+G8V2tCN3UoYqdB4Bhch2/2ORxzWJ2gNC1HPCVXiIr0=",
   "Source": "HCMPo",
   "BasePath": "_content/HCMPo",
   "Mode": "Default",
@@ -80,6 +80,27 @@
       "OriginalItemSpec": "wwwroot\\css\\ethiopian-datepicker.css"
     },
     {
+      "Identity": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\css\\payrollreport.css",
+      "SourceId": "HCMPo",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\",
+      "BasePath": "_content/HCMPo",
+      "RelativePath": "css/payrollreport#[.{fingerprint}]?.css",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "h79nelofq0",
+      "Integrity": "o+8/hDUFZfuQMuejatenSIj+7oAohLa7qrLmoA0J8wA=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\css\\payrollreport.css"
+    },
+    {
       "Identity": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\css\\site.css",
       "SourceId": "HCMPo",
       "SourceType": "Discovered",
@@ -136,8 +157,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "",
       "AssetTraitValue": "",
-      "Fingerprint": "tbsxs7ij00",
-      "Integrity": "qQX+WPOqZU8nTiHTIfRQiOFkbS38fgqrKERN7A5Mouw=",
+      "Fingerprint": "pmqk3zdx1d",
+      "Integrity": "0SI/AAmI/ZJOtX4ohP7qZ2DZOZUoL4dKjMJbl764LIM=",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\images\\logo.jpg"
@@ -1655,6 +1676,88 @@
       ]
     },
     {
+      "Route": "css/payrollreport.css",
+      "AssetFile": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\css\\payrollreport.css",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "3454"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"o+8/hDUFZfuQMuejatenSIj+7oAohLa7qrLmoA0J8wA=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 28 May 2025 13:07:06 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-o+8/hDUFZfuQMuejatenSIj+7oAohLa7qrLmoA0J8wA="
+        }
+      ]
+    },
+    {
+      "Route": "css/payrollreport.h79nelofq0.css",
+      "AssetFile": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\css\\payrollreport.css",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "3454"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"o+8/hDUFZfuQMuejatenSIj+7oAohLa7qrLmoA0J8wA=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 28 May 2025 13:07:06 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "h79nelofq0"
+        },
+        {
+          "Name": "label",
+          "Value": "css/payrollreport.css"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-o+8/hDUFZfuQMuejatenSIj+7oAohLa7qrLmoA0J8wA="
+        }
+      ]
+    },
+    {
       "Route": "css/site.css",
       "AssetFile": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\css\\site.css",
       "Selectors": [],
@@ -1841,7 +1944,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Fri, 16 May 2025 20:20:43 GMT"
+          "Value": "Wed, 28 May 2025 12:29:12 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1878,7 +1981,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Fri, 16 May 2025 20:20:43 GMT"
+          "Value": "Wed, 28 May 2025 12:29:12 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1923,7 +2026,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Fri, 16 May 2025 20:20:43 GMT"
+          "Value": "Wed, 28 May 2025 12:29:12 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1968,7 +2071,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Fri, 16 May 2025 20:20:43 GMT"
+          "Value": "Wed, 28 May 2025 12:29:12 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1993,7 +2096,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "60773"
+          "Value": "99867"
         },
         {
           "Name": "Content-Type",
@@ -2001,11 +2104,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"qQX+WPOqZU8nTiHTIfRQiOFkbS38fgqrKERN7A5Mouw=\""
+          "Value": "\"0SI/AAmI/ZJOtX4ohP7qZ2DZOZUoL4dKjMJbl764LIM=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 06 May 2025 10:46:12 GMT"
+          "Value": "Wed, 28 May 2025 12:52:43 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -2015,12 +2118,12 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-qQX+WPOqZU8nTiHTIfRQiOFkbS38fgqrKERN7A5Mouw="
+          "Value": "sha256-0SI/AAmI/ZJOtX4ohP7qZ2DZOZUoL4dKjMJbl764LIM="
         }
       ]
     },
     {
-      "Route": "images/logo.tbsxs7ij00.jpg",
+      "Route": "images/logo.pmqk3zdx1d.jpg",
       "AssetFile": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\images\\logo.jpg",
       "Selectors": [],
       "ResponseHeaders": [
@@ -2030,7 +2133,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "60773"
+          "Value": "99867"
         },
         {
           "Name": "Content-Type",
@@ -2038,11 +2141,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"qQX+WPOqZU8nTiHTIfRQiOFkbS38fgqrKERN7A5Mouw=\""
+          "Value": "\"0SI/AAmI/ZJOtX4ohP7qZ2DZOZUoL4dKjMJbl764LIM=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 06 May 2025 10:46:12 GMT"
+          "Value": "Wed, 28 May 2025 12:52:43 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -2052,7 +2155,7 @@
       "EndpointProperties": [
         {
           "Name": "fingerprint",
-          "Value": "tbsxs7ij00"
+          "Value": "pmqk3zdx1d"
         },
         {
           "Name": "label",
@@ -2060,7 +2163,7 @@
         },
         {
           "Name": "integrity",
-          "Value": "sha256-qQX+WPOqZU8nTiHTIfRQiOFkbS38fgqrKERN7A5Mouw="
+          "Value": "sha256-0SI/AAmI/ZJOtX4ohP7qZ2DZOZUoL4dKjMJbl764LIM="
         }
       ]
     },

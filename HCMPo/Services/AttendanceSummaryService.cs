@@ -44,6 +44,12 @@ namespace HCMPo.Services
                 foreach (var dayGroup in attendancesByDay)
                 {
                     var dayRecords = dayGroup.ToList();
+                    if (dayRecords.Any(r => r.Status == AttendanceStatus.HalfDay))
+                    {
+                        presentDays += 0.5;
+                        totalHalfDays++;
+                        continue;
+                    }
                     int presentSlots = 0;
                     if (dayRecords.Any(r => r.CheckInTime.TimeOfDay >= new TimeSpan(7, 0, 0) && r.CheckInTime.TimeOfDay <= new TimeSpan(8, 30, 0))) presentSlots++;
                     if (dayRecords.Any(r => r.CheckInTime.TimeOfDay >= new TimeSpan(12, 15, 0) && r.CheckInTime.TimeOfDay <= new TimeSpan(13, 45, 0))) presentSlots++;
@@ -86,6 +92,7 @@ namespace HCMPo.Services
                     DaysOnField = onField,
                     DaysHoliday = holiday,
                     DaysWeekend = 0,
+                    DaysHalfDay = totalHalfDays,
                     TotalWorkDuration = empAttendances.Where(a => a.WorkDuration.HasValue).Aggregate(TimeSpan.Zero, (total, next) => total + next.WorkDuration.Value)
                 };
                 summaryResults.Add(summary);
@@ -95,11 +102,15 @@ namespace HCMPo.Services
 
         /// <summary>
         /// Calculates the progressive tax deduction for a given gross salary using the TaxSetting table.
+        /// WARNING: Only use this with prorated gross salary, not full gross salary!
         /// </summary>
         public async Task<decimal> CalculateTaxDeductionAsync(decimal grossSalary, string employeeId)
         {
-            // Calculate tax based on the gross salary for the period
-            return await _taxCalculationService.CalculateIncomeTaxAsync(grossSalary);
+            // DEBUG LOGGING
+            Console.WriteLine($"[TAX DEBUG] Calling CalculateIncomeTaxAsync with grossSalary={grossSalary} for {employeeId}");
+            var tax = await _taxCalculationService.CalculateIncomeTaxAsync(grossSalary);
+            Console.WriteLine($"[TAX DEBUG] Result from CalculateIncomeTaxAsync for {employeeId}: incomeTax={tax}");
+            return tax;
         }
 
         /// <summary>
@@ -117,8 +128,7 @@ namespace HCMPo.Services
         public async Task<decimal> CalculateNetSalaryAsync(decimal grossSalary, string employeeId)
         {
             // Calculate net salary based on the gross salary for the period
-            var result = await _taxCalculationService.CalculateNetSalaryAsync(grossSalary, 30, 30); // Assuming full month
-            return result.NetSalary;
+            return await _taxCalculationService.CalculateNetSalaryAsync(grossSalary, employeeId);
         }
 
         /// <summary>
@@ -127,7 +137,7 @@ namespace HCMPo.Services
         public async Task<decimal> CalculateDailyRateAsync(decimal grossSalary, string employeeId)
         {
             // Calculate daily rate based on the gross salary
-            return await _taxCalculationService.CalculateDailyRateAsync(grossSalary);
+            return await _taxCalculationService.CalculateDailyRateAsync(grossSalary, employeeId);
         }
 
         /// <summary>
@@ -204,12 +214,7 @@ namespace HCMPo.Services
             var daysPresent = (int)(summary.FirstOrDefault()?.DaysPresent ?? 0);
 
             // Calculate net salary using the corrected logic
-            var result = await _taxCalculationService.CalculateNetSalaryAsync(
-                employee.BasicSalary,
-                daysPresent
-            );
-
-            return result.NetSalary;
+            return await _taxCalculationService.CalculateNetSalaryAsync(employee.BasicSalary, employeeId);
         }
     }
 } 

@@ -19,7 +19,7 @@ namespace HCMPo.Services
         /// <summary>
         /// Calculates the prorated gross salary based on days worked
         /// </summary>
-        public decimal CalculateProratedGrossSalary(decimal monthlyGrossSalary, int daysWorked, int totalDaysInMonth = 30)
+        public decimal CalculateProratedGrossSalary(decimal monthlyGrossSalary, decimal daysWorked, int totalDaysInMonth = 30)
         {
             return (monthlyGrossSalary / totalDaysInMonth) * daysWorked;
         }
@@ -61,42 +61,48 @@ namespace HCMPo.Services
         }
 
         /// <summary>
-        /// Calculates net salary after all deductions, ensuring it's never negative.
+        /// Calculates other deductions for an employee based on their EmployeeTax records
         /// </summary>
-        public async Task<(decimal NetSalary, bool NeedsReview)> CalculateNetSalaryAsync(
-            decimal monthlyGrossSalary, 
-            int daysWorked, 
-            int totalDaysInMonth = 30)
+        public async Task<decimal> CalculateOtherDeductionsAsync(string employeeId, decimal proratedGrossSalary)
         {
-            // 1. Calculate prorated gross salary
-            var proratedGross = CalculateProratedGrossSalary(monthlyGrossSalary, daysWorked, totalDaysInMonth);
+            // Join EmployeeTaxes with DeductionTypes to check both IsApplied and IsActive
+            var employeeTaxes = await (from et in _context.EmployeeTaxes
+                                       join dt in _context.DeductionTypes on et.TaxName equals dt.DisplayName
+                                       where et.EmployeeId == employeeId
+                                             && et.IsApplied == true
+                                             && dt.IsActive == true
+                                             && et.TaxName != "Income Tax"
+                                             && et.TaxName != "Pension"
+                                       select et).ToListAsync();
 
-            // 2. Calculate pension (7% of prorated gross)
-            var pension = CalculatePensionDeduction(proratedGross);
-
-            // 3. Calculate income tax on prorated gross
-            var tax = await CalculateIncomeTaxAsync(proratedGross);
-
-            // 4. Calculate net salary
-            var netSalary = proratedGross - pension - tax;
-
-            // 5. Check if net salary is negative
-            var needsReview = netSalary < 0;
-            if (needsReview)
+            decimal totalDeductions = 0;
+            foreach (var tax in employeeTaxes)
             {
-                netSalary = 0; // Set to 0 if negative
+                totalDeductions += tax.Percentage;
             }
 
-            return (netSalary, needsReview);
+            return totalDeductions;
+        }
+
+        /// <summary>
+        /// Calculates the net salary for a given gross salary and employee ID
+        /// </summary>
+        public async Task<decimal> CalculateNetSalaryAsync(decimal proratedGrossSalary, string employeeId)
+        {
+            var incomeTax = await CalculateIncomeTaxAsync(proratedGrossSalary);
+            var pensionDeduction = CalculatePensionDeduction(proratedGrossSalary);
+            var otherDeductions = await CalculateOtherDeductionsAsync(employeeId, proratedGrossSalary);
+
+            return proratedGrossSalary - incomeTax - pensionDeduction - otherDeductions;
         }
 
         /// <summary>
         /// Calculates the daily rate based on net salary.
         /// </summary>
-        public async Task<decimal> CalculateDailyRateAsync(decimal grossSalary)
+        public async Task<decimal> CalculateDailyRateAsync(decimal grossSalary, string employeeId)
         {
-            var result = await CalculateNetSalaryAsync(grossSalary, 30); // Assuming full month
-            return result.NetSalary / 30m; // Assuming 30 days per month
+            var netSalary = await CalculateNetSalaryAsync(grossSalary, employeeId);
+            return netSalary / 30m; // Assuming 30 days per month
         }
 
         public async Task<decimal> CalculateAttendanceDeductionAsync(decimal grossSalary, int daysAbsent, int totalDaysInMonth = 30)

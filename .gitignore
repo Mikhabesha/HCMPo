@@ -1,1 +1,36 @@
+# User-specific
 .vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build output
+bin/
+obj/
+
+# Sensitive config
+appsettings.json
+appsettings.Development.json
+.env
+
+# Images and uploads
+HCMPo/HCMPo/wwwroot/images/
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# Others
+*.log
+*.db
+*.sqlite
+*.mdf
+*.ldf
+
+# Rider/JetBrains
+.idea/
+
+# Docker
+Dockerfile
+.dockerignore

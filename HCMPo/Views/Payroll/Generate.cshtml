@@ -1,48 +1,184 @@
-@model HCMPo.ViewModels.GeneratePayrollViewModel
+@model HCMPo.ViewModels.PayrollGenerationViewModel
 
 @{
     ViewData["Title"] = "Generate Payroll";
+    var allowanceTypes = ViewData["AllowanceTypes"] as List<HCMPo.Models.AllowanceType>;
+    var deductionTypes = ViewBag.DeductionTypes as List<HCMPo.Models.DeductionType>;
 }
 
-<h1>@ViewData["Title"]</h1>
+<div class="container-fluid">
+    <h2>Generate Payroll</h2>
 
-<h4>Specify Payroll Period and Employees</h4>
-<hr />
+    <div class="card">
+        <div class="card-body">
+            <form asp-action="GeneratePayroll" id="payrollForm">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-<form asp-action="Generate" method="post">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="EmployeeId" class="control-label">Employee</label>
+                            <select asp-for="EmployeeId" class="form-select" asp-items="ViewBag.EmployeeList">
+                                <option value="">-- Select Employee --</option>
+                            </select>
+                            <span asp-validation-for="EmployeeId" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="BasicSalary" class="control-label">Basic Salary</label>
+                            <input asp-for="BasicSalary" class="form-control" type="number" step="0.01" />
+                            <span asp-validation-for="BasicSalary" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
 
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="StartDate" class="form-label"></label>
-            <input asp-for="StartDate" class="form-control" type="date" />
-            <span asp-validation-for="StartDate" class="text-danger"></span>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="StartDate" class="control-label">Start Date</label>
+                            <input asp-for="StartDate" class="form-control" type="date" />
+                            <span asp-validation-for="StartDate" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="EndDate" class="control-label">End Date</label>
+                            <input asp-for="EndDate" class="form-control" type="date" />
+                            <span asp-validation-for="EndDate" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Allowances Section -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            Allowances
+                            <button type="button" class="btn btn-sm btn-primary float-end" onclick="addAllowance()">
+                                <i class="fas fa-plus"></i> Add Allowance
+                            </button>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="allowancesContainer">
+                            <!-- Allowances will be added here dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deductions Section -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            Deductions
+                            <button type="button" class="btn btn-sm btn-primary float-end" onclick="addDeduction()">
+                                <i class="fas fa-plus"></i> Add Deduction
+                            </button>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="deductionsContainer">
+                            @foreach (var type in deductionTypes)
+                            {
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">@type.DisplayName</label>
+                                    <input name="Deductions[@type.Id].Amount" class="form-control" type="number" step="0.01" />
+                                    <input name="Deductions[@type.Id].Remarks" class="form-control mt-1" type="text" placeholder="Remarks" />
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Generate Payroll
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </form>
         </div>
-        <div class="col-md-6">
-            <label asp-for="EndDate" class="form-label"></label>
-            <input asp-for="EndDate" class="form-control" type="date" />
-            <span asp-validation-for="EndDate" class="text-danger"></span>
-        </div>
     </div>
-
-    <div class="mb-3">
-        <label asp-for="SelectedEmployeeIds" class="form-label"></label>
-        <select asp-for="SelectedEmployeeIds" class="form-select" 
-                asp-items='(IEnumerable<SelectListItem>)ViewData["EmployeeList"]' multiple="multiple" size="10">
-            @* Options are populated from ViewData *@
-        </select>
-        <small class="form-text text-muted">Hold Ctrl (or Cmd on Mac) to select multiple employees. Leave blank to generate for all active employees.</small>
-        <span asp-validation-for="SelectedEmployeeIds" class="text-danger"></span>
-    </div>
-
-    <div class="mt-4">
-        <button type="submit" class="btn btn-primary">Generate & Review</button>
-        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
-    </div>
-
-</form>
+</div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    @* Add scripts for multi-select enhancement if needed later (e.g., Select2) *@
+    
+    <script>
+        let allowanceCount = 0;
+        let deductionCount = 0;
+
+        function addAllowance() {
+            const container = document.getElementById('allowancesContainer');
+            const allowanceHtml = `
+                <div class="row mb-2 allowance-row" id="allowance-${allowanceCount}">
+                    <div class="col-md-4">
+                        <select name="Allowances[${allowanceCount}].AllowanceTypeId" class="form-select" required>
+                            <option value="">-- Select Allowance Type --</option>
+                            @foreach (var type in allowanceTypes)
+                            {
+                                <option value="@type.Id">@type.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="number" name="Allowances[${allowanceCount}].Amount" class="form-control" placeholder="Amount" step="0.01" required />
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" name="Allowances[${allowanceCount}].Remarks" class="form-control" placeholder="Remarks" />
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removeAllowance(${allowanceCount})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', allowanceHtml);
+            allowanceCount++;
+        }
+
+        function removeAllowance(index) {
+            const element = document.getElementById(`allowance-${index}`);
+            element.remove();
+        }
+
+        function addDeduction() {
+            const container = document.getElementById('deductionsContainer');
+            const deductionHtml = `
+                <div class="row mb-2 deduction-row" id="deduction-${deductionCount}">
+                    <div class="col-md-4">
+                        <select name="Deductions[${deductionCount}].DeductionTypeId" class="form-select" required>
+                            <option value="">-- Select Deduction Type --</option>
+                            @foreach (var type in deductionTypes)
+                            {
+                                <option value="@type.Id">@type.DisplayName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="number" name="Deductions[${deductionCount}].Amount" class="form-control" placeholder="Amount" step="0.01" required />
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" name="Deductions[${deductionCount}].Remarks" class="form-control" placeholder="Remarks" />
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removeDeduction(${deductionCount})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', deductionHtml);
+            deductionCount++;
+        }
+
+        function removeDeduction(index) {
+            const element = document.getElementById(`deduction-${index}`);
+            element.remove();
+        }
+    </script>
 } 

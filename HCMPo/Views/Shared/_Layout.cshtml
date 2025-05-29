@@ -12,9 +12,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - HCM Portal</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/ethiopian-datepicker.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/payrollreport.css" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
@@ -67,17 +69,17 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-dark @(ViewContext.RouteData.Values["Action"].ToString() == "Summary" ? "active" : "")" 
+                        <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Summary" ? "active" : "")" 
                            asp-controller="Attendances" asp-action="Summary">
                             <i class="fas fa-chart-pie"></i> <span>Attendance Summary</span>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark @(ViewContext.RouteData.Values["Action"].ToString() == "TestZKTimeConnection" ? "active" : "")" 
-                           asp-controller="Attendances" asp-action="TestZKTimeConnection">
-                            <i class="fas fa-database"></i> Test ZKTime Connection
-                        </a>
-                    </li>
+                    @* <li class="nav-item"> *@
+                    @*     <a class="nav-link text-dark @(ViewContext.RouteData.Values["Action"].ToString() == "TestZKTimeConnection" ? "active" : "")"  *@
+                    @*        asp-controller="Attendances" asp-action="TestZKTimeConnection"> *@
+                    @*         <i class="fas fa-database"></i> Test ZKTime Connection *@
+                    @*     </a> *@
+                    @* </li> *@
                     <li class="nav-item">
                         <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Payroll" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")" 
                            asp-controller="Payroll" asp-action="Index">

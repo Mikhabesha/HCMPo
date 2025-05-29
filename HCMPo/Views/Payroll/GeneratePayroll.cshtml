@@ -3,7 +3,7 @@
 
 @{
     ViewData["Title"] = "Generate Payroll";
-    var deductionTypes = Enum.GetValues(typeof(DeductionType)).Cast<DeductionType>();
+    var deductionTypes = ViewBag.DeductionTypes as List<HCMPo.Models.DeductionType>;
 }
 
 <h2>Generate Payroll</h2>
@@ -19,7 +19,7 @@
     </div>
     <div class="mb-3">
         <label for="Allowance" class="form-label">Allowance</label>
-        <input asp-for="Allowance" class="form-control" />
+        <span>@(Model.Allowances != null && Model.Allowances.Any() ? Model.Allowances.Sum(a => a.Amount) : 0)</span>
     </div>
     <div class="mb-3">
         <label for="StartDate" class="form-label">Start Date</label>
@@ -33,9 +33,11 @@
     <div class="row">
         @foreach (var type in deductionTypes)
         {
+            var deduction = Model.Deductions.FirstOrDefault(d => d.DeductionTypeId == type.Id);
             <div class="col-md-3 mb-3">
-                <label class="form-label">@type.ToString()</label>
-                <input name="Deductions[@type]" class="form-control" type="number" step="0.01" value="@(Model.Deductions.ContainsKey(type) ? Model.Deductions[type] : 0)" />
+                <label class="form-label">@type.DisplayName</label>
+                <input name="Deductions[@type.Id].Amount" class="form-control" type="number" step="0.01" value="@(deduction != null ? deduction.Amount : 0)" />
+                <input name="Deductions[@type.Id].Remarks" class="form-control mt-1" type="text" placeholder="Remarks" value="@(deduction != null ? deduction.Remarks : "")" />
             </div>
         }
     </div>

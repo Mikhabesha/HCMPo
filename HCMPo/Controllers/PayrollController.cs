@@ -292,30 +292,32 @@ namespace HCMPo.Controllers
                     .ToListAsync();
 
                 var workingDays = attendanceRecords.Count;
-                var daysWorked = attendanceRecords.Count(a => a.Status == AttendanceStatus.Present);
+                var daysWorked = (decimal)summary.DaysPresent;
                 var absentDays = attendanceRecords.Count(a => a.Status == AttendanceStatus.Absent);
                 var lateDays = attendanceRecords.Count(a => a.Status == AttendanceStatus.Late);
 
                 var monthlyGrossSalary = employee.BasicSalary;
                 
                 // Calculate net salary using the corrected logic
-                var (netSalary, needsReview) = await _taxCalculationService.CalculateNetSalaryAsync(
-                    monthlyGrossSalary,
-                    daysWorked
-                );
-
-                // Calculate prorated gross for display
-                var proratedGross = _taxCalculationService.CalculateProratedGrossSalary(monthlyGrossSalary, daysWorked);
+                var proratedGross = _taxCalculationService.CalculateProratedGrossSalary(monthlyGrossSalary, daysWorked, workingDays);
+                var netSalary = await _taxCalculationService.CalculateNetSalaryAsync(proratedGross, employeeId);
+                var needsReview = netSalary < 0;
+                if (needsReview) netSalary = 0;
                 
                 // Calculate pension on prorated gross
                 var pensionDeduction = _taxCalculationService.CalculatePensionDeduction(proratedGross);
                 
                 // Calculate tax on prorated gross
+                _logger.LogDebug($"[TAX DEBUG] Calling CalculateIncomeTaxAsync with proratedGross={proratedGross} for {employee.FullName}");
                 var incomeTax = await _taxCalculationService.CalculateIncomeTaxAsync(proratedGross);
+                _logger.LogDebug($"[TAX DEBUG] Result from CalculateIncomeTaxAsync for {employee.FullName}: incomeTax={incomeTax}");
                 
-                var totalDeductions = pensionDeduction + incomeTax;
+                var otherDeductions = await _taxCalculationService.CalculateOtherDeductionsAsync(employee.Id, proratedGross);
+                _logger.LogDebug($"[TAX DEBUG] Other deductions for {employee.FullName}: {otherDeductions}");
+                
+                var totalDeductions = pensionDeduction + incomeTax + otherDeductions;
 
-                _logger.LogInformation($"Payroll for {employee.FullName}: MonthlyGross={monthlyGrossSalary}, ProratedGross={proratedGross}, DaysWorked={daysWorked}, IncomeTax={incomeTax}, Pension={pensionDeduction}, TotalDeductions={totalDeductions}, NetSalary={netSalary}, NeedsReview={needsReview}");
+                _logger.LogInformation($"Payroll for {employee.FullName}: MonthlyGross={monthlyGrossSalary}, ProratedGross={proratedGross}, DaysWorked={daysWorked}, IncomeTax={incomeTax}, Pension={pensionDeduction}, OtherDeductions={otherDeductions}, TotalDeductions={totalDeductions}, NetSalary={netSalary}, NeedsReview={needsReview}");
 
                 var payroll = new Payroll
                 {
@@ -333,6 +335,7 @@ namespace HCMPo.Controllers
                     AttendanceDeduction = 0, // No attendance deduction as salary is already prorated
                     IncomeTax = incomeTax,
                     PensionDeduction = pensionDeduction,
+                    OtherDeductions = otherDeductions,
                     GrossSalary = proratedGross, // Store prorated gross
                     TotalDeductions = totalDeductions,
                     NetSalary = netSalary,
@@ -425,25 +428,24 @@ namespace HCMPo.Controllers
                 if (summary == null) continue;
 
                 var monthlyGrossSalary = emp.BasicSalary;
-                
-                // Calculate net salary using the corrected logic
-                var (netSalary, needsReview) = await _taxCalculationService.CalculateNetSalaryAsync(
-                    monthlyGrossSalary,
-                    (int)summary.DaysPresent
-                );
-
-                // Calculate prorated gross for display
-                var proratedGross = _taxCalculationService.CalculateProratedGrossSalary(monthlyGrossSalary, (int)summary.DaysPresent);
-                
-                // Calculate pension on prorated gross
+                var daysWorked = (decimal)summary.DaysPresent;
+                var proratedGross = _taxCalculationService.CalculateProratedGrossSalary(monthlyGrossSalary, daysWorked, summary.TotalWorkingDaysInPeriod);
                 var pensionDeduction = _taxCalculationService.CalculatePensionDeduction(proratedGross);
-                
-                // Calculate tax on prorated gross
+                _logger.LogDebug($"[TAX DEBUG] Calling CalculateIncomeTaxAsync with proratedGross={proratedGross} for {emp.FullName}");
                 var incomeTax = await _taxCalculationService.CalculateIncomeTaxAsync(proratedGross);
-                
-                var totalDeductions = pensionDeduction + incomeTax;
+                _logger.LogDebug($"[TAX DEBUG] Result from CalculateIncomeTaxAsync for {emp.FullName}: incomeTax={incomeTax}");
+                var otherDeductions = await _taxCalculationService.CalculateOtherDeductionsAsync(emp.Id, proratedGross);
+                _logger.LogDebug($"[TAX DEBUG] Other deductions for {emp.FullName}: {otherDeductions}");
+                var totalDeductions = pensionDeduction + incomeTax + otherDeductions;
+                var netSalary = proratedGross - totalDeductions;
+                var needsReview = false;
+                if (netSalary < 0)
+                {
+                    netSalary = 0;
+                    needsReview = true;
+                }
 
-                _logger.LogInformation($"Payroll for {emp.FullName}: MonthlyGross={monthlyGrossSalary}, ProratedGross={proratedGross}, DaysWorked={summary.DaysPresent}, IncomeTax={incomeTax}, Pension={pensionDeduction}, TotalDeductions={totalDeductions}, NetSalary={netSalary}, NeedsReview={needsReview}");
+                _logger.LogInformation($"Payroll for {emp.FullName}: MonthlyGross={monthlyGrossSalary}, ProratedGross={proratedGross}, DaysWorked={daysWorked}, IncomeTax={incomeTax}, Pension={pensionDeduction}, OtherDeductions={otherDeductions}, TotalDeductions={totalDeductions}, NetSalary={netSalary}, NeedsReview={needsReview}");
 
                 // Fix duplicate check: compare both Gregorian and Ethiopian period fields
                 var existingPayroll = await _context.Payrolls.FirstOrDefaultAsync(p =>
@@ -462,13 +464,13 @@ namespace HCMPo.Controllers
                     existingPayroll.OtherAllowances = 0;
                     existingPayroll.IncomeTax = incomeTax;
                     existingPayroll.PensionDeduction = pensionDeduction;
-                    existingPayroll.OtherDeductions = 0;
+                    existingPayroll.OtherDeductions = otherDeductions;
                     existingPayroll.WorkingDays = summary.TotalWorkingDaysInPeriod;
-                    existingPayroll.DaysWorked = (int)summary.DaysPresent;
+                    existingPayroll.DaysWorked = (decimal)summary.DaysPresent;
                     existingPayroll.AbsentDays = (int)summary.DaysAbsent;
                     existingPayroll.LateDays = (int)summary.DaysLate;
                     existingPayroll.AttendanceDeduction = 0; // No attendance deduction as salary is already prorated
-                    existingPayroll.GrossSalary = proratedGross; // Store prorated gross
+                    existingPayroll.GrossSalary = proratedGross;
                     existingPayroll.TotalDeductions = totalDeductions;
                     existingPayroll.NetSalary = netSalary;
                     existingPayroll.Status = needsReview ? PayrollStatus.NeedsReview : PayrollStatus.Generated;
@@ -500,13 +502,13 @@ namespace HCMPo.Controllers
                         OtherAllowances = 0,
                         IncomeTax = incomeTax,
                         PensionDeduction = pensionDeduction,
-                        OtherDeductions = 0,
+                        OtherDeductions = otherDeductions,
                         WorkingDays = summary.TotalWorkingDaysInPeriod,
-                        DaysWorked = (int)summary.DaysPresent,
+                        DaysWorked = (decimal)summary.DaysPresent,
                         AbsentDays = (int)summary.DaysAbsent,
                         LateDays = (int)summary.DaysLate,
                         AttendanceDeduction = 0, // No attendance deduction as salary is already prorated
-                        GrossSalary = proratedGross, // Store prorated gross
+                        GrossSalary = proratedGross,
                         TotalDeductions = totalDeductions,
                         NetSalary = netSalary,
                         Status = needsReview ? PayrollStatus.NeedsReview : PayrollStatus.Generated,
@@ -583,9 +585,6 @@ namespace HCMPo.Controllers
                 double payableDays = 0;
                 var absentDays = 0;
                 var lateDays = 0;
-                var halfDays = 0;
-                var leaveDays = 0;
-                var holidayDays = 0;
                 var totalDays = (end - start).Days + 1;
                 for (int i = 0; i < totalDays; i++)
                 {
@@ -596,7 +595,6 @@ namespace HCMPo.Controllers
                     if (isWeekend || isHoliday)
                     {
                         payableDays += 1;
-                        holidayDays++;
                         continue;
                     }
                     var dayRecords = attendanceRecords.Where(a => a.Date.Date == day).ToList();
@@ -611,32 +609,43 @@ namespace HCMPo.Controllers
                     else if (presentSlots > 0)
                     {
                         payableDays += 0.5;
-                        halfDays++;
                     }
                     else
                     {
                         absentDays++;
                     }
                 }
-                var dailyRate = emp.BasicSalary / workingDays;
-                var attendanceDeduction = absentDays * dailyRate;
-                var incomeTax = emp.BasicSalary * 0.1m;
-                var pensionDeduction = emp.BasicSalary * 0.07m;
-                var otherDeductions = 0m;
-                var totalDeductions = incomeTax + pensionDeduction + otherDeductions + attendanceDeduction;
-                var grossSalary = emp.BasicSalary;
-                var netSalary = emp.Salary;
+                // Use correct calculation logic:
+                var monthlyGrossSalary = emp.BasicSalary;
+                var daysWorked = (int)payableDays;
+                var proratedGross = _taxCalculationService.CalculateProratedGrossSalary(monthlyGrossSalary, daysWorked, workingDays);
+                var pensionDeduction = _taxCalculationService.CalculatePensionDeduction(proratedGross);
+                _logger.LogDebug($"[TAX DEBUG] Calling CalculateIncomeTaxAsync with proratedGross={proratedGross} for {emp.FullName}");
+                var incomeTax = await _taxCalculationService.CalculateIncomeTaxAsync(proratedGross);
+                _logger.LogDebug($"[TAX DEBUG] Result from CalculateIncomeTaxAsync for {emp.FullName}: incomeTax={incomeTax}");
+                var otherDeductions = await _taxCalculationService.CalculateOtherDeductionsAsync(emp.Id, proratedGross);
+                _logger.LogDebug($"[TAX DEBUG] Other deductions for {emp.FullName}: {otherDeductions}");
+                var totalDeductions = pensionDeduction + incomeTax + otherDeductions;
+                var netSalary = proratedGross - totalDeductions;
+                var needsReview = false;
+                if (netSalary < 0)
+                {
+                    netSalary = 0;
+                    needsReview = true;
+                }
                 payroll.WorkingDays = workingDays;
-                payroll.DaysWorked = (int)payableDays;
+                payroll.DaysWorked = daysWorked;
                 payroll.AbsentDays = absentDays;
                 payroll.LateDays = lateDays;
-                payroll.AttendanceDeduction = attendanceDeduction;
+                payroll.AttendanceDeduction = 0; // No extra attendance deduction
                 payroll.IncomeTax = incomeTax;
                 payroll.PensionDeduction = pensionDeduction;
                 payroll.OtherDeductions = otherDeductions;
-                payroll.GrossSalary = grossSalary;
+                payroll.GrossSalary = proratedGross;
                 payroll.TotalDeductions = totalDeductions;
                 payroll.NetSalary = netSalary;
+                payroll.Status = needsReview ? PayrollStatus.NeedsReview : PayrollStatus.Generated;
+                payroll.Remarks = needsReview ? "Net salary was negative, set to 0. Please review." : "";
                 updated++;
             }
             await _context.SaveChangesAsync();
@@ -718,7 +727,7 @@ namespace HCMPo.Controllers
                     IncomeTax = 0, // Tax is already included in the stored net salary
                     PensionDeduction = pensionDeduction,
                     WorkingDays = summary.TotalWorkingDaysInPeriod,
-                    DaysWorked = (int)summary.DaysPresent,
+                    DaysWorked = (decimal)summary.DaysPresent,
                     AbsentDays = (int)summary.DaysAbsent,
                     LateDays = (int)summary.DaysLate,
                     AttendanceDeduction = attendanceDeduction,
@@ -741,57 +750,96 @@ namespace HCMPo.Controllers
         [HttpPost]
         public async Task<IActionResult> GeneratePayroll(PayrollGenerationViewModel model)
         {
+            if (!ModelState.IsValid)
+            {
+                ViewData["EmployeeList"] = await _context.Employees
+                    .OrderBy(e => e.FirstName).ThenBy(e => e.LastName)
+                    .Select(e => new SelectListItem { Value = e.Id, Text = e.FullName })
+                    .ToListAsync();
+                ViewData["AllowanceTypes"] = await _context.AllowanceTypes
+                    .Where(a => a.IsActive)
+                    .OrderBy(a => a.Name)
+                    .ToListAsync();
+                return View(model);
+            }
+
             // 1. Calculate attendance-deducted salary
             decimal attendanceDeductedSalary = await _attendanceSummaryService.CalculateAttendanceDeductedSalaryAsync(model.EmployeeId, model.StartDate, model.EndDate);
 
-            // 2. Allowance (from employee or input)
-            decimal allowance = model.Allowance;
+            // 2. Calculate total allowances
+            decimal totalAllowances = model.Allowances?.Sum(a => a.Amount) ?? 0;
 
             // 3. Total salary
-            decimal totalSalary = attendanceDeductedSalary + allowance;
+            decimal totalSalary = attendanceDeductedSalary + totalAllowances;
 
             // 4. Income tax
-            decimal incomeTax = await _taxCalculationService.CalculateIncomeTaxAsync(attendanceDeductedSalary);
+            _logger.LogDebug($"[TAX DEBUG] Calling CalculateIncomeTaxAsync with totalSalary={totalSalary} for {model.EmployeeId}");
+            decimal incomeTax = await _taxCalculationService.CalculateIncomeTaxAsync(totalSalary);
+            _logger.LogDebug($"[TAX DEBUG] Result from CalculateIncomeTaxAsync for {model.EmployeeId}: incomeTax={incomeTax}");
 
             // 5. Pension
-            decimal pensionEmployee = attendanceDeductedSalary * 0.07m;
-            decimal pensionEmployer = attendanceDeductedSalary * 0.11m;
+            decimal pensionEmployee = totalSalary * 0.07m;
+            decimal pensionEmployer = totalSalary * 0.11m;
 
-            // 6. Other deductions (dynamic)
-            var deductions = new List<PayrollDeduction>();
-            foreach (DeductionType type in Enum.GetValues(typeof(DeductionType)))
-            {
-                decimal amount = await CalculateDeductionAsync(model.EmployeeId, type, model.StartDate, model.EndDate);
-                if (amount > 0)
-                    deductions.Add(new PayrollDeduction { DeductionType = type, Amount = amount });
-            }
+            // 6. Other deductions
+            decimal otherDeductions = model.Deductions?.Sum(d => d.Amount) ?? 0;
 
             // 7. Total deduction
-            decimal totalDeduction = incomeTax + pensionEmployee + deductions.Sum(d => d.Amount);
+            decimal totalDeduction = incomeTax + pensionEmployee + otherDeductions;
 
             // 8. Net pay
             decimal netPay = totalSalary - totalDeduction;
 
-            // 9. Save payroll
+            // 9. Create payroll
             var payroll = new Payroll
             {
+                Id = Guid.NewGuid().ToString(),
                 EmployeeId = model.EmployeeId,
+                PayPeriodStart = model.StartDate,
+                PayPeriodEnd = model.EndDate,
                 BasicSalary = model.BasicSalary,
-                AttendanceDeductedSalary = attendanceDeductedSalary,
-                Allowance = allowance,
-                TotalSalary = totalSalary,
+                GrossSalary = totalSalary,
+                NetSalary = netPay,
                 IncomeTax = incomeTax,
-                PensionEmployee = pensionEmployee,
-                PensionEmployer = pensionEmployer, // Display only
-                TotalDeduction = totalDeduction,
-                NetPaySalary = netPay,
-                Deductions = deductions
+                PensionDeduction = pensionEmployee,
+                OtherDeductions = otherDeductions,
+                TotalDeductions = totalDeduction,
+                Status = PayrollStatus.Draft,
+                GeneratedBy = User.Identity.Name,
+                GeneratedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = User.Identity.Name
             };
+
+            // 10. Add allowances
+            if (model.Allowances != null)
+            {
+                payroll.Allowances = model.Allowances.Select(a => new PayrollAllowance
+                {
+                    AllowanceTypeId = a.AllowanceTypeId,
+                    Amount = a.Amount,
+                    Remarks = a.Remarks,
+                    CreatedBy = User.Identity.Name
+                }).ToList();
+            }
+
+            // 11. Add deductions
+            if (model.Deductions != null)
+            {
+                payroll.Deductions = model.Deductions.Select(d => new PayrollDeduction
+                {
+                    DeductionTypeId = d.DeductionTypeId,
+                    Amount = d.Amount,
+                    Remarks = d.Remarks,
+                    CreatedBy = User.Identity.Name
+                }).ToList();
+            }
+
             _context.Payrolls.Add(payroll);
             await _context.SaveChangesAsync();
 
-            // 10. Pass to view
-            return View("PayrollDetails", payroll);
+            TempData["SuccessMessage"] = "Payroll generated successfully.";
+            return RedirectToAction(nameof(Details), new { id = payroll.Id });
         }
 
         private bool PayrollExists(string id)

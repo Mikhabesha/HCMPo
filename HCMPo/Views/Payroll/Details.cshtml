@@ -1,198 +1,190 @@
 @model HCMPo.Models.Payroll
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Payroll Details";
 }
 
-<h1>Details</h1>
+<div class="container-fluid">
+    <h2>Payroll Details</h2>
 
-<div>
-    <h4>Payroll</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Employee)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Employee.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PayPeriodStart)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PayPeriodStart)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PayPeriodStartEt)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PayPeriodStartEt)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PayPeriodEnd)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PayPeriodEnd)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PayPeriodEndEt)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PayPeriodEndEt)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.BasicSalary)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.BasicSalary)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.TransportAllowance)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.TransportAllowance)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.HousingAllowance)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.HousingAllowance)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.OtherAllowances)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.OtherAllowances)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IncomeTax)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IncomeTax)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PensionDeduction)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PensionDeduction)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.OtherDeductions)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.OtherDeductions)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.WorkingDays)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.WorkingDays)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DaysWorked)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DaysWorked)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.AbsentDays)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.AbsentDays)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.LateDays)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.LateDays)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.AttendanceDeduction)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.AttendanceDeduction)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.GrossSalary)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.GrossSalary)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.TotalDeductions)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.TotalDeductions)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.NetSalary)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.NetSalary)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Status)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.GeneratedBy)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.GeneratedBy)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.GeneratedAt)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.GeneratedAt)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ApprovedBy)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ApprovedBy)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ApprovedAt)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ApprovedAt)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Remarks)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Remarks)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedAt)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CreatedAt)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedBy)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CreatedBy)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ModifiedAt)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ModifiedAt)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ModifiedBy)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ModifiedBy)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Employee Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">Employee</dt>
+                        <dd class="col-sm-8">@Model.Employee.FullName</dd>
+
+                        <dt class="col-sm-4">Department</dt>
+                        <dd class="col-sm-8">@Model.Employee.Department?.Name</dd>
+
+                        <dt class="col-sm-4">Position</dt>
+                        <dd class="col-sm-8">@Model.Employee.JobTitle?.Title</dd>
+                    </dl>
+                </div>
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">Pay Period</dt>
+                        <dd class="col-sm-8">@Model.PayPeriodStartEt - @Model.PayPeriodEndEt</dd>
+
+                        <dt class="col-sm-4">Status</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge bg-@(Model.Status switch {
+                                PayrollStatus.Draft => "secondary",
+                                PayrollStatus.Generated => "primary",
+                                PayrollStatus.Approved => "success",
+                                PayrollStatus.Paid => "info",
+                                PayrollStatus.Cancelled => "danger",
+                                _ => "secondary"
+                            })">@Model.Status</span>
+                        </dd>
+
+                        <dt class="col-sm-4">Generated By</dt>
+                        <dd class="col-sm-8">@Model.GeneratedBy</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Allowances</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var allowance in Model.Allowances)
+                                {
+                                    <tr>
+                                        <td>@allowance.AllowanceType.Name</td>
+                                        <td>@allowance.Amount.ToString("N2")</td>
+                                        <td>@allowance.Remarks</td>
+                                    </tr>
+                                }
+                                @if (!Model.Allowances.Any())
+                                {
+                                    <tr>
+                                        <td colspan="3" class="text-center">No allowances</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th>Total Allowances</th>
+                                    <th colspan="2">@Model.Allowances.Sum(a => a.Amount).ToString("N2")</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Deductions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Income Tax</td>
+                                    <td>@Model.IncomeTax.ToString("N2")</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>Pension</td>
+                                    <td>@Model.PensionDeduction.ToString("N2")</td>
+                                    <td></td>
+                                </tr>
+                                @foreach (var deduction in Model.Deductions)
+                                {
+                                    <tr>
+                                        <td>@deduction.DeductionType</td>
+                                        <td>@deduction.Amount.ToString("N2")</td>
+                                        <td>@deduction.Remarks</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th>Total Deductions</th>
+                                    <th colspan="2">@Model.TotalDeductions.ToString("N2")</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Salary Summary</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">Basic Salary</dt>
+                        <dd class="col-sm-8">@Model.BasicSalary.ToString("N2")</dd>
+
+                        <dt class="col-sm-4">Gross Salary</dt>
+                        <dd class="col-sm-8">@Model.GrossSalary.ToString("N2")</dd>
+
+                        <dt class="col-sm-4">Net Salary</dt>
+                        <dd class="col-sm-8">@Model.NetSalary.ToString("N2")</dd>
+                    </dl>
+                </div>
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">Working Days</dt>
+                        <dd class="col-sm-8">@Model.WorkingDays</dd>
+
+                        <dt class="col-sm-4">Days Worked</dt>
+                        <dd class="col-sm-8">@Model.DaysWorked</dd>
+
+                        <dt class="col-sm-4">Absent Days</dt>
+                        <dd class="col-sm-8">@Model.AbsentDays</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to List
+        </a>
+        @if (Model.Status == PayrollStatus.Draft)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+        }
+    </div>
 </div>

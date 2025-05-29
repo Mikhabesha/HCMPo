@@ -92,7 +92,7 @@ namespace HCMPo.Controllers
                 .Include(e => e.Department)
                 .Include(e => e.JobTitle)
                 .FirstOrDefaultAsync(m => m.Id == id);
-
+            
             if (employee == null)
             {
                 _logger.LogWarning("Employee with ID: {EmployeeId} not found.", id);
@@ -114,6 +114,9 @@ namespace HCMPo.Controllers
             ViewBag.IncomeTaxBrackets = _context.TaxSettings.Where(t => t.Type == TaxType.IncomeTax && t.IsActive).OrderBy(t => t.MinSalary).ToList();
             ViewBag.Pension = _context.TaxSettings.FirstOrDefault(t => t.Type == TaxType.Pension && t.IsActive);
             ViewBag.OtherTaxes = _context.TaxSettings.Where(t => t.Type == TaxType.Other && t.IsActive).ToList();
+            ViewBag.DeductionTypes = _context.DeductionTypes.Where(d => d.IsActive).OrderBy(d => d.Order).ToList();
+            // For Create, no applied taxes by default
+            ViewBag.AppliedTaxes = new Dictionary<string, decimal>();
             return View();
         }
 
@@ -149,15 +152,34 @@ namespace HCMPo.Controllers
                 ViewBag.IncomeTaxBrackets = _context.TaxSettings.Where(t => t.Type == TaxType.IncomeTax && t.IsActive).OrderBy(t => t.MinSalary).ToList();
                 ViewBag.Pension = _context.TaxSettings.FirstOrDefault(t => t.Type == TaxType.Pension && t.IsActive);
                 ViewBag.OtherTaxes = _context.TaxSettings.Where(t => t.Type == TaxType.Other && t.IsActive).ToList();
+                ViewBag.DeductionTypes = _context.DeductionTypes.Where(d => d.IsActive).OrderBy(d => d.Order).ToList();
+                // Pre-fill deduction values after validation error
+                var deductionTypesForPrefillError1 = _context.DeductionTypes.Where(d => d.IsActive).ToList();
+                var appliedTaxesForError1 = new Dictionary<string, decimal>();
+                foreach (var dt in deductionTypesForPrefillError1)
+                {
+                    var isChecked = Request.Form[$"deduction_{dt.Id}"] == "on";
+                    var valueStr = Request.Form[$"deductionValue_{dt.Id}"];
+                    if (isChecked && decimal.TryParse(valueStr, out var value) && value > 0)
+                    {
+                        appliedTaxesForError1[dt.DisplayName] = value;
+                    }
+                }
+                // Also handle Income Tax and Pension checkboxes
+                if (Request.Form["incomeTax"] == "on" || Request.Form["taxes"].ToString().Contains("IncomeTax"))
+                    appliedTaxesForError1["Income Tax"] = 1; // Just a flag for checked
+                if (Request.Form["pension"] == "on" || Request.Form["taxes"].ToString().Contains("Pension"))
+                    appliedTaxesForError1["Pension"] = 1;
+                ViewBag.AppliedTaxes = appliedTaxesForError1;
                 return View(employee);
             }
 
-            var taxPercentages = new Dictionary<string, decimal>();
+            var taxPercentages2 = new Dictionary<string, decimal>();
             foreach (var tax in selectedTaxes)
             {
                 var percentStr = Request.Form[$"taxPercent_{tax.Replace(" ", "")}"];
                 if (decimal.TryParse(percentStr, out var percent))
-                    taxPercentages[tax] = percent;
+                    taxPercentages2[tax] = percent;
             }
             // Handle 'Other' tax name
             string otherTaxName = Request.Form["otherTaxDropdown"];
@@ -165,17 +187,38 @@ namespace HCMPo.Controllers
             {
                 var percentStr = Request.Form["taxPercent_Other"];
                 if (decimal.TryParse(percentStr, out var percent))
-                    taxPercentages[otherTaxName] = percent;
-                taxPercentages.Remove("Other");
+                    taxPercentages2[otherTaxName] = percent;
+                taxPercentages2.Remove("Other");
             }
             // Calculate net salary
-            decimal gross = employee.BasicSalary;
+            decimal gross2 = employee.BasicSalary;
             decimal totalTax = 0;
-            foreach (var kvp in taxPercentages)
+            foreach (var kvp in taxPercentages2)
             {
-                totalTax += (gross * kvp.Value / 100m);
+                if (kvp.Key == "Income Tax")
+                {
+                    var taxSettingsForView = _context.TaxSettings
+                        .Where(t => t.IsActive && t.Type == TaxType.IncomeTax)
+                        .OrderBy(t => t.MinSalary)
+                        .ToList();
+                    var applicableTax = taxSettingsForView
+                        .Where(t => (t.MinSalary == null || gross2 >= t.MinSalary) &&
+                                   (t.MaxSalary == null || gross2 <= t.MaxSalary))
+                        .OrderByDescending(t => t.MinSalary)
+                        .FirstOrDefault();
+                    var subtraction = applicableTax?.Subtraction ?? 0;
+                    totalTax += (gross2 * kvp.Value / 100m) - subtraction;
+                }
+                else if (kvp.Key == "Pension")
+                {
+                    totalTax += (gross2 * kvp.Value / 100m);
+                }
+                else
+                {
+                    totalTax += kvp.Value;
+                }
             }
-            decimal net = gross - totalTax;
+            decimal net = gross2 - totalTax;
             employee.Salary = net;
 
             if (ModelState.IsValid)
@@ -187,7 +230,82 @@ namespace HCMPo.Controllers
                     _logger.LogInformation("About to call SaveChangesAsync (employee)");
                     await _context.SaveChangesAsync();
                     // Save EmployeeTax records
-                    foreach (var kvp in taxPercentages)
+                    var taxPercentagesForError = new Dictionary<string, decimal>();
+                    if ((Request.Form["incomeTax"] == "on") || (Request.Form["taxes"].ToString().Contains("IncomeTax")))
+                    {
+                        var taxSettingsForView = _context.TaxSettings
+                            .Where(t => t.IsActive && t.Type == TaxType.IncomeTax)
+                            .OrderBy(t => t.MinSalary)
+                            .ToList();
+                        var grossForError = employee.BasicSalary;
+                        var applicableTax = taxSettingsForView
+                            .Where(t => (t.MinSalary == null || grossForError >= t.MinSalary) &&
+                                       (t.MaxSalary == null || grossForError <= t.MaxSalary))
+                            .OrderByDescending(t => t.MinSalary)
+                            .FirstOrDefault();
+                        if (applicableTax != null)
+                        {
+                            taxPercentagesForError["Income Tax"] = applicableTax.Percentage;
+                        }
+                    }
+                    if ((Request.Form["pension"] == "on") || (Request.Form["taxes"].ToString().Contains("Pension")))
+                    {
+                        var pensionRate = _context.TaxSettings
+                            .FirstOrDefault(t => t.Type == TaxType.Pension && t.IsActive) ?? new TaxSetting { Percentage = 7 };
+                        taxPercentagesForError["Pension"] = pensionRate.Percentage;
+                    }
+                    var deductionTypes = _context.DeductionTypes.Where(d => d.IsActive).ToList();
+                    foreach (var dt in deductionTypes)
+                    {
+                        var isChecked = Request.Form[$"deduction_{dt.Id}"] == "on";
+                        var valueStr = Request.Form[$"deductionValue_{dt.Id}"];
+                        var existingTax = await _context.EmployeeTaxes.FirstOrDefaultAsync(t => t.EmployeeId == employee.Id && t.TaxName == dt.DisplayName);
+                        if (isChecked && decimal.TryParse(valueStr, out var value) && value > 0)
+                        {
+                            if (existingTax != null)
+                            {
+                                existingTax.Percentage = value;
+                                existingTax.IsApplied = true;
+                                _context.EmployeeTaxes.Update(existingTax);
+                            }
+                            else
+                            {
+                                var empTax = new EmployeeTax
+                                {
+                                    EmployeeId = employee.Id,
+                                    TaxName = dt.DisplayName,
+                                    Percentage = value,
+                                    IsActive = true,
+                                    IsApplied = true
+                                };
+                                _context.EmployeeTaxes.Add(empTax);
+                            }
+                        }
+                        else
+                        {
+                            if (existingTax != null)
+                            {
+                                existingTax.IsApplied = false;
+                                _context.EmployeeTaxes.Update(existingTax);
+                            }
+                            // If you want to always have a record for every deduction type, uncomment below:
+                            /*
+                            else
+                            {
+                                var empTax = new EmployeeTax
+                                {
+                                    EmployeeId = employee.Id,
+                                    TaxName = dt.DisplayName,
+                                    Percentage = 0,
+                                    IsActive = true,
+                                    IsApplied = false
+                                };
+                                _context.EmployeeTaxes.Add(empTax);
+                            }
+                            */
+                        }
+                    }
+                    foreach (var kvp in taxPercentagesForError)
                     {
                         var empTax = new EmployeeTax 
                         { 
@@ -229,6 +347,25 @@ namespace HCMPo.Controllers
             ViewBag.IncomeTaxBrackets = _context.TaxSettings.Where(t => t.Type == TaxType.IncomeTax && t.IsActive).OrderBy(t => t.MinSalary).ToList();
             ViewBag.Pension = _context.TaxSettings.FirstOrDefault(t => t.Type == TaxType.Pension && t.IsActive);
             ViewBag.OtherTaxes = _context.TaxSettings.Where(t => t.Type == TaxType.Other && t.IsActive).ToList();
+            ViewBag.DeductionTypes = _context.DeductionTypes.Where(d => d.IsActive).OrderBy(d => d.Order).ToList();
+            // Pre-fill deduction values after validation error
+            var deductionTypesForPrefillError2 = _context.DeductionTypes.Where(d => d.IsActive).ToList();
+            var appliedTaxesForError2 = new Dictionary<string, decimal>();
+            foreach (var dt in deductionTypesForPrefillError2)
+            {
+                var isChecked = Request.Form[$"deduction_{dt.Id}"] == "on";
+                var valueStr = Request.Form[$"deductionValue_{dt.Id}"];
+                if (isChecked && decimal.TryParse(valueStr, out var value) && value > 0)
+                {
+                    appliedTaxesForError2[dt.DisplayName] = value;
+                }
+            }
+            // Also handle Income Tax and Pension checkboxes
+            if (Request.Form["incomeTax"] == "on" || Request.Form["taxes"].ToString().Contains("IncomeTax"))
+                appliedTaxesForError2["Income Tax"] = 1; // Just a flag for checked
+            if (Request.Form["pension"] == "on" || Request.Form["taxes"].ToString().Contains("Pension"))
+                appliedTaxesForError2["Pension"] = 1;
+            ViewBag.AppliedTaxes = appliedTaxesForError2;
             return View(employee);
         }
 
@@ -277,6 +414,12 @@ namespace HCMPo.Controllers
                 IsActive = true
             };
 
+            ViewBag.DeductionTypes = await _context.DeductionTypes.Where(d => d.IsActive).OrderBy(d => d.Order).ToListAsync();
+
+            // Only include applied taxes (IsApplied == true)
+            var appliedTaxes = employee.EmployeeTaxes?.Where(t => t.IsApplied).ToDictionary(t => t.TaxName, t => t.Percentage) ?? new Dictionary<string, decimal>();
+            ViewBag.AppliedTaxes = appliedTaxes;
+
             return View(employee);
         }
 
@@ -316,65 +459,137 @@ namespace HCMPo.Controllers
                     existingEmployee.SupervisorId = employee.SupervisorId;
                     existingEmployee.Salary = employee.Salary;
 
-                    // Calculate taxes using TaxSettings
-                    var gross = employee.BasicSalary;
-                    var taxSettingsForView = await _context.TaxSettings
-                        .Where(t => t.IsActive && t.Type == TaxType.IncomeTax)
-                        .OrderBy(t => t.MinSalary)
-                        .ToListAsync();
-
-                    // Find the applicable tax bracket
-                    var applicableTax = taxSettingsForView
-                        .Where(t => (t.MinSalary == null || gross >= t.MinSalary) && 
-                                   (t.MaxSalary == null || gross <= t.MaxSalary))
-                        .OrderByDescending(t => t.MinSalary)
-                        .FirstOrDefault();
-
-                    decimal totalTax = 0;
-                    var taxPercentages = new Dictionary<string, decimal>();
-
-                    if (applicableTax != null)
-                    {
-                        // Calculate income tax
-                        var incomeTax = (gross * applicableTax.Percentage / 100m) - (applicableTax.Subtraction ?? 0);
-                        totalTax += incomeTax > 0 ? incomeTax : 0;
-
-                        // Add to taxPercentages for EmployeeTax table
-                        taxPercentages["IncomeTax"] = applicableTax.Percentage;
-                    }
-
-                    // Calculate pension (7%)
-                    var pensionRate = await _context.TaxSettings
-                        .FirstOrDefaultAsync(t => t.Type == TaxType.Pension && t.IsActive) ?? 
-                        new TaxSetting { Percentage = 7 }; // Default to 7% if not configured
-
-                    var pensionTax = gross * (pensionRate.Percentage / 100m);
-                    totalTax += pensionTax;
-                    taxPercentages["Pension"] = pensionRate.Percentage;
-
-                    // Calculate net salary
-                    var net = gross - totalTax;
-                    existingEmployee.Salary = net;
-
-                    // Update employee
-                    _context.Employees.Update(existingEmployee);
-
                     // Remove old taxes
                     var oldTaxes = _context.EmployeeTaxes.Where(t => t.EmployeeId == employee.Id);
                     _context.EmployeeTaxes.RemoveRange(oldTaxes);
 
-                    // Add new taxes
-                    foreach (var kvp in taxPercentages)
+                    // Read selected taxes from form
+                    var selectedTaxes = Request.Form["taxes"].ToList();
+                    var taxPercentages2 = new Dictionary<string, decimal>();
+
+                    // Income Tax
+                    if ((Request.Form["incomeTax"] == "on") || (Request.Form["taxes"].ToString().Contains("IncomeTax")))
                     {
-                        var empTax = new EmployeeTax 
-                        { 
-                            EmployeeId = employee.Id, 
-                            TaxName = kvp.Key, 
+                        var taxSettingsForView = await _context.TaxSettings
+                            .Where(t => t.IsActive && t.Type == TaxType.IncomeTax)
+                            .OrderBy(t => t.MinSalary)
+                            .ToListAsync();
+                        var gross2 = employee.BasicSalary;
+                        var applicableTax = taxSettingsForView
+                            .Where(t => (t.MinSalary == null || gross2 >= t.MinSalary) &&
+                                       (t.MaxSalary == null || gross2 <= t.MaxSalary))
+                            .OrderByDescending(t => t.MinSalary)
+                            .FirstOrDefault();
+                        if (applicableTax != null)
+                        {
+                            taxPercentages2["Income Tax"] = applicableTax.Percentage;
+                        }
+                    }
+
+                    // Pension
+                    if ((Request.Form["pension"] == "on") || (Request.Form["taxes"].ToString().Contains("Pension")))
+                    {
+                        var pensionRate = await _context.TaxSettings
+                            .FirstOrDefaultAsync(t => t.Type == TaxType.Pension && t.IsActive) ?? new TaxSetting { Percentage = 7 };
+                        taxPercentages2["Pension"] = pensionRate.Percentage;
+                    }
+
+                    // Other deductions
+                    var deductionTypes = await _context.DeductionTypes.Where(d => d.IsActive).ToListAsync();
+                    foreach (var dt in deductionTypes)
+                    {
+                        var isChecked = Request.Form[$"deduction_{dt.Id}"] == "on";
+                        var valueStr = Request.Form[$"deductionValue_{dt.Id}"];
+                        var existingTax = await _context.EmployeeTaxes.FirstOrDefaultAsync(t => t.EmployeeId == employee.Id && t.TaxName == dt.DisplayName);
+                        if (isChecked && decimal.TryParse(valueStr, out var value) && value > 0)
+                        {
+                            if (existingTax != null)
+                            {
+                                existingTax.Percentage = value;
+                                existingTax.IsApplied = true;
+                                _context.EmployeeTaxes.Update(existingTax);
+                            }
+                            else
+                            {
+                                var empTax = new EmployeeTax
+                                {
+                                    EmployeeId = employee.Id,
+                                    TaxName = dt.DisplayName,
+                                    Percentage = value,
+                                    IsActive = true,
+                                    IsApplied = true
+                                };
+                                _context.EmployeeTaxes.Add(empTax);
+                            }
+                        }
+                        else
+                        {
+                            if (existingTax != null)
+                            {
+                                existingTax.IsApplied = false;
+                                _context.EmployeeTaxes.Update(existingTax);
+                            }
+                            // If you want to always have a record for every deduction type, uncomment below:
+                            /*
+                            else
+                            {
+                                var empTax = new EmployeeTax
+                                {
+                                    EmployeeId = employee.Id,
+                                    TaxName = dt.DisplayName,
+                                    Percentage = 0,
+                                    IsActive = true,
+                                    IsApplied = false
+                                };
+                                _context.EmployeeTaxes.Add(empTax);
+                            }
+                            */
+                        }
+                    }
+
+                    // Add new taxes (only those checked)
+                    foreach (var kvp in taxPercentages2)
+                    {
+                        var empTax = new EmployeeTax
+                        {
+                            EmployeeId = employee.Id,
+                            TaxName = kvp.Key,
                             Percentage = kvp.Value,
                             IsActive = true
                         };
                         _context.EmployeeTaxes.Add(empTax);
                     }
+
+                    // Calculate net salary
+                    decimal gross = existingEmployee.BasicSalary;
+                    decimal totalTax = 0;
+                    foreach (var kvp in taxPercentages2)
+                    {
+                        if (kvp.Key == "Income Tax")
+                        {
+                            var taxSettingsForView = await _context.TaxSettings
+                                .Where(t => t.IsActive && t.Type == TaxType.IncomeTax)
+                                .OrderBy(t => t.MinSalary)
+                                .ToListAsync();
+                            var applicableTax = taxSettingsForView
+                                .Where(t => (t.MinSalary == null || gross >= t.MinSalary) &&
+                                           (t.MaxSalary == null || gross <= t.MaxSalary))
+                                .OrderByDescending(t => t.MinSalary)
+                                .FirstOrDefault();
+                            var subtraction = applicableTax?.Subtraction ?? 0;
+                            totalTax += (gross * kvp.Value / 100m) - subtraction;
+                        }
+                        else if (kvp.Key == "Pension")
+                        {
+                            totalTax += (gross * kvp.Value / 100m);
+                        }
+                        else
+                        {
+                            totalTax += kvp.Value;
+                        }
+                    }
+                    decimal net = gross - totalTax;
+                    existingEmployee.Salary = net;
 
                     await _context.SaveChangesAsync();
                     TempData["SuccessMessage"] = "Employee updated successfully.";
@@ -395,44 +610,25 @@ namespace HCMPo.Controllers
 
             // If we got this far, something failed, redisplay form
             ViewData["DepartmentId"] = new SelectList(
-                await _context.Departments.ToListAsync() ?? new List<Department>(), 
-                "Id", 
-                "Name", 
+                await _context.Departments.ToListAsync() ?? new List<Department>(),
+                "Id",
+                "Name",
                 employee.DepartmentId
             );
 
             ViewData["JobTitleId"] = new SelectList(
-                await _context.JobTitles.ToListAsync() ?? new List<JobTitle>(), 
-                "Id", 
-                "Title", 
+                await _context.JobTitles.ToListAsync() ?? new List<JobTitle>(),
+                "Id",
+                "Title",
                 employee.JobTitleId
             );
 
-            ViewData["SupervisorId"] = new SelectList(
-                await _context.Employees
-                    .Where(e => e.Id != employee.Id)
-                    .ToListAsync() ?? new List<Employee>(), 
-                "Id", 
-                "FullName", 
-                employee.SupervisorId
-            );
-
-            // Ensure tax settings and pension are set for the view
-            var taxSettingsForViewInvalid = await _context.TaxSettings
-                .Where(t => t.Type == TaxType.IncomeTax && t.IsActive)
-                .OrderBy(t => t.MinSalary)
-                .ToListAsync();
-            ViewBag.TaxSettings = taxSettingsForViewInvalid ?? new List<TaxSetting>();
-
-            var pensionSetting = await _context.TaxSettings
-                .FirstOrDefaultAsync(t => t.Type == TaxType.Pension && t.IsActive);
-            ViewBag.Pension = pensionSetting ?? new TaxSetting
-            {
-                Type = TaxType.Pension,
-                Percentage = 7, // Default pension rate
-                IsActive = true
-            };
-
+            ViewBag.TaxSettings = await _context.TaxSettings.Where(t => t.Type == TaxType.IncomeTax && t.IsActive).OrderBy(t => t.MinSalary).ToListAsync();
+            ViewBag.Pension = await _context.TaxSettings.FirstOrDefaultAsync(t => t.Type == TaxType.Pension && t.IsActive) ?? new TaxSetting { Percentage = 7 };
+            ViewBag.DeductionTypes = await _context.DeductionTypes.Where(d => d.IsActive).OrderBy(d => d.Order).ToListAsync();
+            // Also pass applied taxes for redisplay
+            var appliedTaxes = _context.EmployeeTaxes.Where(t => t.EmployeeId == employee.Id).ToDictionary(t => t.TaxName, t => t.Percentage);
+            ViewBag.AppliedTaxes = appliedTaxes;
             return View(employee);
         }
 

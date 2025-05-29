@@ -36,6 +36,7 @@ namespace HCMPo.Data
         public DbSet<Holiday> Holidays { get; set; }
         public DbSet<PayrollConfiguration> PayrollConfigurations { get; set; }
         public DbSet<DeductionType> DeductionTypes { get; set; }
+        public DbSet<AllowanceType> AllowanceTypes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

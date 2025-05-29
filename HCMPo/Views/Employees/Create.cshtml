@@ -117,17 +117,22 @@
                     <input class="form-check-input" type="checkbox" id="pension" name="taxes" value="Pension" checked>
                     <label class="form-check-label" for="pension">Pension</label>
                 </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input tax-checkbox" type="checkbox" id="otherTax" name="taxes" value="Other" />
-                    <label class="form-check-label" for="otherTax">Other</label>
-                    <select id="otherTaxDropdown" class="form-select d-inline-block ms-2" style="width:auto; display:inline-block; min-width:150px;">
-                        <option value="">-- Select --</option>
-                        @foreach (var other in ViewBag.OtherTaxes)
+                <div class="mt-2">
+                    <label class="form-label">Other Deductions</label>
+                    <div id="deductionTypesList" class="row">
+                        @foreach (var dt in ViewBag.DeductionTypes)
                         {
-                            <option value="@other.Name" data-percent="@other.Percentage">@other.Name (@other.Percentage%)</option>
+                            <div class="col-12 col-md-6 col-lg-4 mb-2">
+                                <div class="input-group">
+                                    <div class="input-group-text">
+                                        <input class="form-check-input deduction-checkbox" type="checkbox" id="deduction_@dt.Id" data-id="@dt.Id" data-name="@dt.DisplayName">
+                                    </div>
+                                    <label class="input-group-text flex-grow-1" for="deduction_@dt.Id">@dt.DisplayName</label>
+                                    <input type="number" class="form-control deduction-value" id="deductionValue_@dt.Id" data-id="@dt.Id" min="0" step="0.01" placeholder="Amount" disabled />
+                                </div>
+                            </div>
                         }
-                    </select>
-                    <input type="number" class="form-control d-inline-block ms-2 tax-percentage" id="otherTaxPercent" name="taxPercent_Other" min="0" max="100" step="0.01" style="width:100px;" placeholder="%" readonly />
+                    </div>
                 </div>
             </div>
 
@@ -149,6 +154,23 @@
                 <span asp-validation-for="Status" class="text-danger"></span>
             </div>
 
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <h5>Tax Breakdown</h5>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Tax Type</th>
+                                <th>Rate</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="taxBreakdown">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <div class="mt-3">
                 <button type="submit" class="btn btn-primary">Create</button>
                 <a asp-action="Index" class="btn btn-secondary">Back to List</a>
@@ -162,45 +184,87 @@
     <script>
         var incomeTaxBrackets = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.IncomeTaxBrackets ?? new List<HCMPo.Models.TaxSetting>()));
         var pension = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Pension));
-        function getIncomeTaxPercent(gross) {
+        function getApplicableIncomeTaxBracket(gross) {
             for (var i = 0; i < incomeTaxBrackets.length; i++) {
                 var b = incomeTaxBrackets[i];
-                if (gross >= b.MinSalary && gross <= b.MaxSalary) return b.Percentage;
+                if (gross >= b.MinSalary && gross <= b.MaxSalary) return b;
             }
-            return 0;
+            return null;
         }
         function updateTaxesAndNetSalary() {
             var gross = parseFloat(document.getElementById('grossSalary').value) || 0;
-            // Income Tax
-            var incomeTaxPercent = getIncomeTaxPercent(gross);
-            document.getElementById('incomeTaxPercent').value = incomeTaxPercent;
-            document.getElementById('incomeTaxPercent').disabled = true;
-            // Pension
-            var pensionPercent = pension ? pension.Percentage : 0;
-            document.getElementById('pensionPercent').value = pensionPercent;
-            document.getElementById('pensionPercent').disabled = true;
-            // Other
-            var otherPercent = 0;
-            var otherDropdown = document.getElementById('otherTaxDropdown');
-            if (otherDropdown && otherDropdown.value) {
-                var selected = otherDropdown.options[otherDropdown.selectedIndex];
-                otherPercent = parseFloat(selected.getAttribute('data-percent')) || 0;
-            }
-            document.getElementById('otherTaxPercent').value = otherPercent;
-            document.getElementById('otherTaxPercent').disabled = true;
-            // Calculate net
             var totalTax = 0;
-            if (document.getElementById('incomeTax').checked) totalTax += incomeTaxPercent;
-            if (document.getElementById('pension').checked) totalTax += pensionPercent;
-            if (document.getElementById('otherTax').checked) totalTax += otherPercent;
-            var net = gross - (gross * totalTax / 100);
+            var taxBreakdown = [];
+            // Income Tax
+            var incomeTaxBracket = getApplicableIncomeTaxBracket(gross);
+            var incomeTax = 0;
+            if (incomeTaxBracket && document.getElementById('incomeTax').checked) {
+                var subtraction = incomeTaxBracket.Subtraction || incomeTaxBracket.subtraction || 0;
+                incomeTax = (gross * incomeTaxBracket.Percentage / 100) - subtraction;
+                if (incomeTax > 0) {
+                    totalTax += incomeTax;
+                    taxBreakdown.push({
+                        type: 'Income Tax',
+                        rate: incomeTaxBracket.Percentage + '%',
+                        amount: incomeTax.toFixed(2),
+                        subtraction: subtraction
+                    });
+                }
+            }
+            // Pension
+            var pensionTax = 0;
+            if (pension && document.getElementById('pension').checked) {
+                var pensionPercent = pension.Percentage || pension.percentage || 0;
+                pensionTax = gross * pensionPercent / 100;
+                totalTax += pensionTax;
+                taxBreakdown.push({
+                    type: 'Pension',
+                    rate: pensionPercent + '%',
+                    amount: pensionTax.toFixed(2)
+                });
+            }
+            // Multi Other Deductions
+            var deductionCheckboxes = document.querySelectorAll('.deduction-checkbox');
+            deductionCheckboxes.forEach(function(checkbox) {
+                var id = checkbox.getAttribute('data-id');
+                var name = checkbox.getAttribute('data-name');
+                var valueInput = document.getElementById('deductionValue_' + id);
+                if (checkbox.checked) {
+                    valueInput.disabled = false;
+                    var deductionAmount = parseFloat(valueInput.value) || 0;
+                    if (deductionAmount > 0) {
+                        totalTax += deductionAmount;
+                        taxBreakdown.push({
+                            type: name,
+                            rate: '',
+                            amount: deductionAmount.toFixed(2)
+                        });
+                    }
+                } else {
+                    valueInput.disabled = true;
+                    valueInput.value = '';
+                }
+            });
+            var net = gross - totalTax;
             document.getElementById('netSalary').value = net.toFixed(2);
+            // Update tax breakdown table
+            var tbody = document.getElementById('taxBreakdown');
+            tbody.innerHTML = '';
+            taxBreakdown.forEach(function(tax) {
+                var row = document.createElement('tr');
+                row.innerHTML = `<td>${tax.type}</td><td>${tax.rate}</td><td>${tax.amount}</td>`;
+                tbody.appendChild(row);
+            });
         }
         document.getElementById('grossSalary').addEventListener('input', updateTaxesAndNetSalary);
         document.getElementById('incomeTax').addEventListener('change', updateTaxesAndNetSalary);
         document.getElementById('pension').addEventListener('change', updateTaxesAndNetSalary);
-        document.getElementById('otherTax').addEventListener('change', updateTaxesAndNetSalary);
-        document.getElementById('otherTaxDropdown').addEventListener('change', updateTaxesAndNetSalary);
+        document.querySelectorAll('.deduction-checkbox').forEach(function(cb) {
+            cb.addEventListener('change', updateTaxesAndNetSalary);
+        });
+        document.querySelectorAll('.deduction-value').forEach(function(input) {
+            input.addEventListener('input', updateTaxesAndNetSalary);
+        });
         updateTaxesAndNetSalary();
     </script>
 } 
