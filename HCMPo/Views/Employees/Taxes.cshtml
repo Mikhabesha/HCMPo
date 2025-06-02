@@ -6,102 +6,202 @@
     var commonTaxes = new List<string> { "Income Tax", "Pension", "Other" };
 }
 
-<h2>@ViewData["Title"]</h2>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">@ViewData["Title"]</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Tax Summary -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">Tax Summary</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Basic Salary:</strong> @Model.BasicSalary.ToString("C")</p>
+                                    <p><strong>Net Salary:</strong> @Model.Salary.ToString("C")</p>
+                                    <p><strong>Total Deductions:</strong> @((Model.BasicSalary - Model.Salary).ToString("C"))</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">Current Tax Settings</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Tax Type</th>
+                                                <th>Rate</th>
+                                                <th>Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var tax in Model.EmployeeTaxes.Where(t => t.IsApplied))
+                                            {
+                                                <tr>
+                                                    <td>@tax.TaxName</td>
+                                                    <td>@tax.Percentage%</td>
+                                                    <td>@((Model.BasicSalary * tax.Percentage / 100).ToString("C"))</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Tax Name</th>
-            <th>Percentage (%)</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var tax in Model.EmployeeTaxes)
-        {
-            <tr>
-                <td>@tax.TaxName</td>
-                <td>@tax.Percentage</td>
-                <td>
-                    <form asp-action="RemoveTax" method="post" style="display:inline;">
-                        <input type="hidden" name="taxId" value="@tax.Id" />
-                        <input type="hidden" name="employeeId" value="@Model.Id" />
-                        <button type="submit" class="btn btn-danger btn-sm">Remove</button>
-                    </form>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+                    <!-- Tax Management -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">Manage Taxes</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form asp-action="AddTax" method="post" class="row g-3" id="taxForm">
+                                        <input type="hidden" name="employeeId" value="@Model.Id" />
+                                        <div class="col-md-12 mb-3">
+                                            <label class="form-label">Select Common Taxes</label>
+                                            <div class="row">
+                                                @foreach (var tax in commonTaxes)
+                                                {
+                                                    <div class="col-md-4 mb-2">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input tax-checkbox" type="checkbox" 
+                                                                   id="@tax.Replace(" ", "")" name="commonTax" value="@tax" />
+                                                            <label class="form-check-label" for="@tax.Replace(" ", "")">@tax</label>
+                                                            <input type="number" class="form-control tax-percentage" 
+                                                                   name="percentage_@tax.Replace(" ", "")" min="0" max="100" 
+                                                                   step="0.01" style="width:100px; display:none;" placeholder="%" />
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="taxName" class="form-label">Custom Tax Name</label>
+                                            <input type="text" class="form-control" name="taxName" />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="percentage" class="form-label">Custom Percentage (%)</label>
+                                            <input type="number" class="form-control" name="percentage" min="0" max="100" step="0.01" />
+                                        </div>
+                                        <div class="col-md-4 align-self-end">
+                                            <button type="submit" class="btn btn-primary">Add Tax</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-<h4>Add Tax</h4>
-<form asp-action="AddTax" method="post" class="row g-3" id="taxForm">
-    <input type="hidden" name="employeeId" value="@Model.Id" />
-    <div class="col-md-12 mb-2">
-        <label class="form-label">Select Common Taxes</label><br />
-        @foreach (var tax in commonTaxes)
-        {
-            <div class="form-check form-check-inline">
-                <input class="form-check-input tax-checkbox" type="checkbox" id="@tax.Replace(" ", "")" name="commonTax" value="@tax" />
-                <label class="form-check-label" for="@tax.Replace(" ", "")">@tax</label>
-                <input type="number" class="form-control d-inline-block ms-2 tax-percentage" name="percentage_@tax.Replace(" ", "")" min="0" max="100" step="0.01" style="width:100px; display:none;" placeholder="%" />
+                    <!-- Tax History -->
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">Tax History</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Tax Name</th>
+                                                <th>Percentage</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var tax in Model.EmployeeTaxes)
+                                            {
+                                                <tr>
+                                                    <td>@tax.TaxName</td>
+                                                    <td>@tax.Percentage%</td>
+                                                    <td>
+                                                        <span class="badge @(tax.IsApplied ? "bg-success" : "bg-secondary")">
+                                                            @(tax.IsApplied ? "Active" : "Inactive")
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <form asp-action="RemoveTax" method="post" style="display:inline;">
+                                                            <input type="hidden" name="taxId" value="@tax.Id" />
+                                                            <input type="hidden" name="employeeId" value="@Model.Id" />
+                                                            <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        }
+        </div>
     </div>
-    <div class="col-md-4">
-        <label for="taxName" class="form-label">Custom Tax Name</label>
-        <input type="text" class="form-control" name="taxName" />
-    </div>
-    <div class="col-md-4">
-        <label for="percentage" class="form-label">Custom Percentage (%)</label>
-        <input type="number" class="form-control" name="percentage" min="0" max="100" step="0.01" />
-    </div>
-    <div class="col-md-4 align-self-end">
-        <button type="submit" class="btn btn-primary">Add Tax</button>
-    </div>
-</form>
+</div>
 
 <a asp-action="Index" class="btn btn-secondary mt-3">Back to Employee List</a>
 
 @section Scripts {
     <script>
-        // Show/hide percentage input for checked taxes
-        document.querySelectorAll('.tax-checkbox').forEach(function(checkbox) {
-            checkbox.addEventListener('change', function() {
-                var input = this.parentElement.querySelector('.tax-percentage');
-                if (this.checked) {
-                    input.style.display = 'inline-block';
-                    input.required = true;
+        $(document).ready(function() {
+            // Show/hide percentage input when checkbox is clicked
+            $('.tax-checkbox').change(function() {
+                var percentageInput = $(this).siblings('.tax-percentage');
+                if ($(this).is(':checked')) {
+                    percentageInput.show();
                 } else {
-                    input.style.display = 'none';
-                    input.required = false;
-                    input.value = '';
+                    percentageInput.hide();
                 }
             });
-        });
 
-        // On submit, add checked common taxes as separate posts
-        document.getElementById('taxForm').addEventListener('submit', function(e) {
-            var checked = document.querySelectorAll('.tax-checkbox:checked');
-            if (checked.length > 0) {
-                e.preventDefault();
-                var employeeId = document.querySelector('input[name="employeeId"]').value;
-                checked.forEach(function(cb) {
-                    var taxName = cb.value;
-                    var percentInput = cb.parentElement.querySelector('.tax-percentage');
-                    var percentage = percentInput.value;
-                    if (percentage) {
-                        var form = document.createElement('form');
-                        form.method = 'post';
-                        form.action = '/Employees/AddTax';
-                        form.innerHTML = '<input type="hidden" name="employeeId" value="' + employeeId + '" />' +
-                                         '<input type="hidden" name="taxName" value="' + taxName + '" />' +
-                                         '<input type="hidden" name="percentage" value="' + percentage + '" />';
-                        document.body.appendChild(form);
-                        form.submit();
+            // Form validation
+            $('#taxForm').submit(function(e) {
+                var hasCheckedTax = false;
+                var hasValidPercentage = false;
+
+                // Check if any common tax is selected
+                $('.tax-checkbox:checked').each(function() {
+                    hasCheckedTax = true;
+                    var percentageInput = $(this).siblings('.tax-percentage');
+                    if (percentageInput.val() && parseFloat(percentageInput.val()) > 0) {
+                        hasValidPercentage = true;
                     }
                 });
-            }
+
+                // Check custom tax
+                var customTaxName = $('input[name="taxName"]').val();
+                var customPercentage = $('input[name="percentage"]').val();
+
+                if (customTaxName && customPercentage && parseFloat(customPercentage) > 0) {
+                    hasCheckedTax = true;
+                    hasValidPercentage = true;
+                }
+
+                if (!hasCheckedTax) {
+                    e.preventDefault();
+                    alert('Please select at least one tax type.');
+                    return false;
+                }
+
+                if (!hasValidPercentage) {
+                    e.preventDefault();
+                    alert('Please enter a valid percentage for the selected tax.');
+                    return false;
+                }
+            });
         });
     </script>
 } 

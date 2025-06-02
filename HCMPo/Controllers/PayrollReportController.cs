@@ -23,18 +23,27 @@ namespace HCMPo.Controllers
 
         public async Task<IActionResult> Index(DateTime? start = null, DateTime? end = null, string employeeId = null, string departmentId = null, string payPeriod = null)
         {
-            // Group by Gregorian dates for uniqueness, display Ethiopian period name
-            var payPeriods = await _context.Payrolls
+            // First get the grouped data from database
+            var payPeriodsData = await _context.Payrolls
                 .GroupBy(p => new {
                     p.PayPeriodStart,
                     p.PayPeriodEnd
                 })
                 .Select(g => new {
-                    Value = g.Key.PayPeriodStart.ToString("yyyy-MM-dd") + "," + g.Key.PayPeriodEnd.ToString("yyyy-MM-dd"),
-                    Text = g.Select(x => x.PayPeriodStartEt.Trim() + " - " + x.PayPeriodEndEt.Trim()).FirstOrDefault()
+                    PayPeriodStart = g.Key.PayPeriodStart,
+                    PayPeriodEnd = g.Key.PayPeriodEnd,
+                    PayPeriodStartEt = g.Select(x => x.PayPeriodStartEt).FirstOrDefault(),
+                    PayPeriodEndEt = g.Select(x => x.PayPeriodEndEt).FirstOrDefault()
                 })
-                .OrderByDescending(p => p.Value)
+                .OrderByDescending(p => p.PayPeriodStart)
                 .ToListAsync();
+
+            // Then format the data in memory
+            var payPeriods = payPeriodsData.Select(p => new {
+                Value = p.PayPeriodStart.ToString("yyyy-MM-dd") + "," + p.PayPeriodEnd.ToString("yyyy-MM-dd"),
+                Text = (p.PayPeriodStartEt?.Trim() ?? "") + " - " + (p.PayPeriodEndEt?.Trim() ?? "")
+            }).ToList();
+
             ViewBag.PayPeriods = payPeriods;
 
             var payrolls = _context.Payrolls.Include(p => p.Employee).AsQueryable();

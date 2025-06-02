@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HCMPo")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+66aa679d6e14e892f97093ffcd304f1a0cc09df2")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d7b31595426a9f2a64032f290ba73938eec3387d")]
 [assembly: System.Reflection.AssemblyProductAttribute("HCMPo")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HCMPo")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

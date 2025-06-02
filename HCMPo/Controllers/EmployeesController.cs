@@ -670,38 +670,199 @@ namespace HCMPo.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // Add actions for managing EmployeeTaxes
         // GET: Employees/Taxes/{id}
+        [Authorize(Roles = "Admin,HR")]
         public async Task<IActionResult> Taxes(string id)
         {
             if (id == null) return NotFound();
+            
             var employee = await _context.Employees
                 .Include(e => e.EmployeeTaxes)
                 .FirstOrDefaultAsync(e => e.Id == id);
+                
             if (employee == null) return NotFound();
+
+            // Get tax settings for reference
+            ViewBag.IncomeTaxBrackets = await _context.TaxSettings
+                .Where(t => t.Type == TaxType.IncomeTax && t.IsActive)
+                .OrderBy(t => t.MinSalary)
+                .ToListAsync();
+                
+            ViewBag.Pension = await _context.TaxSettings
+                .FirstOrDefaultAsync(t => t.Type == TaxType.Pension && t.IsActive);
+                
+            ViewBag.OtherTaxes = await _context.TaxSettings
+                .Where(t => t.Type == TaxType.Other && t.IsActive)
+                .ToListAsync();
+
             return View(employee);
         }
 
         // POST: Employees/AddTax
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,HR")]
         public async Task<IActionResult> AddTax(string employeeId, string taxName, decimal percentage)
         {
-            if (string.IsNullOrEmpty(employeeId) || string.IsNullOrEmpty(taxName)) return BadRequest();
-            var tax = new EmployeeTax { EmployeeId = employeeId, TaxName = taxName, Percentage = percentage };
-            _context.EmployeeTaxes.Add(tax);
-            await _context.SaveChangesAsync();
+            if (string.IsNullOrEmpty(employeeId) || string.IsNullOrEmpty(taxName))
+            {
+                TempData["ErrorMessage"] = "Invalid tax information provided.";
+                return RedirectToAction("Taxes", new { id = employeeId });
+            }
+
+            try
+            {
+                // Validate percentage
+                if (percentage <= 0 || percentage > 100)
+                {
+                    TempData["ErrorMessage"] = "Tax percentage must be between 0 and 100.";
+                    return RedirectToAction("Taxes", new { id = employeeId });
+                }
+
+                var employee = await _context.Employees
+                    .Include(e => e.EmployeeTaxes)
+                    .FirstOrDefaultAsync(e => e.Id == employeeId);
+
+                if (employee == null)
+                {
+                    return NotFound();
+                }
+
+                // Check if tax already exists
+                var existingTax = employee.EmployeeTaxes
+                    .FirstOrDefault(t => t.TaxName == taxName && t.IsActive);
+
+                if (existingTax != null)
+                {
+                    existingTax.Percentage = percentage;
+                    existingTax.IsApplied = true;
+                    _context.EmployeeTaxes.Update(existingTax);
+                }
+                else
+                {
+                    var tax = new EmployeeTax
+                    {
+                        EmployeeId = employeeId,
+                        TaxName = taxName,
+                        Percentage = percentage,
+                        IsActive = true,
+                        IsApplied = true
+                    };
+                    _context.EmployeeTaxes.Add(tax);
+                }
+
+                // Recalculate net salary
+                decimal gross = employee.BasicSalary;
+                decimal totalTax = 0;
+
+                foreach (var tax in employee.EmployeeTaxes.Where(t => t.IsApplied))
+                {
+                    if (tax.TaxName == "Income Tax")
+                    {
+                        var taxSettings = await _context.TaxSettings
+                            .Where(t => t.IsActive && t.Type == TaxType.IncomeTax)
+                            .OrderBy(t => t.MinSalary)
+                            .ToListAsync();
+
+                        var applicableTax = taxSettings
+                            .Where(t => (t.MinSalary == null || gross >= t.MinSalary) &&
+                                       (t.MaxSalary == null || gross <= t.MaxSalary))
+                            .OrderByDescending(t => t.MinSalary)
+                            .FirstOrDefault();
+
+                        var subtraction = applicableTax?.Subtraction ?? 0;
+                        totalTax += (gross * tax.Percentage / 100m) - subtraction;
+                    }
+                    else if (tax.TaxName == "Pension")
+                    {
+                        totalTax += (gross * tax.Percentage / 100m);
+                    }
+                    else
+                    {
+                        totalTax += tax.Percentage;
+                    }
+                }
+
+                employee.Salary = gross - totalTax;
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Tax added successfully.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error adding tax for employee {EmployeeId}", employeeId);
+                TempData["ErrorMessage"] = "An error occurred while adding the tax.";
+            }
+
             return RedirectToAction("Taxes", new { id = employeeId });
         }
 
         // POST: Employees/RemoveTax
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,HR")]
         public async Task<IActionResult> RemoveTax(string taxId, string employeeId)
         {
-            var tax = await _context.EmployeeTaxes.FindAsync(taxId);
-            if (tax != null) _context.EmployeeTaxes.Remove(tax);
-            await _context.SaveChangesAsync();
+            try
+            {
+                var tax = await _context.EmployeeTaxes.FindAsync(taxId);
+                if (tax != null)
+                {
+                    // Instead of removing, mark as inactive
+                    tax.IsApplied = false;
+                    _context.EmployeeTaxes.Update(tax);
+
+                    // Recalculate net salary
+                    var employee = await _context.Employees
+                        .Include(e => e.EmployeeTaxes)
+                        .FirstOrDefaultAsync(e => e.Id == employeeId);
+
+                    if (employee != null)
+                    {
+                        decimal gross = employee.BasicSalary;
+                        decimal totalTax = 0;
+
+                        foreach (var activeTax in employee.EmployeeTaxes.Where(t => t.IsApplied))
+                        {
+                            if (activeTax.TaxName == "Income Tax")
+                            {
+                                var taxSettings = await _context.TaxSettings
+                                    .Where(t => t.IsActive && t.Type == TaxType.IncomeTax)
+                                    .OrderBy(t => t.MinSalary)
+                                    .ToListAsync();
+
+                                var applicableTax = taxSettings
+                                    .Where(t => (t.MinSalary == null || gross >= t.MinSalary) &&
+                                               (t.MaxSalary == null || gross <= t.MaxSalary))
+                                    .OrderByDescending(t => t.MinSalary)
+                                    .FirstOrDefault();
+
+                                var subtraction = applicableTax?.Subtraction ?? 0;
+                                totalTax += (gross * activeTax.Percentage / 100m) - subtraction;
+                            }
+                            else if (activeTax.TaxName == "Pension")
+                            {
+                                totalTax += (gross * activeTax.Percentage / 100m);
+                            }
+                            else
+                            {
+                                totalTax += activeTax.Percentage;
+                            }
+                        }
+
+                        employee.Salary = gross - totalTax;
+                    }
+
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "Tax removed successfully.";
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error removing tax {TaxId} for employee {EmployeeId}", taxId, employeeId);
+                TempData["ErrorMessage"] = "An error occurred while removing the tax.";
+            }
+
             return RedirectToAction("Taxes", new { id = employeeId });
         }
 
