@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Extensions.Logging;
 
 namespace HCMPo.Models
 {
@@ -7,7 +6,6 @@ namespace HCMPo.Models
     {
         private static readonly int[] NumberOfDaysInMonth = { 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 5 };
         private const int EthiopianEpoch = 1723856; // JDN for 1/1/1 Ethiopian
-        private readonly ILogger<EthiopianCalendar> _logger;
 
         public int Year { get; set; }
         public int Month { get; set; }

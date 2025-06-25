@@ -1,0 +1,216 @@
+@{
+    ViewData["Title"] = "Leave Reports";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Leave Reports & Analytics
+                    </h4>
+                </div>
+                <div class="card-body">
+                    
+                    <!-- Summary Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h5 class="card-title">Total Requests</h5>
+                                            <h3 class="mb-0">@ViewBag.TotalRequests</h3>
+                                        </div>
+                                        <i class="fas fa-file-alt fa-2x opacity-75"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h5 class="card-title">Approved</h5>
+                                            <h3 class="mb-0">@ViewBag.ApprovedRequests</h3>
+                                        </div>
+                                        <i class="fas fa-check fa-2x opacity-75"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h5 class="card-title">Pending</h5>
+                                            <h3 class="mb-0">@ViewBag.PendingRequests</h3>
+                                        </div>
+                                        <i class="fas fa-clock fa-2x opacity-75"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h5 class="card-title">Rejected</h5>
+                                            <h3 class="mb-0">@ViewBag.RejectedRequests</h3>
+                                        </div>
+                                        <i class="fas fa-times fa-2x opacity-75"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Leave by Type Chart -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Leave by Type</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="leaveByTypeChart" width="400" height="300"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Leave Statistics</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Leave Type</th>
+                                                <th>Count</th>
+                                                <th>Total Days</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in ViewBag.LeaveByType)
+                                            {
+                                                <tr>
+                                                    <td>@item.LeaveType</td>
+                                                    <td>@item.Count</td>
+                                                    <td>@item.TotalDays</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Overview -->
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Status Overview</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="statusChart" width="800" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="d-flex gap-2">
+                                <a href="#" class="btn btn-success">
+                                    <i class="fas fa-download me-1"></i>Export Excel
+                                </a>
+                                <a href="#" class="btn btn-info">
+                                    <i class="fas fa-file-pdf me-1"></i>Export PDF
+                                </a>
+                                <a asp-action="Index" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i>Back to List
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/chartjs/chart.min.js"></script>
+    <script>
+        // Leave by Type Chart
+        var ctx1 = document.getElementById('leaveByTypeChart').getContext('2d');
+        var leaveData = @Html.Raw(Json.Serialize(ViewBag.LeaveByType));
+        
+        new Chart(ctx1, {
+            type: 'pie',
+            data: {
+                labels: leaveData.map(item => item.leaveType),
+                datasets: [{
+                    data: leaveData.map(item => item.count),
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB', 
+                        '#FFCE56',
+                        '#4BC0C0',
+                        '#9966FF'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // Status Chart
+        var ctx2 = document.getElementById('statusChart').getContext('2d');
+        new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: ['Total', 'Approved', 'Pending', 'Rejected'],
+                datasets: [{
+                    label: 'Leave Requests',
+                    data: [@ViewBag.TotalRequests, @ViewBag.ApprovedRequests, @ViewBag.PendingRequests, @ViewBag.RejectedRequests],
+                    backgroundColor: [
+                        '#007bff',
+                        '#28a745',
+                        '#ffc107',
+                        '#dc3545'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+}
+
+<style>
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: 1px solid rgba(0, 0, 0, 0.125);
+    }
+    .opacity-75 {
+        opacity: 0.75;
+    }
+</style> 

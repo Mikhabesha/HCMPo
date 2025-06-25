@@ -1,0 +1,447 @@
+@model HCMPo.ViewModels.PayrollSummaryViewModel
+@{
+    ViewData["Title"] = "Payroll Summary Reports";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-chart-bar"></i> Payroll Summary Reports</h2>
+        <div>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Slip Generation
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5><i class="fas fa-filter"></i> Report Configuration</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="Summary" method="get" id="summaryForm">
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label for="scope">Report Scope</label>
+                            <select name="scope" class="form-select" id="scopeSelect">
+                                <option value="all" selected="@(Model.Scope == "all")">All Employees</option>
+                                <option value="individual" selected="@(Model.Scope == "individual")">Individual Analysis</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label for="period">Period Type</label>
+                            <select name="period" class="form-select" id="periodSelect">
+                                <option value="monthly" selected="@(Model.Period == "monthly")">Monthly</option>
+                                <option value="annual" selected="@(Model.Period == "annual")">Annual</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2" id="employeeFilter" style="@(Model.Scope == "all" ? "display: none;" : "")">
+                        <div class="form-group">
+                            <label for="employeeId">Employee</label>
+                            <select name="employeeId" class="form-select">
+                                <option value="">Select Employee</option>
+                                @foreach (var emp in ViewBag.Employees as List<SelectListItem>)
+                                {
+                                    <option value="@emp.Value" selected="@emp.Selected">@emp.Text</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label for="organizationUnitId">Organization Unit</label>
+                            <select name="organizationUnitId" class="form-select">
+                                <option value="">All Organization Units</option>
+                                @foreach (var ou in ViewBag.OrganizationUnits as List<SelectListItem>)
+                                {
+                                    <option value="@ou.Value" selected="@ou.Selected">@ou.Text</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="payPeriod">Pay Period (Ethiopian Calendar)</label>
+                            <select name="payPeriod" class="form-select">
+                                <option value="">All Pay Periods</option>
+                                @foreach (var period in ViewBag.PayPeriods as List<SelectListItem>)
+                                {
+                                    <option value="@period.Value" selected="@period.Selected">@period.Text</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-chart-line"></i> Generate Report
+                        </button>
+                        <a href="@Url.Action("ExportExcel", new { scope = ViewBag.SelectedScope, period = ViewBag.SelectedPeriod, payPeriod = ViewBag.SelectedPayPeriod, employeeId = ViewBag.SelectedEmployeeId, organizationUnitId = ViewBag.SelectedOrganizationUnitId })" class="btn btn-success">
+                            <i class="fas fa-file-excel"></i> Export Excel
+                        </a>
+                        <a href="@Url.Action("ExportCsv", new { scope = ViewBag.SelectedScope, period = ViewBag.SelectedPeriod, payPeriod = ViewBag.SelectedPayPeriod, employeeId = ViewBag.SelectedEmployeeId, organizationUnitId = ViewBag.SelectedOrganizationUnitId })" class="btn btn-info">
+                            <i class="fas fa-file-csv"></i> Export CSV
+                        </a>
+                        <a href="@Url.Action("ExportPdf", new { scope = ViewBag.SelectedScope, period = ViewBag.SelectedPeriod, payPeriod = ViewBag.SelectedPayPeriod, employeeId = ViewBag.SelectedEmployeeId, organizationUnitId = ViewBag.SelectedOrganizationUnitId })" class="btn btn-danger">
+                            <i class="fas fa-file-pdf"></i> Export PDF
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (Model.TotalEmployees > 0)
+    {
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title">Total Employees</h6>
+                                <h3 class="mb-0">@Model.TotalEmployees</h3>
+                            </div>
+                            <div>
+                                <i class="fas fa-users fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title">Total Gross</h6>
+                                <h3 class="mb-0">@Model.TotalGrossSalary.ToString("N0")</h3>
+                                <small>ETB</small>
+                            </div>
+                            <div>
+                                <i class="fas fa-money-bill-wave fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title">Total Deductions</h6>
+                                <h3 class="mb-0">@Model.TotalDeductions.ToString("N0")</h3>
+                                <small>ETB</small>
+                            </div>
+                            <div>
+                                <i class="fas fa-minus-circle fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title">Total Net</h6>
+                                <h3 class="mb-0">@Model.TotalNetSalary.ToString("N0")</h3>
+                                <small>ETB</small>
+                            </div>
+                            <div>
+                                <i class="fas fa-hand-holding-usd fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.Period == "annual" && Model.MonthlySummaries.Any())
+        {
+            <!-- Monthly Breakdown for Annual Reports -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-calendar-alt"></i> Monthly Breakdown (@Model.Year)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Employees</th>
+                                    <th>Gross Salary</th>
+                                    <th>Deductions</th>
+                                    <th>Net Salary</th>
+                                    <th>Avg Gross</th>
+                                    <th>Avg Net</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var monthly in Model.MonthlySummaries)
+                                {
+                                    <tr>
+                                        <td>@monthly.MonthName @monthly.Year</td>
+                                        <td>@monthly.EmployeeCount</td>
+                                        <td>@monthly.GrossSalary.ToString("N2") ETB</td>
+                                        <td>@monthly.Deductions.ToString("N2") ETB</td>
+                                        <td>@monthly.NetSalary.ToString("N2") ETB</td>
+                                        <td>@((monthly.EmployeeCount > 0 ? monthly.GrossSalary / monthly.EmployeeCount : 0).ToString("N2")) ETB</td>
+                                        <td>@((monthly.EmployeeCount > 0 ? monthly.NetSalary / monthly.EmployeeCount : 0).ToString("N2")) ETB</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot class="table-secondary">
+                                <tr>
+                                    <th>TOTAL</th>
+                                    <th>@Model.TotalEmployees</th>
+                                    <th>@Model.TotalGrossSalary.ToString("N2") ETB</th>
+                                    <th>@Model.TotalDeductions.ToString("N2") ETB</th>
+                                    <th>@Model.TotalNetSalary.ToString("N2") ETB</th>
+                                    <th>@((Model.TotalEmployees > 0 ? Model.TotalGrossSalary / Model.TotalEmployees : 0).ToString("N2")) ETB</th>
+                                    <th>@((Model.TotalEmployees > 0 ? Model.TotalNetSalary / Model.TotalEmployees : 0).ToString("N2")) ETB</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Chart for Monthly Trends -->
+                    <div class="mt-4">
+                        <canvas id="monthlyChart" height="100"></canvas>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (Model.Scope == "individual" && Model.EmployeeSummaries.Any())
+        {
+            <!-- Individual Employee Analysis -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-user-check"></i> Individual Employee Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Badge #</th>
+                                    <th>Organization Unit</th>
+                                    <th>Pay Periods</th>
+                                    <th>Total Gross</th>
+                                    <th>Total Deductions</th>
+                                    <th>Total Net</th>
+                                    <th>Avg Monthly</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var emp in Model.EmployeeSummaries)
+                                {
+                                    <tr>
+                                        <td>@emp.EmployeeName</td>
+                                        <td>@emp.BadgeNumber</td>
+                                        <td>@emp.OrganizationUnit</td>
+                                        <td>@emp.PayrollCount</td>
+                                        <td>@emp.TotalGross.ToString("N2") ETB</td>
+                                        <td>@emp.TotalDeductions.ToString("N2") ETB</td>
+                                        <td>@emp.TotalNet.ToString("N2") ETB</td>
+                                        <td>@((emp.PayrollCount > 0 ? emp.TotalNet / emp.PayrollCount : 0).ToString("N2")) ETB</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Chart for Employee Comparison -->
+                    @if (Model.EmployeeSummaries.Count <= 20)
+                    {
+                        <div class="mt-4">
+                            <canvas id="employeeChart" height="100"></canvas>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Statistics Summary -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-calculator"></i> Statistical Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Financial Overview</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Average Gross Salary:</strong> @((Model.TotalEmployees > 0 ? Model.TotalGrossSalary / Model.TotalEmployees : 0).ToString("N2")) ETB</li>
+                            <li><strong>Average Net Salary:</strong> @((Model.TotalEmployees > 0 ? Model.TotalNetSalary / Model.TotalEmployees : 0).ToString("N2")) ETB</li>
+                            <li><strong>Average Deduction Rate:</strong> @((Model.TotalGrossSalary > 0 ? Model.TotalDeductions / Model.TotalGrossSalary * 100 : 0).ToString("N1"))%</li>
+                            <li><strong>Take-home Rate:</strong> @((Model.TotalGrossSalary > 0 ? Model.TotalNetSalary / Model.TotalGrossSalary * 100 : 0).ToString("N1"))%</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Report Details</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Report Type:</strong> @(Model.Scope == "all" ? "Organization-wide" : "Individual Employee")</li>
+                            <li><strong>Period:</strong> @(Model.Period == "monthly" ? (Model.Month > 0 && Model.Month <= 12 && Model.Year > 0 ? new DateTime(Model.Year, Model.Month, 1).ToString("MMMM yyyy") : $"Month {Model.Month}, {Model.Year}") : Model.Year.ToString())</li>
+                            <li><strong>Generated:</strong> @DateTime.Now.ToString("MMM dd, yyyy HH:mm")</li>
+                            <li><strong>Currency:</strong> Ethiopian Birr (ETB)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> No payroll data found for the selected criteria. Please adjust your filters and try again.
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="~/lib/chartjs/chart.min.js"></script>
+    <script>
+        // Handle scope change
+        document.getElementById('scopeSelect').addEventListener('change', function() {
+            const employeeFilter = document.getElementById('employeeFilter');
+            if (this.value === 'individual') {
+                employeeFilter.style.display = 'block';
+            } else {
+                employeeFilter.style.display = 'none';
+            }
+        });
+
+        // Handle period change
+        document.getElementById('periodSelect').addEventListener('change', function() {
+            const monthFilter = document.getElementById('monthFilter');
+            if (this.value === 'monthly') {
+                monthFilter.style.display = 'block';
+            } else {
+                monthFilter.style.display = 'none';
+            }
+        });
+
+        // Monthly Chart
+        @if (Model.Period == "annual" && Model.MonthlySummaries.Any())
+        {
+            <text>
+            const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+            new Chart(monthlyCtx, {
+                type: 'line',
+                data: {
+                    labels: [@Html.Raw(string.Join(",", Model.MonthlySummaries.Select(m => $"'{m.MonthName}'")))],
+                    datasets: [
+                        {
+                            label: 'Gross Salary',
+                            data: [@Html.Raw(string.Join(",", Model.MonthlySummaries.Select(m => m.GrossSalary)))],
+                            borderColor: 'rgb(75, 192, 192)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Net Salary',
+                            data: [@Html.Raw(string.Join(",", Model.MonthlySummaries.Select(m => m.NetSalary)))],
+                            borderColor: 'rgb(54, 162, 235)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString() + ' ETB';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Monthly Salary Trends - @Model.Year'
+                        }
+                    }
+                }
+            });
+            </text>
+        }
+
+        // Employee Chart
+        @if (Model.Scope == "individual" && Model.EmployeeSummaries.Any() && Model.EmployeeSummaries.Count <= 20)
+        {
+            <text>
+            const employeeCtx = document.getElementById('employeeChart').getContext('2d');
+            new Chart(employeeCtx, {
+                type: 'bar',
+                data: {
+                    labels: [@Html.Raw(string.Join(",", Model.EmployeeSummaries.Select(e => $"'{e.EmployeeName}'")))],
+                    datasets: [
+                        {
+                            label: 'Total Gross',
+                            data: [@Html.Raw(string.Join(",", Model.EmployeeSummaries.Select(e => e.TotalGross)))],
+                            backgroundColor: 'rgba(75, 192, 192, 0.8)'
+                        },
+                        {
+                            label: 'Total Net',
+                            data: [@Html.Raw(string.Join(",", Model.EmployeeSummaries.Select(e => e.TotalNet)))],
+                            backgroundColor: 'rgba(54, 162, 235, 0.8)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString() + ' ETB';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Employee Salary Comparison'
+                        }
+                    }
+                }
+            });
+            </text>
+        }
+
+        // Export functions
+        function exportSummary(format) {
+            const form = document.getElementById('summaryForm');
+            const originalAction = form.action;
+            const exportInput = document.createElement('input');
+            exportInput.type = 'hidden';
+            exportInput.name = 'export';
+            exportInput.value = format;
+            form.appendChild(exportInput);
+
+            form.action = '@Url.Action("ExportSummary")';
+            form.submit();
+
+            form.removeChild(exportInput);
+            form.action = originalAction;
+        }
+    </script>
+} 

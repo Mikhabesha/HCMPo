@@ -1,4 +1,5 @@
 @model List<HCMPo.ViewModels.EmployeeAttendanceSummaryViewModel>
+@using HCMPo.Helpers
 
 @{
     ViewData["Title"] = "Attendance Summary Results";
@@ -48,47 +49,25 @@
     </div>
     <div class="mb-3">
         @{
-            var etMonthNames = new[] { "መስከረም", "ጥቅምት", "ኅዳር", "ታኅሳስ", "ጥር", "የካቲት", "መጋቢት", "ሚያዝያ", "ግንቦት", "ሰኔ", "ሐምሌ", "ነሐሴ", "ጳጉሜን" };
-            
-            // Get Ethiopian date parts from ViewData
-            var ethStartYear = ViewData["EthStartYear"]?.ToString();
-            var ethStartMonth = ViewData["EthStartMonth"]?.ToString();
-            var ethStartDay = ViewData["EthStartDay"]?.ToString();
-            var ethEndYear = ViewData["EthEndYear"]?.ToString();
-            var ethEndMonth = ViewData["EthEndMonth"]?.ToString();
-            var ethEndDay = ViewData["EthEndDay"]?.ToString();
-
-            // Format Ethiopian date range
-            string ethiopianRange = "";
-            if (!string.IsNullOrEmpty(ethStartYear) && !string.IsNullOrEmpty(ethStartMonth) && !string.IsNullOrEmpty(ethStartDay) &&
-                !string.IsNullOrEmpty(ethEndYear) && !string.IsNullOrEmpty(ethEndMonth) && !string.IsNullOrEmpty(ethEndDay))
-            {
-                int startMonthIndex = int.Parse(ethStartMonth) - 1;
-                int endMonthIndex = int.Parse(ethEndMonth) - 1;
-                
-                if (startMonthIndex >= 0 && startMonthIndex < etMonthNames.Length &&
-                    endMonthIndex >= 0 && endMonthIndex < etMonthNames.Length)
-                {
-                    ethiopianRange = $"Ethiopian: {ethStartYear} {etMonthNames[startMonthIndex]} {ethStartDay} - {ethEndYear} {etMonthNames[endMonthIndex]} {ethEndDay}";
-                }
-            }
-
-            // Format Gregorian date range
             var startDate = ViewData["StartDate"] as DateTime?;
             var endDate = ViewData["EndDate"] as DateTime?;
-            var gregorianRange = (startDate.HasValue && endDate.HasValue)
-                ? $"Gregorian: {startDate.Value:yyyy-MM-dd} - {endDate.Value:yyyy-MM-dd}"
-                : "";
+            
+            string dateRangeDisplay = "";
+            if (startDate.HasValue && endDate.HasValue)
+            {
+                var gregorianRange = $"Gregorian: {startDate.Value:yyyy-MM-dd} - {endDate.Value:yyyy-MM-dd}";
+                var ethiopianStart = EthiopianCalendarHelper.FormatEthiopianShort(startDate.Value);
+                var ethiopianEnd = EthiopianCalendarHelper.FormatEthiopianShort(endDate.Value);
+                var ethiopianRange = $"Ethiopian: {ethiopianStart} - {ethiopianEnd}";
+                
+                dateRangeDisplay = $"{gregorianRange}<br><small class='text-muted'>{ethiopianRange}</small>";
+            }
         }
         
         <div class="date-ranges">
-            @if (!string.IsNullOrEmpty(gregorianRange))
+            @if (!string.IsNullOrEmpty(dateRangeDisplay))
             {
-                <div>@gregorianRange</div>
-            }
-            @if (!string.IsNullOrEmpty(ethiopianRange))
-            {
-                <div style="font-size: 0.95em; color: #555;">@ethiopianRange</div>
+                @Html.Raw(dateRangeDisplay)
             }
         </div>
     </div>

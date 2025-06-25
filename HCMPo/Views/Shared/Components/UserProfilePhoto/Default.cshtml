@@ -1,0 +1,10 @@
+@model string
+
+@if (!string.IsNullOrEmpty(Model))
+{
+    <img src="~/@Model" alt="Profile" class="@ViewBag.CssClass" style="width: @(ViewBag.Size)px; height: @(ViewBag.Size)px; object-fit: cover;">
+}
+else
+{
+    <i class="fas fa-user-circle text-secondary" style="font-size: @(ViewBag.Size)px;"></i>
+} 

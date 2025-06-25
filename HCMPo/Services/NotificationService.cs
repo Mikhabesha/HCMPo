@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -8,15 +9,6 @@ using HCMPo.Data;
 
 namespace HCMPo.Services
 {
-    public interface INotificationService
-    {
-        Task CreateNotification(string userId, string title, string message, string type);
-        Task MarkAsRead(string notificationId);
-        Task<List<Notification>> GetUserNotifications(string userId, bool unreadOnly = false);
-        Task<int> GetUnreadCount(string userId);
-        Task SendRealTimeNotification(string userId, string message);
-    }
-
     public class NotificationService : INotificationService
     {
         private readonly ApplicationDbContext _context;
@@ -28,7 +20,7 @@ namespace HCMPo.Services
             _hubContext = hubContext;
         }
 
-        public async Task CreateNotification(string userId, string title, string message, string type)
+        public async Task CreateNotificationAsync(string userId, string title, string message, string url = null, string type = "Info")
         {
             var notification = new Notification
             {
@@ -39,17 +31,16 @@ namespace HCMPo.Services
                 Type = type,
                 CreatedAt = DateTime.UtcNow,
                 IsRead = false,
-                Url = "#"
+                Url = url ?? "#"
             };
 
             _context.Notifications.Add(notification);
             await _context.SaveChangesAsync();
 
-            // Send real-time notification
             await SendRealTimeNotification(userId, message);
         }
 
-        public async Task MarkAsRead(string notificationId)
+        public async Task MarkAsReadAsync(string notificationId)
         {
             var notification = await _context.Notifications.FindAsync(notificationId);
             if (notification != null)
@@ -58,14 +49,13 @@ namespace HCMPo.Services
                 notification.ReadAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
 
-                // Update badge count
-                var unreadCount = await GetUnreadCount(notification.UserId);
+                var summary = await GetUnreadNotificationSummaryAsync(notification.UserId);
                 await _hubContext.Clients.User(notification.UserId)
-                    .SendAsync("UpdateBadgeCount", unreadCount);
+                    .SendAsync("UpdateBadgeCount", summary.count, summary.mostRecentType);
             }
         }
 
-        public async Task<List<Notification>> GetUserNotifications(string userId, bool unreadOnly = false)
+        public async Task<List<Notification>> GetUserNotificationsAsync(string userId, bool unreadOnly = false, int limit = 50)
         {
             var query = _context.Notifications
                 .Where(n => n.UserId == userId);
@@ -77,14 +67,27 @@ namespace HCMPo.Services
 
             return await query
                 .OrderByDescending(n => n.CreatedAt)
-                .Take(50)
+                .Take(limit)
                 .ToListAsync();
         }
 
-        public async Task<int> GetUnreadCount(string userId)
+        public async Task<int> GetUnreadCountAsync(string userId)
         {
             return await _context.Notifications
                 .CountAsync(n => n.UserId == userId && !n.IsRead);
+        }
+
+        public async Task<(int count, string mostRecentType)> GetUnreadNotificationSummaryAsync(string userId)
+        {
+            var unreadNotifications = _context.Notifications
+                .Where(n => n.UserId == userId && !n.IsRead);
+
+            var count = await unreadNotifications.CountAsync();
+            var mostRecentNotification = await unreadNotifications
+                .OrderByDescending(n => n.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            return (count, mostRecentNotification?.Type ?? "Info");
         }
 
         public async Task SendRealTimeNotification(string userId, string message)
@@ -92,9 +95,30 @@ namespace HCMPo.Services
             await _hubContext.Clients.User(userId)
                 .SendAsync("ReceiveNotification", message);
 
-            var unreadCount = await GetUnreadCount(userId);
+            var summary = await GetUnreadNotificationSummaryAsync(userId);
             await _hubContext.Clients.User(userId)
-                .SendAsync("UpdateBadgeCount", unreadCount);
+                .SendAsync("UpdateBadgeCount", summary.count, summary.mostRecentType);
+        }
+
+        // Backward compatibility methods
+        public async Task CreateNotification(string userId, string title, string message, string type)
+        {
+            await CreateNotificationAsync(userId, title, message, "#", type);
+        }
+
+        public async Task MarkAsRead(string notificationId)
+        {
+            await MarkAsReadAsync(notificationId);
+        }
+
+        public async Task<List<Notification>> GetUserNotifications(string userId, bool unreadOnly = false)
+        {
+            return await GetUserNotificationsAsync(userId, unreadOnly, 50);
+        }
+
+        public async Task<int> GetUnreadCount(string userId)
+        {
+            return await GetUnreadCountAsync(userId);
         }
     }
 

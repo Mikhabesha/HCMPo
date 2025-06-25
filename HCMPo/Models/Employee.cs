@@ -11,15 +11,15 @@ namespace HCMPo.Models
         
         [Required]
         [Display(Name = "First Name")]
-        public string FirstName { get; set; }
+        public string FirstName { get; set; } = string.Empty;
         
         [Required]
         [Display(Name = "Last Name")]
-        public string LastName { get; set; }
+        public string LastName { get; set; } = string.Empty;
 
         [Required]
         [EmailAddress]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         [Display(Name = "Old Phone Property")]
         public string? Phone { get; set; }
@@ -35,18 +35,28 @@ namespace HCMPo.Models
 
         [Required]
         [Display(Name = "Badge Number")]
-        public string BadgeNumber { get; set; }
+        public string BadgeNumber { get; set; } = string.Empty;
 
+        // ApplicationUser relationship properties (for backward compatibility and lookups)
         public string? UserId { get; set; }
-        public virtual ApplicationUser? User { get; set; }
+        public string? ApplicationUserId { get; set; }
+        public virtual ApplicationUser? ApplicationUser { get; set; }
+        
+        [Display(Name = "Position/Job Title")]
+        public string? Position { get; set; }
         
         [Required]
-        public string JobTitleId { get; set; }
+        public string JobTitleId { get; set; } = string.Empty;
         public virtual JobTitle? JobTitle { get; set; }
         
         [Required]
-        public string DepartmentId { get; set; }
-        public virtual Department? Department { get; set; }
+        public string OrganizationUnitId { get; set; } = string.Empty;
+        public virtual OrganizationUnit? OrganizationUnit { get; set; }
+
+        // Enhanced organizational structure fields
+        // [Display(Name = "Directorate")]
+        // public string? DirectorateId { get; set; }
+        // public virtual Directorate? Directorate { get; set; }
 
         public string FullName => $"{FirstName} {LastName}";
 
@@ -59,7 +69,7 @@ namespace HCMPo.Models
         [Required]
         [Display(Name = "Phone Number")]
         [Phone]
-        public string PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; } = string.Empty;
 
         public string? PhotoUrl { get; set; }
 
@@ -109,9 +119,19 @@ namespace HCMPo.Models
 
         public string? AttendanceScheduleId { get; set; }
         public virtual AttendanceSchedule? AttendanceSchedule { get; set; }
-        
         public string? AttendanceRuleId { get; set; }
         public virtual AttendanceRule? AttendanceRule { get; set; }
+
+        // Audit fields
+        public bool IsActive { get; set; } = true;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? ModifiedAt { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? ModifiedBy { get; set; }
+
+        // Approval chain properties
+        public string? TeamLeaderId { get; set; }
+        public string? DirectorId { get; set; }
 
         public Employee()
         {

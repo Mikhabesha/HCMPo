@@ -1,0 +1,264 @@
+@{
+    ViewData["Title"] = "System Test Dashboard";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary">
+                    <h3 class="card-title text-white">
+                        <i class="fas fa-cogs"></i>
+                        HCM System Test Dashboard
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-heartbeat"></i> Quick Health Check</h5>
+                                </div>
+                                <div class="card-body">
+                                    <button id="healthCheckBtn" class="btn btn-info">
+                                        <i class="fas fa-stethoscope"></i> Run Health Check
+                                    </button>
+                                    <div id="healthResults" class="mt-3"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-flask"></i> Comprehensive Test Suite</h5>
+                                </div>
+                                <div class="card-body">
+                                    <button id="runTestsBtn" class="btn btn-primary">
+                                        <i class="fas fa-play"></i> Run All Tests
+                                    </button>
+                                    <div id="testProgress" class="mt-3" style="display: none;">
+                                        <div class="progress">
+                                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                        <small class="text-muted">Running tests...</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Test Results Section -->
+                    <div id="testResultsSection" style="display: none;">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-chart-bar"></i> Test Results</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="testSummary" class="mb-3"></div>
+                                <div id="testDetails"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Manual Test Section -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5><i class="fas fa-hand-pointer"></i> Manual Test Options</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="card border-primary">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                                            <h6>Employee Management</h6>
+                                            <a href="/EmployeeManagement" class="btn btn-sm btn-primary">Test CRUD</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card border-success">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-user-cog fa-2x text-success mb-2"></i>
+                                            <h6>User Management</h6>
+                                            <a href="/UserManagement" class="btn btn-sm btn-success">Test Users</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card border-warning">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-plane fa-2x text-warning mb-2"></i>
+                                            <h6>Leave Management</h6>
+                                            <a href="/LeaveRequests" class="btn btn-sm btn-warning">Test Leaves</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card border-info">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-money-bill fa-2x text-info mb-2"></i>
+                                            <h6>Payroll System</h6>
+                                            <a href="/PayrollSlip" class="btn btn-sm btn-info">Test Payroll</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Information -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5><i class="fas fa-info-circle"></i> System Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Test Coverage Areas:</h6>
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success"></i> Database Connectivity</li>
+                                        <li><i class="fas fa-check text-success"></i> Employee CRUD Operations</li>
+                                        <li><i class="fas fa-check text-success"></i> User Management Operations</li>
+                                        <li><i class="fas fa-check text-success"></i> Employee-User Relationships</li>
+                                        <li><i class="fas fa-check text-success"></i> Leave Management Integration</li>
+                                        <li><i class="fas fa-check text-success"></i> Payroll Integration</li>
+                                        <li><i class="fas fa-check text-success"></i> View Rendering</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Fixed Issues:</h6>
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-wrench text-primary"></i> Employee-User bidirectional relationships</li>
+                                        <li><i class="fas fa-wrench text-primary"></i> Missing EmployeeManagement views</li>
+                                        <li><i class="fas fa-wrench text-primary"></i> Bulk user creation functionality</li>
+                                        <li><i class="fas fa-wrench text-primary"></i> Leave request system enhancements</li>
+                                        <li><i class="fas fa-wrench text-primary"></i> PayrollSlip error handling</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Health Check
+            $('#healthCheckBtn').click(function() {
+                var btn = $(this);
+                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Checking...');
+                
+                $.get('/Test/HealthCheck')
+                    .done(function(result) {
+                        var html = '';
+                        if (result.success) {
+                            html = `
+                                <div class="alert alert-success">
+                                    <h6><i class="fas fa-check"></i> System Health: Good</h6>
+                                    <ul class="mb-0">
+                                        <li>Database: ${result.health.databaseConnection ? 'Connected' : 'Disconnected'}</li>
+                                        <li>Active Employees: ${result.health.activeEmployees}</li>
+                                        <li>Total Users: ${result.health.totalUsers}</li>
+                                        <li>Linked Employees: ${result.health.linkedEmployees}</li>
+                                        <li>Unlinked Employees: ${result.health.unlinkedEmployees}</li>
+                                    </ul>
+                                </div>
+                            `;
+                        } else {
+                            html = `<div class="alert alert-danger">Health check failed: ${result.message}</div>`;
+                        }
+                        $('#healthResults').html(html);
+                    })
+                    .fail(function() {
+                        $('#healthResults').html('<div class="alert alert-danger">Health check request failed</div>');
+                    })
+                    .always(function() {
+                        btn.prop('disabled', false).html('<i class="fas fa-stethoscope"></i> Run Health Check');
+                    });
+            });
+
+            // Comprehensive Tests
+            $('#runTestsBtn').click(function() {
+                var btn = $(this);
+                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Running Tests...');
+                $('#testProgress').show();
+                
+                // Animate progress bar
+                var progress = 0;
+                var interval = setInterval(function() {
+                    progress += Math.random() * 20;
+                    if (progress > 90) progress = 90;
+                    $('.progress-bar').css('width', progress + '%');
+                }, 500);
+
+                $.post('/Test/RunComprehensiveTest')
+                    .done(function(result) {
+                        clearInterval(interval);
+                        $('.progress-bar').css('width', '100%');
+                        
+                        setTimeout(function() {
+                            $('#testProgress').hide();
+                            displayTestResults(result);
+                        }, 500);
+                    })
+                    .fail(function() {
+                        clearInterval(interval);
+                        $('#testProgress').hide();
+                        $('#testResultsSection').show();
+                        $('#testDetails').html('<div class="alert alert-danger">Test execution failed</div>');
+                    })
+                    .always(function() {
+                        btn.prop('disabled', false).html('<i class="fas fa-play"></i> Run All Tests');
+                    });
+            });
+
+            function displayTestResults(result) {
+                $('#testResultsSection').show();
+                
+                // Summary
+                var summaryClass = result.success ? 'success' : 'danger';
+                var summaryIcon = result.success ? 'check' : 'times';
+                var summaryHtml = `
+                    <div class="alert alert-${summaryClass}">
+                        <h5><i class="fas fa-${summaryIcon}"></i> Overall Result: ${result.success ? 'PASSED' : 'FAILED'}</h5>
+                        <p>Total Tests: ${result.summary.totalTests} | Passed: ${result.summary.passed} | Failed: ${result.summary.failed}</p>
+                    </div>
+                `;
+                $('#testSummary').html(summaryHtml);
+
+                // Details
+                var detailsHtml = '<div class="row">';
+                result.results.forEach(function(test, index) {
+                    var testClass = test.Success ? 'success' : 'danger';
+                    var testIcon = test.Success ? 'check' : 'times';
+                    
+                    detailsHtml += `
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-${testClass}">
+                                <div class="card-header bg-${testClass} text-white">
+                                    <i class="fas fa-${testIcon}"></i> ${test.TestName}
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-1">${test.Message}</p>
+                                    ${test.Details ? `<pre class="small text-muted">${JSON.stringify(test.Details, null, 2)}</pre>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                detailsHtml += '</div>';
+                $('#testDetails').html(detailsHtml);
+            }
+
+            // Auto-run health check on page load
+            setTimeout(function() {
+                $('#healthCheckBtn').click();
+            }, 1000);
+        });
+    </script>
+} 

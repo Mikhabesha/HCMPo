@@ -1,4 +1,5 @@
 @model HCMPo.ViewModels.PayrollGenerationViewModel
+@using HCMPo.Helpers
 
 @{
     ViewData["Title"] = "Generate Payroll";
@@ -36,15 +37,31 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label asp-for="StartDate" class="control-label">Start Date</label>
-                            <input asp-for="StartDate" class="form-control" type="date" />
+                            <label class="control-label">Pay Period Start Date (የደመወዝ ጊዜ መጀመሪያ ቀን)</label>
+                            @{
+                                ViewBag.Id = "StartDate";
+                                ViewBag.Name = "StartDate";
+                                ViewBag.Label = "Pay Period Start Date (የደመወዝ ጊዜ መጀመሪያ ቀን)";
+                                ViewBag.Required = true;
+                                ViewBag.ShowGregorian = true;
+                            }
+                            @await Html.PartialAsync("_EthiopianDatePicker")
+                            <input asp-for="StartDate" type="hidden" id="StartDateGregorian" />
                             <span asp-validation-for="StartDate" class="text-danger"></span>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label asp-for="EndDate" class="control-label">End Date</label>
-                            <input asp-for="EndDate" class="form-control" type="date" />
+                            <label class="control-label">Pay Period End Date (የደመወዝ ጊዜ መጨረሻ ቀን)</label>
+                            @{
+                                ViewBag.Id = "EndDate";
+                                ViewBag.Name = "EndDate";
+                                ViewBag.Label = "Pay Period End Date (የደመወዝ ጊዜ መጨረሻ ቀን)";
+                                ViewBag.Required = true;
+                                ViewBag.ShowGregorian = true;
+                            }
+                            @await Html.PartialAsync("_EthiopianDatePicker")
+                            <input asp-for="EndDate" type="hidden" id="EndDateGregorian" />
                             <span asp-validation-for="EndDate" class="text-danger"></span>
                         </div>
                     </div>
@@ -79,6 +96,8 @@
                     </div>
                     <div class="card-body">
                         <div id="deductionsContainer">
+                            @if (deductionTypes != null)
+                            {
                             @foreach (var type in deductionTypes)
                             {
                                 <div class="col-md-3 mb-3">
@@ -86,6 +105,7 @@
                                     <input name="Deductions[@type.Id].Amount" class="form-control" type="number" step="0.01" />
                                     <input name="Deductions[@type.Id].Remarks" class="form-control mt-1" type="text" placeholder="Remarks" />
                                 </div>
+                                }
                             }
                         </div>
                     </div>
@@ -118,9 +138,12 @@
                     <div class="col-md-4">
                         <select name="Allowances[${allowanceCount}].AllowanceTypeId" class="form-select" required>
                             <option value="">-- Select Allowance Type --</option>
+                            @if (allowanceTypes != null)
+                            {
                             @foreach (var type in allowanceTypes)
                             {
                                 <option value="@type.Id">@type.Name</option>
+                                }
                             }
                         </select>
                     </div>
@@ -153,9 +176,12 @@
                     <div class="col-md-4">
                         <select name="Deductions[${deductionCount}].DeductionTypeId" class="form-select" required>
                             <option value="">-- Select Deduction Type --</option>
+                            @if (deductionTypes != null)
+                            {
                             @foreach (var type in deductionTypes)
                             {
                                 <option value="@type.Id">@type.DisplayName</option>
+                                }
                             }
                         </select>
                     </div>
@@ -180,5 +206,35 @@
             const element = document.getElementById(`deduction-${index}`);
             element.remove();
         }
+
+        // Sync Ethiopian date picker values with hidden inputs
+        $('#payrollForm').on('submit', function(e) {
+            syncEthiopianDates();
+        });
+
+        function syncEthiopianDates() {
+            // Start Date
+            const startGregorian = $('#StartDateGregorian').val();
+            if (startGregorian) {
+                $('#StartDate').val(startGregorian);
+            }
+
+            // End Date
+            const endGregorian = $('#EndDateGregorian').val();
+            if (endGregorian) {
+                $('#EndDate').val(endGregorian);
+            }
+        }
+
+        // Listen for changes in Ethiopian date pickers and update hidden inputs
+        $(document).on('change', '.ethiopian-date-picker select', function() {
+            const datePicker = $(this).closest('.ethiopian-date-picker');
+            const gregorianInput = datePicker.find('.gregorian-input');
+            const hiddenInput = $('#' + datePicker.data('name'));
+            
+            if (gregorianInput.val()) {
+                hiddenInput.val(gregorianInput.val());
+            }
+        });
     </script>
 } 

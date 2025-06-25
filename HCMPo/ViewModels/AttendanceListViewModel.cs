@@ -12,6 +12,12 @@ namespace HCMPo.ViewModels
         public string Status { get; set; } = "";
         public string Remark { get; set; } = "";
         public string? EmployeeName { get; set; }
+        public string? MorningStatus { get; set; }
+        public string? MorningStatusReason { get; set; }
+        public string? AfternoonStatus { get; set; }
+        public string? AfternoonStatusReason { get; set; }
+        public string? EveningStatus { get; set; }
+        public string? EveningStatusReason { get; set; }
     }
 
     public class AttendanceListViewModel
@@ -19,6 +25,7 @@ namespace HCMPo.ViewModels
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public string? EmployeeId { get; set; }
+        public string? OrganizationUnitId { get; set; }
         public int PageNumber { get; set; } = 1;
         public int PageSize { get; set; } = 10;
         public int TotalCount { get; set; }

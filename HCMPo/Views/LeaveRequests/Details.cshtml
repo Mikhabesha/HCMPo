@@ -1,0 +1,148 @@
+@model HCMPo.Models.LeaveRequest
+@using HCMPo.Models.Enums
+@using HCMPo.Helpers
+
+@{
+    ViewData["Title"] = "Leave Request Details";
+    var isAdmin = User.IsInRole("Admin") || User.IsInRole("HR");
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-file-alt me-2"></i>Leave Request Details
+                    </h4>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Back to List
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Employee Information</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Employee:</strong></td>
+                                    <td>@Model.Employee?.FullName</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Email:</strong></td>
+                                    <td>@Model.Employee?.Email</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Organization Unit:</strong></td>
+                                    <td>@Model.Employee?.OrganizationUnit?.Name</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Leave Information</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Leave Type:</strong></td>
+                                    <td><span class="badge bg-info">@Model.LeaveType?.Name</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Start Date:</strong></td>
+                                    <td>@Html.Raw(EthiopianCalendarHelper.FormatDateWithEthiopian(Model.StartDate, "MMMM dd, yyyy"))</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>End Date:</strong></td>
+                                    <td>@Html.Raw(EthiopianCalendarHelper.FormatDateWithEthiopian(Model.EndDate, "MMMM dd, yyyy"))</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Duration:</strong></td>
+                                    <td><span class="badge bg-secondary">@Model.TotalDays day(s)</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Status:</strong></td>
+                                    <td>
+                                        @{
+                                            var statusClass = Model.Status switch
+                                            {
+                                                LeaveRequestStatus.Submitted => "bg-warning",
+                                                LeaveRequestStatus.HRApproved => "bg-success",
+                                                var s when s.ToString().Contains("Rejected") => "bg-danger",
+                                                var s when s.ToString().Contains("Approved") => "bg-info",
+                                                _ => "bg-secondary"
+                                            };
+                                        }
+                                        <span class="badge @statusClass">@Model.Status</span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h5>Reason for Leave</h5>
+                            <div class="p-3 bg-light rounded">
+                                @Model.Reason
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (User.IsInRole("Admin") || User.IsInRole("HR") || User.IsInRole("TeamLeader") || User.IsInRole("Director"))
+                    {
+                        <div class="card mt-4">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="card-title mb-0"><i class="fas fa-gavel"></i> Approval Actions</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="post" id="approvalForm">
+                                    @Html.AntiForgeryToken()
+                                    <div class="mb-3">
+                                        <label for="remarks" class="form-label">Remarks (Required for Rejection)</label>
+                                        <textarea id="remarks" name="remarks" class="form-control" rows="3"></textarea>
+                                    </div>
+                                    <div class="d-flex justify-content-end">
+                                        <button type="button" class="btn btn-success me-2" onclick="submitApproval(true)">
+                                            <i class="fas fa-check"></i> Approve
+                                        </button>
+                                        <button type="button" class="btn btn-danger" onclick="submitApproval(false)">
+                                            <i class="fas fa-times"></i> Reject
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function submitApproval(isApproved) {
+            const form = document.getElementById('approvalForm');
+            const remarks = document.getElementById('remarks').value;
+
+            if (!isApproved && !remarks) {
+                alert('Remarks are required to reject a leave request.');
+                return;
+            }
+
+            const actionUrl = isApproved 
+                ? `@Url.Action("Approve", new { id = Model.Id })`
+                : `@Url.Action("Reject", new { id = Model.Id })`;
+
+            form.action = actionUrl;
+            form.submit();
+        }
+    </script>
+} 

@@ -17,6 +17,6 @@ namespace HCMPo.ViewModels
         [Display(Name = "Select Specific Employees (Optional)")]
         public List<string>? SelectedEmployeeIds { get; set; } // For selecting specific employees
 
-        // We might add other options later, like selecting by department
+        // We might add other options later, like selecting by organization unit
     }
 } 

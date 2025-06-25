@@ -1,0 +1,274 @@
+@model List<HCMPo.ViewModels.PayrollSlipViewModel>
+@{
+    ViewData["Title"] = "Bank Payment Slip";
+    var config = Model.FirstOrDefault()?.SlipConfiguration;
+    var stamp = Model.FirstOrDefault()?.ActiveStamp;
+    var payPeriod = Model.FirstOrDefault()?.PayPeriodStart.ToString("yyyy-MM-dd") + "," + Model.FirstOrDefault()?.PayPeriodEnd.ToString("yyyy-MM-dd");
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"]</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        
+        .slip-container {
+            background: white;
+            margin: 0 auto 30px;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            max-width: 800px;
+            position: relative;
+            page-break-after: always;
+        }
+        
+        .slip-container:last-child {
+            page-break-after: avoid;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .company-logo {
+            max-height: 80px;
+            margin-bottom: 10px;
+        }
+        
+        .company-name {
+            font-size: 28px;
+            font-weight: bold;
+            color: #007bff;
+            margin: 10px 0;
+        }
+        
+        .company-details {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .slip-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #28a745;
+            margin: 20px 0;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .pay-period {
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+            margin: 15px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .period-label {
+            font-weight: 600;
+            color: #495057;
+            margin-top: 5px;
+        }
+        
+        .period-value {
+            font-size: 16px;
+            color: #212529;
+            margin-bottom: 10px;
+        }
+        
+        .period-value.ethiopian {
+            font-family: 'Nyala', 'Ebrima', sans-serif;
+            font-size: 18px;
+            color: #007bff;
+            font-weight: 500;
+        }
+        
+        .employee-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dotted #ccc;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .detail-value {
+            color: #212529;
+            font-weight: 500;
+        }
+        
+        .amount {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        
+        .bank-details {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border: 2px solid #2196f3;
+        }
+        
+        .net-salary {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2e7d32;
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            margin-top: 15px;
+            border: 2px dashed #4caf50;
+        }
+        
+        .action-buttons {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        
+        .btn-print {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .btn-send-bank {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .stamp {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 100px;
+            height: 100px;
+            opacity: 0.7;
+        }
+        
+
+    </style>
+</head>
+<body>
+    @foreach (var slip in Model)
+    {
+        <div class="slip-container">
+            @if (stamp != null)
+            {
+                <img src="@stamp.FilePath" class="stamp" alt="Official Stamp" />
+            }
+            
+            <!-- Header -->
+            <div class="header">
+                @if (!string.IsNullOrEmpty(config?.CompanyLogo))
+                {
+                    <img src="@config.CompanyLogo" class="company-logo" alt="Company Logo" />
+                }
+                <div class="company-name">POESSA Employees' Monthly Salary Payment Order</div>
+                <div class="pay-period">
+                    <div class="period-label">Ethiopian Period:</div>
+                    <div class="period-value ethiopian">@slip.PayPeriodStartEt - @slip.PayPeriodEndEt</div>
+                    <div class="period-label">Gregorian Period:</div>
+                    <div class="period-value">@slip.PayPeriodStart.ToString("MMM dd, yyyy") - @slip.PayPeriodEnd.ToString("MMM dd, yyyy")</div>
+                </div>
+            </div>
+
+            <!-- Bank Payment Details -->
+            <div class="bank-details">
+                <div class="section-title">Bank Payment Information</div>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Employee Name:</span>
+                        <span class="detail-value">@slip.EmployeeName</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Account Number:</span>
+                        <span class="detail-value">@slip.BankAccountNumber</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Bank Name:</span>
+                        <span class="detail-value">@slip.BankName</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Amount Payable:</span>
+                        <span class="detail-value amount">@slip.NetSalary.ToString("N2") ETB</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="btn-print" onclick="window.print()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                <button class="btn-send-bank" onclick="sendToBank()">
+                    <i class="fas fa-paper-plane"></i> Send to Bank
+                </button>
+            </div>
+        </div>
+    }
+
+    <script>
+        function sendToBank() {
+            // Add your bank sending logic here
+            alert('Sending to bank...');
+        }
+    </script>
+</body>
+</html> 

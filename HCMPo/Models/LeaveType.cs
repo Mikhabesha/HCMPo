@@ -10,7 +10,7 @@ namespace HCMPo.Models
 
         [Required]
         [StringLength(100)]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [StringLength(500)]
         public string? Description { get; set; }
@@ -31,7 +31,7 @@ namespace HCMPo.Models
         public bool IsActive { get; set; } = true;
 
         public bool IsPaidLeave { get; set; } = true;
-        public int MaxDaysPerRequest { get; set; } = 30;
+        public int? MaxDaysPerRequest { get; set; } = 30;
         public bool AllowHalfDay { get; set; } = false;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

@@ -1,62 +1,33 @@
 @using Humanizer
-@model IEnumerable<HCMPo.Models.Notification>
+@model HCMPo.ViewModels.NotificationsDropdownViewModel
 
-<div class="dropdown-menu dropdown-menu-end notifications-dropdown" aria-labelledby="notificationsDropdown">
-    <div class="notifications-header d-flex justify-content-between align-items-center p-3">
-        <h6 class="mb-0">Notifications</h6>
-        @if (Model.Any())
-        {
-            <a href="#" class="text-muted small mark-all-read">Mark all as read</a>
-        }
-    </div>
-    
-    <div class="notifications-body">
-        @if (!Model.Any())
-        {
-            <div class="text-center p-3">
-                <p class="text-muted mb-0">No new notifications</p>
-            </div>
-        }
-        else
-        {
-            foreach (var notification in Model)
-            {
-                <a href="@notification.Url" class="dropdown-item notification-item @(!notification.IsRead ? "unread" : "")">
-                    <div class="d-flex">
-                        <div class="notification-icon me-3">
-                            @switch (notification.Type)
-                            {
-                                case "Leave":
-                                    <i class="fas fa-calendar text-primary"></i>
-                                    break;
-                                case "Performance":
-                                    <i class="fas fa-chart-line text-success"></i>
-                                    break;
-                                case "Attendance":
-                                    <i class="fas fa-clock text-warning"></i>
-                                    break;
-                                default:
-                                    <i class="fas fa-bell text-info"></i>
-                                    break;
-                            }
-                        </div>
-                        <div class="notification-content flex-grow-1">
-                            <p class="mb-1">@notification.Message</p>
-                            <small class="text-muted">@notification.CreatedAt.Humanize()</small>
-                        </div>
-                    </div>
-                </a>
-            }
-        }
-    </div>
-
-    @if (Model.Any())
-    {
-        <div class="notifications-footer text-center p-2 border-top">
-            <a href="/Notifications" class="text-primary">View all notifications</a>
-        </div>
-    }
+<div class="dropdown-header d-flex justify-content-between align-items-center">
+    <span>Notifications</span>
+    <span class="badge bg-primary rounded-pill">@Model.UnreadCount Unread</span>
 </div>
+
+@if (Model.Notifications.Any())
+{
+    foreach (var notification in Model.Notifications)
+    {
+        <a class="dropdown-item d-flex align-items-center" href="@notification.Url">
+            <div class="me-3">
+                <div class="bg-primary icon-circle"><i class="fas fa-bell text-white"></i></div>
+            </div>
+            <div>
+                <div class="small text-gray-500">@notification.CreatedAt.ToString("MMM dd, yyyy")</div>
+                <span class="fw-bold">@notification.Title</span>
+                <div class="small">@notification.Message</div>
+            </div>
+        </a>
+    }
+}
+else
+{
+    <div class="dropdown-item text-center small text-gray-500">No new notifications</div>
+}
+
+<a class="dropdown-item text-center small text-gray-500" asp-controller="Profile" asp-action="Notifications">Show All Notifications</a>
 
 <style>
     .notifications-dropdown {

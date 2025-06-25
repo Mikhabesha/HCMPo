@@ -1,18 +1,21 @@
-@model IEnumerable<HCMPo.Models.Payroll>
+@model IEnumerable<HCMPo.Models.ViewModels.PayrollReportViewModel>
 @using HCMPo.Models
+@using HCMPo.Models.ViewModels
 @{
     ViewData["Title"] = "Payroll Report";
     var employees = ViewBag.Employees as IEnumerable<dynamic>;
-    var departments = ViewBag.Departments as IEnumerable<dynamic>;
+    var organizationUnits = ViewBag.OrganizationUnits as IEnumerable<dynamic>;
     var deductionTypes = ViewBag.DeductionTypes as List<DeductionType>;
     int rowNum = 1;
-    string GetDeduction(HCMPo.Models.Payroll p, int deductionTypeId)
-    {
-        var d = p.Deductions?.FirstOrDefault(x => x.DeductionTypeId == deductionTypeId);
-        return d != null ? d.Amount.ToString("N2") : "";
-    }
 }
-<h2>Payroll Report</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Payroll Report</h2>
+    <div>
+        <a href="@Url.Action("Index", "PayrollSlip")" class="btn btn-primary">
+            <i class="fas fa-file-invoice-dollar"></i> Generate Payroll Slips
+        </a>
+    </div>
+</div>
 <form method="get" class="row mb-3">
     <div class="col-md-2">
         <label>Pay Period (Ethiopian)</label>
@@ -49,20 +52,20 @@
         </select>
     </div>
     <div class="col-md-3">
-        <label>Department</label>
-        <select name="departmentId" class="form-control">
+        <label>Organization Unit</label>
+        <select name="organizationUnitId" class="form-control">
             <option value="">All</option>
-            @if (departments != null)
+            @if (ViewBag.OrganizationUnits != null)
             {
-                foreach (var d in departments)
+                foreach (var ou in ViewBag.OrganizationUnits)
                 {
-                    if (Context.Request.Query["departmentId"] == (string)d.Id)
+                    if (Context.Request.Query["organizationUnitId"] == (string)ou.Id)
                     {
-                        <option value="@d.Id" selected="selected">@d.Name</option>
+                        <option value="@ou.Id" selected="selected">@ou.Name</option>
                     }
                     else
                     {
-                        <option value="@d.Id">@d.Name</option>
+                        <option value="@ou.Id">@ou.Name</option>
                     }
                 }
             }
@@ -97,10 +100,10 @@
             @{ rowNum = 1; }
             @foreach (var p in Model)
             {
-                <tr>
-                    <td class="number-col">@rowNum</td>
-                    <td>@p.Employee?.FullName</td>
-                    <td>@p.Allowance.ToString("N2")</td>
+                <tr class="employee-row" data-employee-name="@p.EmployeeName">
+                    <td class="number-col">@p.BadgeNumber</td>
+                    <td>@p.EmployeeName</td>
+                    <td>@p.TotalAllowance.ToString("N2")</td>
                     <td>@p.PensionEmployer.ToString("N2")</td>
                     <td>@p.IncomeTax.ToString("N2")</td>
                     <td>@p.PensionEmployee.ToString("N2")</td>
@@ -127,12 +130,12 @@
             @{ rowNum = 1; }
             @foreach (var p in Model)
             {
-                <tr>
-                    <td class="number-col">@rowNum</td>
-                    <td>@p.Employee?.FullName</td>
-                    <td>@p.TotalSalary.ToString("N2")</td>
-                    <td>@p.TotalDeduction.ToString("N2")</td>
-                    <td>@p.NetPaySalary.ToString("N2")</td>
+                <tr class="employee-row" data-employee-name="@p.EmployeeName">
+                    <td class="number-col">@p.BadgeNumber</td>
+                    <td>@p.EmployeeName</td>
+                    <td>@p.GrossSalary.ToString("N2")</td>
+                    <td>@p.TotalDeductions.ToString("N2")</td>
+                    <td>@p.NetPay.ToString("N2")</td>
                 </tr>
                 rowNum++;
             }
@@ -151,7 +154,7 @@
                 {
                     foreach (var dt in deductionTypes)
                     {
-                        <th>@dt.DisplayName</th>
+                        <th>@dt.Name</th>
                     }
                 }
             </tr>
@@ -160,14 +163,15 @@
             @{ rowNum = 1; }
             @foreach (var p in Model)
             {
-                <tr>
-                    <td class="number-col">@rowNum</td>
-                    <td>@p.Employee?.FullName</td>
+                <tr class="employee-row" data-employee-name="@p.EmployeeName">
+                    <td class="number-col">@p.BadgeNumber</td>
+                    <td>@p.EmployeeName</td>
                     @if (deductionTypes != null && deductionTypes.Count > 0)
                     {
                         foreach (var dt in deductionTypes)
                         {
-                            <td>@GetDeduction(p, dt.Id)</td>
+                            var deduction = p.Deductions.FirstOrDefault(d => d.DeductionName == dt.Name);
+                            <td>@(deduction != null ? deduction.Amount.ToString("N2") : "0.00")</td>
                         }
                     }
                 </tr>
@@ -178,9 +182,25 @@
 </div>
 
 <div class="mb-3">
-    <a asp-action="ExportExcel" asp-route-start="@Context.Request.Query["start"]" asp-route-end="@Context.Request.Query["end"]" asp-route-employeeId="@Context.Request.Query["employeeId"]" asp-route-departmentId="@Context.Request.Query["departmentId"]" class="btn btn-success">Export to Excel</a>
-    <a asp-action="ExportCsv" asp-route-start="@Context.Request.Query["start"]" asp-route-end="@Context.Request.Query["end"]" asp-route-employeeId="@Context.Request.Query["employeeId"]" asp-route-departmentId="@Context.Request.Query["departmentId"]" class="btn btn-info">Export to CSV</a>
-    <a asp-action="ExportPdf" asp-route-start="@Context.Request.Query["start"]" asp-route-end="@Context.Request.Query["end"]" asp-route-employeeId="@Context.Request.Query["employeeId"]" asp-route-departmentId="@Context.Request.Query["departmentId"]" class="btn btn-danger">Export to PDF</a>
+    <div class="btn-group me-3">
+        <a asp-action="ExportExcel" asp-route-start="@Context.Request.Query["start"]" asp-route-end="@Context.Request.Query["end"]" asp-route-employeeId="@Context.Request.Query["employeeId"]" asp-route-organizationUnitId="@Context.Request.Query["organizationUnitId"]" class="btn btn-success">
+            <i class="fas fa-file-excel"></i> Export to Excel
+        </a>
+        <a asp-action="ExportCsv" asp-route-start="@Context.Request.Query["start"]" asp-route-end="@Context.Request.Query["end"]" asp-route-employeeId="@Context.Request.Query["employeeId"]" asp-route-organizationUnitId="@Context.Request.Query["organizationUnitId"]" class="btn btn-info">
+            <i class="fas fa-file-csv"></i> Export to CSV
+        </a>
+        <a asp-action="ExportPdf" asp-route-start="@Context.Request.Query["start"]" asp-route-end="@Context.Request.Query["end"]" asp-route-employeeId="@Context.Request.Query["employeeId"]" asp-route-organizationUnitId="@Context.Request.Query["organizationUnitId"]" class="btn btn-danger">
+            <i class="fas fa-file-pdf"></i> Export to PDF
+        </a>
+    </div>
+    <div class="btn-group">
+        <a href="@Url.Action("Index", "PayrollSlip")" class="btn btn-primary">
+            <i class="fas fa-file-invoice-dollar"></i> Generate Individual Slips
+        </a>
+        <a href="@Url.Action("Summary", "PayrollSlip")" class="btn btn-outline-primary">
+            <i class="fas fa-chart-bar"></i> Summary Reports
+        </a>
+    </div>
 </div>
 
 <link rel="stylesheet" href="~/css/payrollreport.css" />
@@ -191,14 +211,9 @@ const searchInput = document.getElementById('employeeSearch');
 if (searchInput) {
     searchInput.addEventListener('input', function() {
         const search = this.value.toLowerCase();
-        document.querySelectorAll('.payroll-table-employee tbody').forEach(tbody => {
-            Array.from(tbody.querySelectorAll('tr')).forEach(row => {
-                const empCell = row.querySelector('td:nth-child(2)');
-                if (empCell) {
-                    const name = empCell.textContent.toLowerCase();
-                    row.style.display = name.includes(search) ? '' : 'none';
-                }
-            });
+        document.querySelectorAll('.payroll-table-employee tbody .employee-row').forEach(row => {
+            const name = row.dataset.employeeName.toLowerCase();
+            row.style.display = name.includes(search) ? '' : 'none';
         });
     });
 }

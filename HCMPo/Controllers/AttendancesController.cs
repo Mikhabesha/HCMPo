@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using HCMPo.Models;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using HCMPo.ViewModels;
@@ -21,6 +22,7 @@ using Microsoft.Extensions.Configuration;
 using HCMPo.Services;
 using System.Globalization;
 using HCMPo.Data;
+using Microsoft.AspNetCore.Http;
 
 namespace HCMPo.Controllers
 {
@@ -106,10 +108,30 @@ namespace HCMPo.Controllers
 
                         // Morning: 07:00-08:30
                         slot.MorningCheckIns = records.Where(r => r.CheckInTime.TimeOfDay >= new TimeSpan(7, 0, 0) && r.CheckInTime.TimeOfDay <= new TimeSpan(8, 30, 0)).Select(r => r.CheckInTime).ToList();
+                        var morningRecord = records.FirstOrDefault(r => r.CheckInTime.TimeOfDay >= new TimeSpan(7, 0, 0) && r.CheckInTime.TimeOfDay <= new TimeSpan(8, 30, 0));
+                        if (morningRecord != null)
+                        {
+                            slot.MorningStatus = morningRecord.Status.ToString();
+                            slot.MorningStatusReason = morningRecord.StatusReason;
+                        }
+
                         // Afternoon: 12:15-13:45
                         slot.AfternoonCheckIns = records.Where(r => r.CheckInTime.TimeOfDay >= new TimeSpan(12, 15, 0) && r.CheckInTime.TimeOfDay <= new TimeSpan(13, 45, 0)).Select(r => r.CheckInTime).ToList();
+                        var afternoonRecord = records.FirstOrDefault(r => r.CheckInTime.TimeOfDay >= new TimeSpan(12, 15, 0) && r.CheckInTime.TimeOfDay <= new TimeSpan(13, 45, 0));
+                        if (afternoonRecord != null)
+                        {
+                            slot.AfternoonStatus = afternoonRecord.Status.ToString();
+                            slot.AfternoonStatusReason = afternoonRecord.StatusReason;
+                        }
+
                         // Evening: 15:45-17:15
                         slot.EveningCheckOuts = records.Where(r => r.CheckInTime.TimeOfDay >= new TimeSpan(15, 45, 0) && r.CheckInTime.TimeOfDay <= new TimeSpan(17, 15, 0)).Select(r => r.CheckInTime).ToList();
+                        var eveningRecord = records.FirstOrDefault(r => r.CheckInTime.TimeOfDay >= new TimeSpan(15, 45, 0) && r.CheckInTime.TimeOfDay <= new TimeSpan(17, 15, 0));
+                        if (eveningRecord != null)
+                        {
+                            slot.EveningStatus = eveningRecord.Status.ToString();
+                            slot.EveningStatusReason = eveningRecord.StatusReason;
+                        }
 
                         int presentSlots = 0;
                         if (slot.MorningCheckIns.Any()) presentSlots++;
@@ -176,7 +198,7 @@ namespace HCMPo.Controllers
                 .Select(e => new SelectListItem
                 {
                     Value = e.Id,
-                    Text = e.FullName
+                    Text = e.FirstName + " " + e.LastName
                 })
                 .ToListAsync();
 
@@ -224,6 +246,7 @@ namespace HCMPo.Controllers
         }
 
         // GET: Attendances/Create
+        [HttpGet]
         public IActionResult Create()
         {
             ViewData["EmployeeId"] = new SelectList(_context.Employees, "Id", "FullName");
@@ -233,29 +256,139 @@ namespace HCMPo.Controllers
         // POST: Attendances/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("EmployeeId,CheckInTime,CheckOutTime,Status,StatusReason,ManualEntryReason")] Attendance attendance)
+        public async Task<IActionResult> Create(IFormCollection form)
         {
-            if (ModelState.IsValid)
+            _logger.LogInformation("=== ATTENDANCE CREATE POST ACTION STARTED ===");
+            
+            // Log all form data for debugging
+            _logger.LogInformation("All form data received:");
+            foreach (var key in Request.Form.Keys)
             {
-                _logger.LogInformation("ModelState is valid. Attempting to create attendance record.");
+                _logger.LogInformation("Form[{Key}] = {Value}", key, Request.Form[key]);
+            }
+            
+            // Get form data
+            var selectedEmployeeIds = form["SelectedEmployeeIds"].ToList();
+            var selectedTimeSlots = form["timeSlots"].ToList();
+            var status = Enum.Parse<AttendanceStatus>(form["Status"]);
+            var statusReason = form["StatusReason"].ToString();
+            var manualEntryReason = form["ManualEntryReason"].ToString();
+            
+            _logger.LogInformation("Selected {EmployeeCount} employees and {SlotCount} time slots", 
+                selectedEmployeeIds.Count, selectedTimeSlots.Count);
+            
+            // Validate form data
+            if (!selectedEmployeeIds.Any())
+            {
+                ModelState.AddModelError("", "Please select at least one employee.");
+            }
+            
+            if (!selectedTimeSlots.Any())
+            {
+                ModelState.AddModelError("", "Please select at least one time slot.");
+            }
+            
+            if (string.IsNullOrEmpty(manualEntryReason))
+            {
+                ModelState.AddModelError("ManualEntryReason", "Manual entry reason is required.");
+            }
+            
+            // Handle Ethiopian calendar conversion server-side
+            DateTime gregorianDate = DateTime.MinValue;
+            if (Request.Form.ContainsKey("AttendanceDateYear") && 
+                Request.Form.ContainsKey("AttendanceDateMonth") && 
+                Request.Form.ContainsKey("AttendanceDateDay"))
+            {
                 try
                 {
-                    attendance.Id = Guid.NewGuid().ToString();
-                    attendance.IsManualEntry = true;
-                    attendance.CreatedAt = DateTime.UtcNow;
-                    attendance.CreatedBy = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    var ethYear = int.Parse(Request.Form["AttendanceDateYear"]);
+                    var ethMonth = int.Parse(Request.Form["AttendanceDateMonth"]);
+                    var ethDay = int.Parse(Request.Form["AttendanceDateDay"]);
+                    
+                    _logger.LogInformation("Converting Ethiopian date: {Year}-{Month}-{Day}", ethYear, ethMonth, ethDay);
+                    
+                    // Convert Ethiopian to Gregorian
+                    var ethDate = new EthiopianCalendar(ethYear, ethMonth, ethDay);
+                    gregorianDate = ethDate.ToGregorianDate();
+                    
+                    _logger.LogInformation("Successfully converted to Gregorian date: {GregorianDate}", gregorianDate);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error converting Ethiopian date");
+                    ModelState.AddModelError("", "Error converting Ethiopian date: " + ex.Message);
+                }
+            }
+            else
+            {
+                ModelState.AddModelError("", "Date is required");
+            }
+            
+            // Validate time selections for each slot
+            var timeSelections = new Dictionary<string, string>();
+            foreach (var slot in selectedTimeSlots)
+            {
+                var timeKey = char.ToUpper(slot[0]) + slot.Substring(1) + "Time";
+                if (Request.Form.ContainsKey(timeKey))
+                {
+                    var timeValue = Request.Form[timeKey].ToString();
+                    if (string.IsNullOrEmpty(timeValue))
+                    {
+                        ModelState.AddModelError("", $"Please select a time for {slot} slot.");
+                    }
+                    else
+                    {
+                        timeSelections[slot] = timeValue;
+                    }
+                }
+            }
+            
+            if (ModelState.IsValid)
+            {
+                _logger.LogInformation("ModelState is valid. Attempting to create attendance records.");
+                try
+                {
+                    var createdRecords = new List<Attendance>();
+                    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-                    _logger.LogInformation("Attendance object before Add: EmployeeId={EmpId}, CheckIn={CheckIn}, Status={Status}", 
-                        attendance.EmployeeId, attendance.CheckInTime, attendance.Status);
+                    // Create attendance records for each employee and time slot combination
+                    foreach (var employeeId in selectedEmployeeIds)
+                    {
+                        foreach (var slot in selectedTimeSlots)
+                        {
+                            if (timeSelections.TryGetValue(slot, out var timeStr))
+                            {
+                                if (TimeSpan.TryParse(timeStr, out var time))
+                                {
+                                    var attendance = new Attendance
+                                    {
+                                        Id = Guid.NewGuid().ToString(),
+                                        EmployeeId = employeeId,
+                                        CheckInTime = gregorianDate.Date.Add(time),
+                                        Status = status,
+                                        StatusReason = statusReason,
+                                        ManualEntryReason = manualEntryReason,
+                                        IsManualEntry = true,
+                                        CreatedAt = DateTime.UtcNow,
+                                        CreatedBy = currentUserId
+                                    };
 
                     _context.Attendances.Add(attendance);
+                                    createdRecords.Add(attendance);
+                                }
+                            }
+                        }
+                    }
 
-                    _logger.LogInformation("Calling SaveChangesAsync...");
-                    await _context.SaveChangesAsync();
-                    _logger.LogInformation("SaveChangesAsync completed successfully.");
+                    _logger.LogInformation("Calling SaveChangesAsync for {RecordCount} records...", createdRecords.Count);
+                    var changeCount = await _context.SaveChangesAsync();
+                    _logger.LogInformation("SaveChangesAsync completed successfully. {ChangeCount} changes saved.", changeCount);
 
-                    TempData["SuccessMessage"] = "Attendance record created successfully.";
-                    return RedirectToAction(nameof(Index));
+                    ViewData["SuccessMessage"] = $"Successfully created {createdRecords.Count} attendance records for {selectedEmployeeIds.Count} employee(s) across {selectedTimeSlots.Count} time slot(s)!";
+                    ViewData["EmployeeId"] = new SelectList(_context.Employees, "Id", "FullName");
+                    
+                    // Return a fresh form for next entry
+                    return View(new Attendance());
                 }
                 catch (DbUpdateException dbEx)
                 {
@@ -271,7 +404,16 @@ namespace HCMPo.Controllers
             }
             else
             {
-                // Existing ModelState error logging...
+                // Log all ModelState errors
+                _logger.LogWarning("=== ModelState is INVALID ===");
+                foreach (var kvp in ModelState)
+                {
+                    foreach (var error in kvp.Value.Errors)
+                    {
+                        _logger.LogWarning("ModelState Error - Key: {Key}, Error: {ErrorMessage}", kvp.Key, error.ErrorMessage);
+                    }
+                }
+                
                 var errors = ModelState
                     .Where(x => x.Value.Errors.Count > 0)
                     .Select(x => new { x.Key, x.Value.Errors })
@@ -284,8 +426,9 @@ namespace HCMPo.Controllers
             }
 
             // Repopulate dropdowns if returning to view
-            ViewData["EmployeeId"] = new SelectList(_context.Employees, "Id", "FullName", attendance.EmployeeId);
-            return View(attendance);
+            ViewData["EmployeeId"] = new SelectList(_context.Employees, "Id", "FullName");
+            _logger.LogInformation("=== ATTENDANCE CREATE POST ACTION RETURNING TO VIEW ===");
+            return View(new Attendance());
         }
 
         // GET: Attendances/Edit/5
@@ -413,7 +556,7 @@ namespace HCMPo.Controllers
             // Provide employee list for optional multi-select
             ViewData["EmployeeList"] = await _context.Employees
                                                 .OrderBy(e => e.FirstName).ThenBy(e => e.LastName)
-                                                .Select(e => new SelectListItem { Value = e.Id, Text = e.FullName })
+                                                .Select(e => new SelectListItem { Value = e.Id, Text = e.FirstName + " " + e.LastName })
                                                 .ToListAsync();
             return View(viewModel);
         }
@@ -427,7 +570,7 @@ namespace HCMPo.Controllers
                 _logger.LogWarning("Attendance Summary Query ModelState invalid.");
                 ViewData["EmployeeList"] = await _context.Employees
                                                     .OrderBy(e => e.FirstName).ThenBy(e => e.LastName)
-                                                    .Select(e => new SelectListItem { Value = e.Id, Text = e.FullName })
+                                                    .Select(e => new SelectListItem { Value = e.Id, Text = e.FirstName + " " + e.LastName })
                                                     .ToListAsync();
                 return View(model);
             }
@@ -502,7 +645,7 @@ namespace HCMPo.Controllers
                 ModelState.AddModelError("", "No active employees found or selected.");
                 ViewData["EmployeeList"] = await _context.Employees
                                                 .OrderBy(e => e.FirstName).ThenBy(e => e.LastName)
-                                                .Select(e => new SelectListItem { Value = e.Id, Text = e.FullName })
+                                                .Select(e => new SelectListItem { Value = e.Id, Text = e.FirstName + " " + e.LastName })
                                                 .ToListAsync();
                 return View(model);
             }
@@ -667,7 +810,7 @@ namespace HCMPo.Controllers
                 ModelState.AddModelError("", "No attendance summary data found for the selected criteria.");
                 ViewData["EmployeeList"] = await _context.Employees
                                                 .OrderBy(e => e.FirstName).ThenBy(e => e.LastName)
-                                                .Select(e => new SelectListItem { Value = e.Id, Text = e.FullName })
+                                                .Select(e => new SelectListItem { Value = e.Id, Text = e.FirstName + " " + e.LastName })
                                                 .ToListAsync();
                 return View(model);
             }
@@ -927,7 +1070,7 @@ namespace HCMPo.Controllers
             var syncService = HttpContext.RequestServices.GetService(typeof(IAttendanceSyncService)) as IAttendanceSyncService;
             if (syncService == null)
             {
-                return StatusCode(500, "AttendanceSyncService not available");
+                return StatusCode(500, new { success = false, message = "AttendanceSyncService not available" });
             }
             int added = await syncService.SyncEmployeesFromAttDbAsync(progressKey);
             return Ok(new { success = true, message = $"{added} employees synced from Att_db." });
@@ -976,8 +1119,8 @@ namespace HCMPo.Controllers
                 .FirstOrDefaultAsync(pd => pd.StartDate == startDate && pd.EndDate == endDate);
             if (existing != null)
             {
-                // Store employeeIds in TempData and pass only dates as query params
-                TempData["ReplaceEmployeeIds"] = selectedEmployeeIds != null ? string.Join(",", selectedEmployeeIds) : string.Empty;
+                // Store employeeIds in Session instead of TempData
+                HttpContext.Session.SetString("ReplaceEmployeeIds", selectedEmployeeIds != null ? string.Join(",", selectedEmployeeIds) : string.Empty);
                 return RedirectToAction("ConfirmReplacePayrollDeclaration", new {
                     startDate = startDate.ToString("o"),
                     endDate = endDate.ToString("o")
@@ -1005,8 +1148,8 @@ namespace HCMPo.Controllers
         {
             ViewBag.ReplaceStartDate = startDate;
             ViewBag.ReplaceEndDate = endDate;
-            ViewBag.ReplaceEmployeeIds = TempData["ReplaceEmployeeIds"] as string;
-            TempData.Keep("ReplaceEmployeeIds"); // Keep for the POST
+            ViewBag.ReplaceEmployeeIds = HttpContext.Session.GetString("ReplaceEmployeeIds");
+            // No need to keep in session unless needed for POST
             return View();
         }
 
@@ -1016,7 +1159,7 @@ namespace HCMPo.Controllers
         {
             var parsedStart = DateTime.Parse(startDate);
             var parsedEnd = DateTime.Parse(endDate);
-            var employeeIds = TempData["ReplaceEmployeeIds"] as string;
+            var employeeIds = HttpContext.Session.GetString("ReplaceEmployeeIds");
             var existing = await _context.PayrollDeclarations
                 .FirstOrDefaultAsync(pd => pd.StartDate == parsedStart && pd.EndDate == parsedEnd);
             if (existing != null)
@@ -1029,6 +1172,8 @@ namespace HCMPo.Controllers
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "Payroll declaration replaced with the new summary.";
             }
+            // Remove from session after use
+            HttpContext.Session.Remove("ReplaceEmployeeIds");
             return RedirectToAction("Summary");
         }
 
@@ -1036,5 +1181,29 @@ namespace HCMPo.Controllers
         {
             return _context.Attendances.Any(e => e.Id == id);
         }
+
+        // Debug endpoint to see all attendance records
+        [HttpGet]
+        public async Task<IActionResult> DebugRecords()
+        {
+            var records = await _context.Attendances
+                .Include(a => a.Employee)
+                .OrderByDescending(a => a.CheckInTime)
+                .Take(50)
+                .Select(a => new
+                {
+                    a.Id,
+                    EmployeeName = a.Employee.FullName,
+                    CheckInTime = a.CheckInTime,
+                    Status = a.Status.ToString(),
+                    IsManualEntry = a.IsManualEntry,
+                    CreatedAt = a.CreatedAt
+                })
+                .ToListAsync();
+
+            return Json(records);
+        }
+
+
     }
 }

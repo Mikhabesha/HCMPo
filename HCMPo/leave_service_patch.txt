@@ -1,0 +1,93 @@
+PATCH FOR LeaveService.cs - CalculateEmployeeEntitlementAsync Method
+
+LOCATION: Around line 620-642 in HCMPo/HCMPo/Services/LeaveService.cs
+
+REPLACE THIS METHOD:
+public async Task<decimal> CalculateEmployeeEntitlementAsync(string employeeId, string leaveTypeId, int year)
+{
+    var employee = await _context.Employees.FindAsync(employeeId);
+    if (employee == null) throw new ArgumentException("Employee not found");
+
+    var leaveType = await _context.LeaveTypes.FindAsync(leaveTypeId);
+    if (leaveType == null) throw new ArgumentException("Leave type not found");
+
+    // First, check if there's a custom entitlement for this employee and leave type
+    var customEntitlement = await _context.EmployeeLeaveEntitlements
+        .FirstOrDefaultAsync(ele => ele.EmployeeId == employeeId && 
+                                   ele.LeaveTypeId == leaveTypeId && 
+                                   ele.IsActive && 
+                                   ele.UseCustomEntitlement);
+
+    if (customEntitlement != null)
+    {
+        // Use the custom entitlement days
+        return customEntitlement.CustomEntitlementDays;
+    }
+
+    // For Annual Leave, calculate based on years of service using configurable values
+    if (leaveType.Name.ToLower().Contains("annual"))
+    {
+        var yearsOfService = await CalculateYearsOfServiceAsync(employeeId, new DateTime(year, 12, 31));
+        
+        // Get or create the employee entitlement record to use configurable values
+        var entitlement = await GetOrCreateEmployeeEntitlementAsync(employeeId, leaveTypeId);
+        
+        // Use configurable values from the database instead of hardcoded ones
+        var baseEntitlement = entitlement.BaseEntitlement;
+        var annualIncrement = entitlement.AnnualIncrement;
+        var maxEntitlement = entitlement.MaxEntitlement;
+
+        var calculatedEntitlement = baseEntitlement + (yearsOfService * annualIncrement);
+        
+        // Only apply max entitlement cap if it's greater than 0 (0 means no cap)
+        if (maxEntitlement > 0)
+        {
+            return Math.Min(calculatedEntitlement, maxEntitlement);
+        }
+        
+        return calculatedEntitlement;
+    }
+
+    return leaveType.DefaultDays;
+}
+
+WHAT THIS FIX DOES:
+1. Adds a database query to check for custom entitlements
+2. If a custom entitlement exists and is active, returns CustomEntitlementDays
+3. Uses configurable values from EmployeeLeaveEntitlement table instead of hardcoded values:
+   - BaseEntitlement (instead of hardcoded 20m)
+   - AnnualIncrement (instead of hardcoded 1m) 
+   - MaxEntitlement (instead of hardcoded 30m)
+4. Makes the max entitlement cap optional (0 means no cap)
+5. This allows for proper carryover functionality and flexible leave policies
+
+CHANGES FROM HARDCODED VALUES:
+- OLD: var baseEntitlement = 20m; // Default to 20 days
+- NEW: var baseEntitlement = entitlement.BaseEntitlement;
+
+- OLD: var annualIncrement = 1m; // Increment by 1 each year
+- NEW: var annualIncrement = entitlement.AnnualIncrement;
+
+- OLD: var maxEntitlement = 30m; // Cap at 30 days
+- NEW: var maxEntitlement = entitlement.MaxEntitlement; // Configurable cap
+
+- OLD: return Math.Min(calculatedEntitlement, maxEntitlement); // Always capped at 30
+- NEW: if (maxEntitlement > 0) { return Math.Min(calculatedEntitlement, maxEntitlement); } // Optional cap
+
+AFTER APPLYING:
+1. Rebuild the project: dotnet build
+2. Test custom entitlements - they should now work properly
+3. Leave balances and requests will use custom entitlements when set
+4. You can now control leave policies through the database instead of hardcoded values
+5. Carryover functionality will work properly without the 30-day restriction
+
+WHAT THIS FIX DOES:
+1. Adds a database query to check for custom entitlements
+2. If a custom entitlement exists and is active, returns CustomEntitlementDays
+3. Otherwise, falls back to the existing calculation logic
+4. This ensures custom entitlements are properly used in all leave calculations
+
+AFTER APPLYING:
+1. Rebuild the project: dotnet build
+2. Test custom entitlements - they should now work properly
+3. Leave balances and requests will use custom entitlements when set 

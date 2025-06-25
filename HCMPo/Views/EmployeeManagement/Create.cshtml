@@ -1,0 +1,212 @@
+@model HCMPo.Models.Employee
+@using HCMPo.Helpers
+
+@{
+    ViewData["Title"] = "Create Employee";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-user-plus"></i>
+                        Create New Employee
+                    </h3>
+                    <div class="card-tools">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to List
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post" id="createEmployeeForm">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        <div class="row">
+                            <!-- Personal Information Section -->
+                            <div class="col-md-6">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-user"></i> Personal Information
+                                </h5>
+                                <div class="form-group mb-3">
+                                    <label asp-for="FirstName" class="form-label"></label>
+                                    <input asp-for="FirstName" class="form-control" placeholder="Enter first name" />
+                                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="LastName" class="form-label"></label>
+                                    <input asp-for="LastName" class="form-control" placeholder="Enter last name" />
+                                    <span asp-validation-for="LastName" class="text-danger"></span>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="Email" class="form-label"></label>
+                                    <input asp-for="Email" class="form-control" placeholder="Enter email address" type="email" />
+                                    <span asp-validation-for="Email" class="text-danger"></span>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="PhoneNumber" class="form-label"></label>
+                                    <input asp-for="PhoneNumber" class="form-control" placeholder="Enter phone number" />
+                                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="Gender" class="form-label"></label>
+                                    <select asp-for="Gender" class="form-control">
+                                        <option value="">Select Gender</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                    </select>
+                                    <span asp-validation-for="Gender" class="text-danger"></span>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Date of Birth (የተወለደበት ቀን)</label>
+                                    @await Html.PartialAsync("_EthiopianDatePicker", new { Id = "DateOfBirth", Name = "DateOfBirth", Label = "Date of Birth", IsRequired = true, ShowGregorian = true, Placeholder = "Select Date of Birth", InitialDate = (DateTime?)null })
+                                    <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <!-- Employment Information Section -->
+                            <div class="col-md-6">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-briefcase"></i> Employment Information
+                                </h5>
+                                <div class="form-group mb-3">
+                                    <label asp-for="BadgeNumber" class="form-label"></label>
+                                    <div class="input-group">
+                                        <input asp-for="BadgeNumber" class="form-control" placeholder="Enter badge number" id="badgeNumber" />
+                                        <button type="button" class="btn btn-outline-secondary" onclick="checkBadgeNumber()">
+                                            <i class="fas fa-search"></i> Check
+                                        </button>
+                                    </div>
+                                    <span asp-validation-for="BadgeNumber" class="text-danger"></span>
+                                    <div id="badgeNumberStatus" class="mt-1"></div>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="OrganizationUnitId" class="form-label">Department/Directorate</label>
+                                    <select asp-for="OrganizationUnitId" class="form-control" asp-items="ViewBag.OrganizationUnits">
+                                        <option value="">Select Organization Unit</option>
+                                    </select>
+                                    <span asp-validation-for="OrganizationUnitId" class="text-danger"></span>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="JobTitleId" class="form-label">Job Title</label>
+                                    <select asp-for="JobTitleId" class="form-control" asp-items="ViewBag.JobTitles">
+                                        <option value="">Select Job Title</option>
+                                    </select>
+                                    <span asp-validation-for="JobTitleId" class="text-danger"></span>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Hire Date (የተቀጠረበት ቀን)</label>
+                                    @await Html.PartialAsync("_EthiopianDatePicker", new { Id = "HireDate", Name = "HireDate", Label = "Hire Date", IsRequired = false, ShowGregorian = true, Placeholder = "Select Hire Date", InitialDate = (DateTime?)null })
+                                    <span asp-validation-for="HireDate" class="text-danger"></span>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Employment Date (የስራ መጀመሪያ ቀን)</label>
+                                    @await Html.PartialAsync("_EthiopianDatePicker", new { Id = "EmploymentDate", Name = "EmploymentDate", Label = "Employment Date", IsRequired = true, ShowGregorian = true, Placeholder = "Select Employment Date", InitialDate = (DateTime?)null })
+                                    <span asp-validation-for="EmploymentDate" class="text-danger"></span>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="BasicSalary" class="form-label"></label>
+                                    <input asp-for="BasicSalary" class="form-control" placeholder="Enter basic salary" type="number" step="0.01" />
+                                    <span asp-validation-for="BasicSalary" class="text-danger"></span>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="Status" class="form-label"></label>
+                                    <select asp-for="Status" class="form-control" asp-items="ViewBag.Statuses">
+                                        <option value="">Select Status</option>
+                                    </select>
+                                    <span asp-validation-for="Status" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Additional Information Section -->
+                        <div class="row">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3 mt-3">
+                                    <i class="fas fa-info-circle"></i> Additional Information
+                                </h5>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Address" class="form-label"></label>
+                                    <textarea asp-for="Address" class="form-control" rows="3" placeholder="Enter address"></textarea>
+                                    <span asp-validation-for="Address" class="text-danger"></span>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="City" class="form-label"></label>
+                                    <input asp-for="City" class="form-control" placeholder="Enter city" />
+                                    <span asp-validation-for="City" class="text-danger"></span>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="Position" class="form-label"></label>
+                                    <input asp-for="Position" class="form-control" placeholder="Enter position" />
+                                    <span asp-validation-for="Position" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="BankName" class="form-label"></label>
+                                    <input asp-for="BankName" class="form-control" placeholder="Enter bank name" />
+                                    <span asp-validation-for="BankName" class="text-danger"></span>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="BankAccountNumber" class="form-label"></label>
+                                    <input asp-for="BankAccountNumber" class="form-control" placeholder="Enter bank account number" />
+                                    <span asp-validation-for="BankAccountNumber" class="text-danger"></span>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="TinNumber" class="form-label"></label>
+                                    <input asp-for="TinNumber" class="form-control" placeholder="Enter TIN number" />
+                                    <span asp-validation-for="TinNumber" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-12 text-end">
+                                <button type="submit" class="btn btn-success" id="submitBtn">
+                                    <i class="fas fa-save"></i> Create Employee
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script>
+        var incomeTaxBrackets = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.IncomeTaxBrackets ?? new List<HCMPo.Models.TaxSetting>()));
+        var pension = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Pension));
+        let badgeNumberValid = false;
+
+        // ... (keep the rest of the existing script content above the submit listener)
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // ... (keep the existing DOMContentLoaded content)
+
+            document.getElementById('createEmployeeForm').addEventListener('submit', function(e) {
+                var allDatesValid = true;
+                var missingDates = [];
+
+                ['DateOfBirth', 'EmploymentDate'].forEach(function(id) {
+                    var input = document.getElementById(id + 'Gregorian');
+                    if (!input || !input.value) {
+                        allDatesValid = false;
+                        var labelFor = id === 'DateOfBirth' ? 'Date of Birth (የተወለደበት ቀን)' : 'Employment Date (የስራ መጀመሪያ ቀን)';
+                        missingDates.push(labelFor.split('(')[0].trim());
+                    }
+                });
+
+                if (!allDatesValid) {
+                    e.preventDefault();
+                    Swal.fire('Validation Error', 'Please select the following required dates: ' + missingDates.join(', '), 'error');
+                } else if (!badgeNumberValid) {
+                    e.preventDefault();
+                    Swal.fire('Validation Error', 'Badge number is not available. Please enter a unique one.', 'error');
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,345 @@
+@model IEnumerable<dynamic>
+
+@{
+    ViewData["Title"] = "Leave Calendar";
+    var ethiopianYear = ViewBag.EthiopianYear;
+    var gregorianYearStart = ViewBag.GregorianYearStart;
+    var gregorianYearEnd = ViewBag.GregorianYearEnd;
+    var currentEthiopianDate = ViewBag.CurrentEthiopianDate;
+    var ethiopianMonths = ViewBag.EthiopianMonths;
+    
+    // Ethiopian month names in Amharic
+    var ethiopianMonthNames = new Dictionary<int, string>
+    {
+        { 1, "መስከረም" },   // September
+        { 2, "ጥቅምት" },    // October
+        { 3, "ህዳር" },     // November
+        { 4, "ታህሳስ" },    // December
+        { 5, "ጥር" },      // January
+        { 6, "የካቲት" },    // February
+        { 7, "መጋቢት" },    // March
+        { 8, "ሚያዝያ" },    // April
+        { 9, "ግንቦት" },    // May
+        { 10, "ሰኔ" },     // June
+        { 11, "ሀምሌ" },    // July
+        { 12, "ነሐሴ" },    // August
+        { 13, "ጳጉሜን" }   // Pagumen (13th month)
+    };
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="card-title mb-0">
+                            <i class="fas fa-calendar-alt me-2"></i>
+                            Leave Calendar - Ethiopian Year @ethiopianYear (@gregorianYearStart-@gregorianYearEnd)
+                        </h4>
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar-day"></i>
+                                    Current: @currentEthiopianDate.Item3 @ethiopianMonths[currentEthiopianDate.Item2] @currentEthiopianDate.Item1
+                                </small>
+                            </div>
+                            <div class="btn-group" role="group">
+                                <a href="@Url.Action("Calendar", new { ethiopianYear = ethiopianYear - 1 })" 
+                                   class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-chevron-left"></i> Previous Year
+                                </a>
+                                <a href="@Url.Action("Calendar", new { ethiopianYear = currentEthiopianDate.Item1 })" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-home"></i> Current Year
+                                </a>
+                                <a href="@Url.Action("Calendar", new { ethiopianYear = ethiopianYear + 1 })" 
+                                   class="btn btn-outline-secondary btn-sm">
+                                    Next Year <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="calendar"></div>
+                    
+                    <!-- Ethiopian Calendar Information -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-info-circle"></i> Ethiopian Calendar Information
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled mb-0">
+                                        <li><strong>Current Ethiopian Date:</strong> @currentEthiopianDate.Item3 @ethiopianMonths[currentEthiopianDate.Item2] @currentEthiopianDate.Item1</li>
+                                        <li><strong>Ethiopian Year:</strong> @ethiopianYear (Gregorian: @gregorianYearStart-@gregorianYearEnd)</li>
+                                        <li><strong>Ethiopian New Year:</strong> September 11 (1 መስከረም)</li>
+                                        <li><strong>Leap Year:</strong> @((ethiopianYear % 4 == 3) ? "Yes" : "No")</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-calendar-check"></i> Leave Summary
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled mb-0">
+                                        <li><strong>Total Leave Requests:</strong> @Model.Count()</li>
+                                        <li><strong>Approved Leaves:</strong> @Model.Count()</li>
+                                        <li><strong>Total Days:</strong> @Model.Sum(l => l.TotalDays)</li>
+                                        <li><strong>Calendar Period:</strong> Ethiopian Year @ethiopianYear</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/fullcalendar/fullcalendar.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            
+            var events = [
+                @foreach (var leave in Model)
+                {
+                    <text>{
+                        title: '@leave.Employee?.FullName - @leave.LeaveType?.Name',
+                        start: '@leave.StartDate.ToString("yyyy-MM-dd")',
+                        end: '@leave.EndDate.AddDays(1).ToString("yyyy-MM-dd")',
+                        backgroundColor: '#28a745',
+                        borderColor: '#28a745',
+                        url: '@Url.Action("Details", new { id = leave.Id })',
+                        extendedProps: {
+                            ethiopianStart: '@leave.StartDateEthiopianFormatted',
+                            ethiopianEnd: '@leave.EndDateEthiopianFormatted',
+                            totalDays: @leave.TotalDays,
+                            reason: '@leave.Reason'
+                        }
+                    },</text>
+                }
+            ];
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,dayGridWeek,listWeek'
+                },
+                events: events,
+                eventClick: function(info) {
+                    if (info.event.url) {
+                        window.open(info.event.url, '_blank');
+                        info.jsEvent.preventDefault();
+                    }
+                },
+                eventDidMount: function(info) {
+                    // Add Ethiopian date tooltip
+                    var ethiopianStart = info.event.extendedProps.ethiopianStart;
+                    var ethiopianEnd = info.event.extendedProps.ethiopianEnd;
+                    var totalDays = info.event.extendedProps.totalDays;
+                    var reason = info.event.extendedProps.reason;
+                    
+                    var tooltipContent = `
+                        <div class="leave-tooltip">
+                            <strong>${info.event.title}</strong><br>
+                            <small>Gregorian: ${info.event.start.toLocaleDateString()} - ${info.event.end.toLocaleDateString()}</small><br>
+                            <small>Ethiopian: ${ethiopianStart} - ${ethiopianEnd}</small><br>
+                            <small>Duration: ${totalDays} days</small>
+                            ${reason ? `<br><small>Reason: ${reason}</small>` : ''}
+                        </div>
+                    `;
+                    
+                    $(info.el).tooltip({
+                        title: tooltipContent,
+                        html: true,
+                        placement: 'top',
+                        trigger: 'hover'
+                    });
+                },
+                height: 'auto',
+                eventDisplay: 'block',
+                displayEventTime: false,
+                dayCellDidMount: function(arg) {
+                    // Add Ethiopian date to each day cell
+                    var gregorianDate = arg.date;
+                    var ethiopianDate = convertToEthiopian(gregorianDate);
+                    
+                    if (ethiopianDate) {
+                        var ethiopianDay = ethiopianDate.day;
+                        var ethiopianMonth = ethiopianDate.month;
+                        
+                        // Add Ethiopian day number to the cell
+                        var dayNumberEl = arg.el.querySelector('.fc-daygrid-day-number');
+                        if (dayNumberEl) {
+                            var ethiopianDayEl = document.createElement('div');
+                            ethiopianDayEl.className = 'ethiopian-day';
+                            ethiopianDayEl.textContent = ethiopianDay;
+                            ethiopianDayEl.style.cssText = 'font-size: 0.8em; color: #666; position: absolute; top: 2px; right: 2px;';
+                            arg.el.appendChild(ethiopianDayEl);
+                        }
+                        
+                        // Highlight Ethiopian New Year (1 Meskerem)
+                        if (ethiopianDay === 1 && ethiopianMonth === 1) {
+                            arg.el.style.backgroundColor = '#fff3cd';
+                            arg.el.style.border = '2px solid #ffc107';
+                        }
+                    }
+                },
+                titleFormat: function(date) {
+                    // Custom title formatter to show both Gregorian and Ethiopian dates
+                    var gregorianMonth = date.date.marker.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                    var ethiopianDate = convertToEthiopian(date.date.marker);
+                    
+                    if (ethiopianDate) {
+                        var ethiopianMonthName = getEthiopianMonthName(ethiopianDate.month);
+                        return gregorianMonth + ' / ' + ethiopianMonthName + ' ' + ethiopianDate.year;
+                    }
+                    
+                    return gregorianMonth;
+                },
+                dayHeaderFormat: { weekday: 'short' }
+            });
+
+            calendar.render();
+            
+            // Function to convert Gregorian date to Ethiopian date
+            function convertToEthiopian(gregorianDate) {
+                var year = gregorianDate.getFullYear();
+                var month = gregorianDate.getMonth() + 1;
+                var day = gregorianDate.getDate();
+                
+                // Ethiopian calendar conversion
+                var ethYear = year - 7;
+                
+                // Adjust for Ethiopian calendar starting in September
+                if (month < 9) {
+                    ethYear = year - 8;
+                }
+                
+                // Calculate days since Ethiopian New Year (September 11)
+                var ethiopianNewYear = new Date(year, 8, 11); // September 11 (month is 0-based)
+                if (month < 9) {
+                    ethiopianNewYear = new Date(year - 1, 8, 11);
+                }
+                
+                var daysSinceNewYear = Math.floor((gregorianDate - ethiopianNewYear) / (1000 * 60 * 60 * 24));
+                
+                if (daysSinceNewYear < 0) {
+                    // Date is in previous Ethiopian year
+                    ethYear--;
+                    ethiopianNewYear = new Date(year - 1, 8, 11);
+                    daysSinceNewYear = Math.floor((gregorianDate - ethiopianNewYear) / (1000 * 60 * 60 * 24));
+                }
+                
+                // Calculate Ethiopian month and day
+                var ethMonth = 1;
+                var ethDay = 1;
+                
+                // Ethiopian months have 30 days each, except the 13th month (Pagumen)
+                var daysInMonth = [30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 5]; // Last month is 5 or 6 days
+                
+                // Adjust for leap year (every 4 years, year % 4 == 3)
+                if ((ethYear % 4) == 3) {
+                    daysInMonth[12] = 6; // Pagumen has 6 days in leap year
+                }
+                
+                var remainingDays = daysSinceNewYear;
+                
+                for (var i = 0; i < 13 && remainingDays >= daysInMonth[i]; i++) {
+                    remainingDays -= daysInMonth[i];
+                    ethMonth = i + 2; // Next month
+                }
+                
+                if (remainingDays >= 0) {
+                    ethDay = remainingDays + 1;
+                }
+                
+                // Validate the result
+                if (ethMonth > 13 || ethDay > daysInMonth[ethMonth - 1]) {
+                    return null;
+                }
+                
+                return {
+                    year: ethYear,
+                    month: ethMonth,
+                    day: ethDay
+                };
+            }
+            
+            // Function to get Ethiopian month name
+            function getEthiopianMonthName(month) {
+                var monthNames = {
+                    1: 'መስከረም', 2: 'ጥቅምት', 3: 'ህዳር', 4: 'ታህሳስ', 5: 'ጥር', 6: 'የካቲት',
+                    7: 'መጋቢት', 8: 'ሚያዝያ', 9: 'ግንቦት', 10: 'ሰኔ', 11: 'ሀምሌ', 12: 'ነሐሴ', 13: 'ጳጉሜን'
+                };
+                return monthNames[month] || month;
+            }
+        });
+    </script>
+}
+
+<style>
+    .fc-event {
+        cursor: pointer;
+    }
+    .fc-event:hover {
+        opacity: 0.8;
+    }
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: 1px solid rgba(0, 0, 0, 0.125);
+    }
+    
+    .ethiopian-day {
+        font-size: 0.8em;
+        color: #666;
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        background: rgba(255, 255, 255, 0.8);
+        padding: 1px 3px;
+        border-radius: 2px;
+    }
+    
+    .leave-tooltip {
+        text-align: left;
+        max-width: 300px;
+    }
+    
+    .fc-daygrid-day.fc-day-today {
+        background-color: #e3f2fd !important;
+    }
+    
+    .fc-daygrid-day.fc-day-today .ethiopian-day {
+        background: #2196f3;
+        color: white;
+        font-weight: bold;
+    }
+    
+    /* Ethiopian New Year styling */
+    .fc-daygrid-day.ethiopian-new-year {
+        background-color: #fff3cd !important;
+        border: 2px solid #ffc107 !important;
+    }
+    
+    .fc-daygrid-day.ethiopian-new-year .ethiopian-day {
+        background: #ffc107;
+        color: #000;
+        font-weight: bold;
+    }
+</style> 

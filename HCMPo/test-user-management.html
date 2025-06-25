@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test User Management</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .success { color: green; }
+        .error { color: red; }
+        button { margin: 5px; padding: 10px; }
+        .result { margin: 10px 0; padding: 10px; background: #f5f5f5; }
+    </style>
+</head>
+<body>
+    <h1>HCM User Management Test Page</h1>
+    
+    <div class="test-section">
+        <h2>1. Test System Info</h2>
+        <button onclick="testSystemInfo()">Test System Info</button>
+        <div id="systemInfo" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Test Employees Without Users</h2>
+        <button onclick="testEmployeesWithoutUsers()">Get Employees Without Users</button>
+        <div id="employeesResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Test Bulk User Creation</h2>
+        <button onclick="testBulkCreation()">Test Bulk User Creation (Safe)</button>
+        <div id="bulkResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Create Test Employees First</h2>
+        <button onclick="createTestEmployees()">Create Test Employees</button>
+        <div id="testEmployeesResult" class="result"></div>
+    </div>
+
+    <script>
+        function log(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="${isError ? 'error' : 'success'}">${message}</div>`;
+            console.log(message);
+        }
+
+        function testSystemInfo() {
+            log('systemInfo', 'Testing System Info...');
+            
+            $.get('/UserManagement/SystemInfo')
+                .done(function(data) {
+                    log('systemInfo', `✅ System Info Success: Users: ${data.userCount}, Employees: ${data.employeeCount}, Unlinked: ${data.unlinkedEmployees}`);
+                })
+                .fail(function(xhr, status, error) {
+                    log('systemInfo', `❌ System Info Failed: ${error} (Status: ${xhr.status})`, true);
+                });
+        }
+
+        function testEmployeesWithoutUsers() {
+            log('employeesResult', 'Getting employees without users...');
+            
+            $.get('/UserManagement/GetEmployeesWithoutUsers')
+                .done(function(data) {
+                    if (data.success) {
+                        log('employeesResult', `✅ Found ${data.employees.length} employees without users`);
+                    } else {
+                        log('employeesResult', `❌ Error: ${data.message}`, true);
+                    }
+                })
+                .fail(function(xhr, status, error) {
+                    log('employeesResult', `❌ Request Failed: ${error} (Status: ${xhr.status})`, true);
+                });
+        }
+
+        function createTestEmployees() {
+            log('testEmployeesResult', 'Creating test employees...');
+            
+            // Get CSRF token (this might be the issue!)
+            const token = $('meta[name="csrf-token"]').attr('content') || 
+                         $('input[name="__RequestVerificationToken"]').val() ||
+                         'NO_TOKEN_FOUND';
+            
+            console.log('CSRF Token:', token);
+            
+            $.ajax({
+                url: '/UserManagement/CreateTestEmployees',
+                type: 'POST',
+                headers: {
+                    'RequestVerificationToken': token
+                },
+                data: {
+                    __RequestVerificationToken: token
+                },
+                success: function(data) {
+                    if (data.success) {
+                        log('testEmployeesResult', `✅ ${data.message}`);
+                    } else {
+                        log('testEmployeesResult', `❌ Error: ${data.message}`, true);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    log('testEmployeesResult', `❌ Request Failed: ${error} (Status: ${xhr.status}) - Response: ${xhr.responseText}`, true);
+                }
+            });
+        }
+
+        function testBulkCreation() {
+            log('bulkResult', 'Testing bulk user creation...');
+            
+            // Get CSRF token
+            const token = $('meta[name="csrf-token"]').attr('content') || 
+                         $('input[name="__RequestVerificationToken"]').val() ||
+                         'NO_TOKEN_FOUND';
+            
+            console.log('CSRF Token for bulk creation:', token);
+            
+            $.ajax({
+                url: '/UserManagement/CreateAccountsForEmployeesWithoutUsers',
+                type: 'POST',
+                headers: {
+                    'RequestVerificationToken': token
+                },
+                data: {
+                    __RequestVerificationToken: token
+                },
+                timeout: 30000,
+                success: function(data) {
+                    if (data.success) {
+                        log('bulkResult', `✅ Bulk Creation Success: Created: ${data.created}, Linked: ${data.linked}, Errors: ${data.errors}`);
+                        
+                        if (data.hasPasswordReport) {
+                            log('bulkResult', document.getElementById('bulkResult').innerHTML + 
+                                '<br><a href="/UserManagement/DownloadPasswordReport" target="_blank">📥 Download Password Report</a>');
+                        }
+                    } else {
+                        log('bulkResult', `❌ Bulk Creation Error: ${data.message}`, true);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    log('bulkResult', `❌ Bulk Creation Failed: ${error} (Status: ${xhr.status}) - Response: ${xhr.responseText}`, true);
+                }
+            });
+        }
+
+        // On page load
+        $(document).ready(function() {
+            log('systemInfo', 'Page loaded. Click buttons to test functionality.');
+            
+            // Try to find CSRF token
+            const token = $('meta[name="csrf-token"]').attr('content') || 
+                         $('input[name="__RequestVerificationToken"]').val();
+            
+            if (!token) {
+                console.warn('⚠️ No CSRF token found. This might be the issue with POST requests.');
+                // Add a basic token element for testing
+                $('head').append('<meta name="csrf-token" content="test-token">');
+            }
+        });
+    </script>
+</body>
+</html> 

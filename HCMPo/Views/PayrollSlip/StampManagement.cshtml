@@ -1,0 +1,246 @@
+@model HCMPo.ViewModels.StampUploadViewModel
+@{
+    ViewData["Title"] = "Stamp Management";
+    var stamps = ViewBag.Stamps as List<HCMPo.Models.PayrollStamp>;
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-stamp"></i> Stamp Management</h2>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Slip Generation
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Upload New Stamp -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-upload"></i> Upload New Stamp</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="UploadStamp" method="post" enctype="multipart/form-data" id="stampUploadForm">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        
+                        <div class="form-group mb-3">
+                            <label asp-for="StampFile" class="form-label">Stamp Image</label>
+                            <input asp-for="StampFile" type="file" class="form-control" accept="image/*" id="stampFileInput" />
+                            <span asp-validation-for="StampFile" class="text-danger"></span>
+                            <small class="form-text text-muted">Supported formats: JPG, PNG, GIF, BMP. Max size: 5MB</small>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Description" class="form-label">Description</label>
+                            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Optional description for this stamp"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label asp-for="Width" class="form-label">Width (px)</label>
+                                <input asp-for="Width" class="form-control" type="number" min="50" max="500" />
+                                <span asp-validation-for="Width" class="text-danger"></span>
+                            </div>
+                            <div class="col-6">
+                                <label asp-for="Height" class="form-label">Height (px)</label>
+                                <input asp-for="Height" class="form-control" type="number" min="25" max="250" />
+                                <span asp-validation-for="Height" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Position" class="form-label">Position on Slip</label>
+                            <select asp-for="Position" class="form-select">
+                                <option value="top-left">Top Left</option>
+                                <option value="top-right">Top Right</option>
+                                <option value="bottom-left">Bottom Left</option>
+                                <option value="bottom-right" selected>Bottom Right</option>
+                                <option value="center">Center</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <div class="form-check">
+                                <input asp-for="ApplyOnBankSlip" class="form-check-input" />
+                                <label asp-for="ApplyOnBankSlip" class="form-check-label">Apply on Bank Slip</label>
+                            </div>
+                            <div class="form-check">
+                                <input asp-for="ApplyOnReportSlip" class="form-check-input" />
+                                <label asp-for="ApplyOnReportSlip" class="form-check-label">Apply on Report Slip</label>
+                            </div>
+                        </div>
+
+                        <!-- Preview -->
+                        <div id="imagePreview" class="mb-3" style="display: none;">
+                            <label class="form-label">Preview:</label>
+                            <div class="border p-2 text-center">
+                                <img id="previewImage" class="img-fluid" style="max-height: 150px;" />
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-upload"></i> Upload Stamp
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Existing Stamps -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-images"></i> Existing Stamps</h5>
+                </div>
+                <div class="card-body">
+                    @if (stamps != null && stamps.Any())
+                    {
+                        <div class="row">
+                            @foreach (var stamp in stamps)
+                            {
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card @(stamp.IsActive ? "border-success" : "")">
+                                        @if (stamp.IsActive)
+                                        {
+                                            <div class="card-header bg-success text-white py-1">
+                                                <small><i class="fas fa-check"></i> Active</small>
+                                            </div>
+                                        }
+                                        <div class="card-body p-2">
+                                            <div class="text-center mb-2">
+                                                <img src="@stamp.FilePath" class="img-fluid border" style="max-height: 80px; width: @(stamp.Width)px; height: @(stamp.Height)px;" alt="Stamp" />
+                                            </div>
+                                            <h6 class="card-title text-truncate">@stamp.FileName</h6>
+                                            @if (!string.IsNullOrEmpty(stamp.Description))
+                                            {
+                                                <p class="card-text small text-muted">@stamp.Description</p>
+                                            }
+                                            <div class="small text-muted mb-2">
+                                                <div>Size: @(stamp.Width) x @(stamp.Height) px</div>
+                                                <div>Position: @stamp.Position</div>
+                                                <div>Uploaded: @stamp.UploadedAt.ToString("MMM dd, yyyy")</div>
+                                                <div>By: @stamp.UploadedBy</div>
+                                            </div>
+                                            <div class="mb-2">
+                                                @if (stamp.ApplyOnBankSlip)
+                                                {
+                                                    <span class="badge bg-info me-1">Bank</span>
+                                                }
+                                                @if (stamp.ApplyOnReportSlip)
+                                                {
+                                                    <span class="badge bg-warning">Report</span>
+                                                }
+                                            </div>
+                                            <div class="btn-group w-100">
+                                                @if (!stamp.IsActive)
+                                                {
+                                                    <form asp-action="ActivateStamp" method="post" class="d-inline">
+                                                        <input type="hidden" name="stampId" value="@stamp.Id" />
+                                                        <button type="submit" class="btn btn-sm btn-success">
+                                                            <i class="fas fa-check"></i> Activate
+                                                        </button>
+                                                    </form>
+                                                }
+                                                else
+                                                {
+                                                    <button class="btn btn-sm btn-success" disabled>
+                                                        <i class="fas fa-check"></i> Active
+                                                    </button>
+                                                }
+                                                <form asp-action="DeleteStamp" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this stamp?')">
+                                                    <input type="hidden" name="stampId" value="@stamp.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-danger">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-stamp fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No stamps uploaded yet</h5>
+                            <p class="text-muted">Upload your first stamp using the form on the left.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Image preview functionality
+        document.getElementById('stampFileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Check file size (5MB limit)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File size must be less than 5MB');
+                    this.value = '';
+                    document.getElementById('imagePreview').style.display = 'none';
+                    return;
+                }
+
+                // Check file type
+                if (!file.type.startsWith('image/')) {
+                    alert('Please select an image file');
+                    this.value = '';
+                    document.getElementById('imagePreview').style.display = 'none';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewImg = document.getElementById('previewImage');
+                    previewImg.src = e.target.result;
+                    document.getElementById('imagePreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                document.getElementById('imagePreview').style.display = 'none';
+            }
+        });
+
+        // Update preview dimensions when width/height changes
+        document.querySelector('input[name="Width"]').addEventListener('input', updatePreviewSize);
+        document.querySelector('input[name="Height"]').addEventListener('input', updatePreviewSize);
+
+        function updatePreviewSize() {
+            const width = document.querySelector('input[name="Width"]').value;
+            const height = document.querySelector('input[name="Height"]').value;
+            const previewImg = document.getElementById('previewImage');
+            
+            if (width && height && previewImg.src) {
+                previewImg.style.width = width + 'px';
+                previewImg.style.height = height + 'px';
+            }
+        }
+
+        // Form validation
+        document.getElementById('stampUploadForm').addEventListener('submit', function(e) {
+            const fileInput = document.getElementById('stampFileInput');
+            if (!fileInput.files.length) {
+                e.preventDefault();
+                alert('Please select a stamp image file');
+                return false;
+            }
+
+            const applyBank = document.querySelector('input[name="ApplyOnBankSlip"]').checked;
+            const applyReport = document.querySelector('input[name="ApplyOnReportSlip"]').checked;
+            
+            if (!applyBank && !applyReport) {
+                e.preventDefault();
+                alert('Please select at least one slip type to apply the stamp on');
+                return false;
+            }
+        });
+    </script>
+} 

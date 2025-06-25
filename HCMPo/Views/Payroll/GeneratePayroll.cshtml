@@ -1,5 +1,6 @@
 @model HCMPo.ViewModels.PayrollGenerationViewModel
 @using HCMPo.Models
+@using HCMPo.Helpers
 
 @{
     ViewData["Title"] = "Generate Payroll";
@@ -22,12 +23,28 @@
         <span>@(Model.Allowances != null && Model.Allowances.Any() ? Model.Allowances.Sum(a => a.Amount) : 0)</span>
     </div>
     <div class="mb-3">
-        <label for="StartDate" class="form-label">Start Date</label>
-        <input asp-for="StartDate" class="form-control" type="date" />
+        <label class="form-label">Start Date (የደመወዝ ጊዜ መጀመሪያ ቀን)</label>
+        @{
+            ViewBag.Id = "StartDate";
+            ViewBag.Name = "StartDate";
+            ViewBag.Label = "Start Date (የደመወዝ ጊዜ መጀመሪያ ቀን)";
+            ViewBag.Required = true;
+            ViewBag.ShowGregorian = true;
+        }
+        @await Html.PartialAsync("_EthiopianDatePicker")
+        <input asp-for="StartDate" type="hidden" id="StartDateGregorian" />
     </div>
     <div class="mb-3">
-        <label for="EndDate" class="form-label">End Date</label>
-        <input asp-for="EndDate" class="form-control" type="date" />
+        <label class="form-label">End Date (የደመወዝ ጊዜ መጨረሻ ቀን)</label>
+        @{
+            ViewBag.Id = "EndDate";
+            ViewBag.Name = "EndDate";
+            ViewBag.Label = "End Date (የደመወዝ ጊዜ መጨረሻ ቀን)";
+            ViewBag.Required = true;
+            ViewBag.ShowGregorian = true;
+        }
+        @await Html.PartialAsync("_EthiopianDatePicker")
+        <input asp-for="EndDate" type="hidden" id="EndDateGregorian" />
     </div>
     <h4>Deductions</h4>
     <div class="row">
@@ -43,3 +60,24 @@
     </div>
     <button type="submit" class="btn btn-primary">Generate Payroll</button>
 </form> 
+
+<script>
+    // Sync Ethiopian date picker values with hidden inputs
+    $('form').on('submit', function(e) {
+        syncEthiopianDates();
+    });
+
+    function syncEthiopianDates() {
+        // Start Date
+        const startGregorian = $('#StartDateGregorian').val();
+        if (startGregorian) {
+            $('#StartDate').val(startGregorian);
+        }
+
+        // End Date
+        const endGregorian = $('#EndDateGregorian').val();
+        if (endGregorian) {
+            $('#EndDate').val(endGregorian);
+        }
+    }
+</script> 

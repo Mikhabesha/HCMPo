@@ -44,20 +44,6 @@ namespace HCMPo.Models
                 }
             }
 
-            // Check if there are any departments
-            if (!context.Departments.Any())
-            {
-                var departments = new[]
-                {
-                    new HCMPo.Models.Department { Id = Guid.NewGuid().ToString(), Name = "Human Resources", Description = "HR Department" },
-                    new HCMPo.Models.Department { Id = Guid.NewGuid().ToString(), Name = "Information Technology", Description = "IT Department" },
-                    new HCMPo.Models.Department { Id = Guid.NewGuid().ToString(), Name = "Finance", Description = "Finance Department" }
-                };
-
-                context.Departments.AddRange(departments);
-                await context.SaveChangesAsync();
-            }
-
             // Check if there are any job titles
             if (!context.JobTitles.Any())
             {
@@ -134,10 +120,10 @@ namespace HCMPo.Models
             // Check if there are any employees
             if (!context.Employees.Any())
             {
-                var department = await context.Departments.FirstOrDefaultAsync(d => d.Name == "Information Technology");
+                var organizationUnit = await context.OrganizationUnits.FirstOrDefaultAsync(ou => ou.Name == "Information Technology");
                 var jobTitle = await context.JobTitles.FirstOrDefaultAsync(j => j.Title == "Software Developer");
 
-                if (department != null && jobTitle != null)
+                if (organizationUnit != null && jobTitle != null)
                 {
                     var testEmployee = new Employee
                     {
@@ -149,7 +135,7 @@ namespace HCMPo.Models
                         HireDate = DateTime.Now.AddYears(-1),
                         Salary = 50000,
                         JobTitleId = jobTitle.Id,
-                        DepartmentId = department.Id,
+                        OrganizationUnitId = organizationUnit.Id,
                         BasicSalary = 50000,
                         EmploymentDate = DateTime.Now.AddYears(-1),
                         Status = EmploymentStatus.Active,

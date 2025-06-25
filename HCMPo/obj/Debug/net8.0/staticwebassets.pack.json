@@ -53,6 +53,10 @@
       "PackagePath": "staticwebassets\\css\\payrollreport.css"
     },
     {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\css\\payrollslip.css",
+      "PackagePath": "staticwebassets\\css\\payrollslip.css"
+    },
+    {
       "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\css\\site.css",
       "PackagePath": "staticwebassets\\css\\site.css"
     },
@@ -249,6 +253,62 @@
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.min.js.map"
     },
     {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\lib\\chartjs\\chart.min.js",
+      "PackagePath": "staticwebassets\\lib\\chartjs\\chart.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\lib\\datatables\\dataTables.bootstrap5.min.css",
+      "PackagePath": "staticwebassets\\lib\\datatables\\dataTables.bootstrap5.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\lib\\datatables\\dataTables.bootstrap5.min.js",
+      "PackagePath": "staticwebassets\\lib\\datatables\\dataTables.bootstrap5.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\lib\\datatables\\jquery.dataTables.min.js",
+      "PackagePath": "staticwebassets\\lib\\datatables\\jquery.dataTables.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\lib\\font-awesome-cdn\\all.min.css",
+      "PackagePath": "staticwebassets\\lib\\font-awesome-cdn\\all.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\lib\\font-awesome-cdn\\webfonts\\fa-brands-400.ttf",
+      "PackagePath": "staticwebassets\\lib\\font-awesome-cdn\\webfonts\\fa-brands-400.ttf"
+    },
+    {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\lib\\font-awesome-cdn\\webfonts\\fa-brands-400.woff2",
+      "PackagePath": "staticwebassets\\lib\\font-awesome-cdn\\webfonts\\fa-brands-400.woff2"
+    },
+    {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\lib\\font-awesome-cdn\\webfonts\\fa-regular-400.ttf",
+      "PackagePath": "staticwebassets\\lib\\font-awesome-cdn\\webfonts\\fa-regular-400.ttf"
+    },
+    {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\lib\\font-awesome-cdn\\webfonts\\fa-regular-400.woff2",
+      "PackagePath": "staticwebassets\\lib\\font-awesome-cdn\\webfonts\\fa-regular-400.woff2"
+    },
+    {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\lib\\font-awesome-cdn\\webfonts\\fa-solid-900.ttf",
+      "PackagePath": "staticwebassets\\lib\\font-awesome-cdn\\webfonts\\fa-solid-900.ttf"
+    },
+    {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\lib\\font-awesome-cdn\\webfonts\\fa-solid-900.woff2",
+      "PackagePath": "staticwebassets\\lib\\font-awesome-cdn\\webfonts\\fa-solid-900.woff2"
+    },
+    {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\lib\\font-awesome-cdn\\webfonts\\fa-v4compatibility.ttf",
+      "PackagePath": "staticwebassets\\lib\\font-awesome-cdn\\webfonts\\fa-v4compatibility.ttf"
+    },
+    {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\lib\\font-awesome-cdn\\webfonts\\fa-v4compatibility.woff2",
+      "PackagePath": "staticwebassets\\lib\\font-awesome-cdn\\webfonts\\fa-v4compatibility.woff2"
+    },
+    {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\lib\\fullcalendar\\fullcalendar.min.js",
+      "PackagePath": "staticwebassets\\lib\\fullcalendar\\fullcalendar.min.js"
+    },
+    {
       "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\lib\\jquery-validation-unobtrusive\\LICENSE.txt",
       "PackagePath": "staticwebassets\\lib\\jquery-validation-unobtrusive\\LICENSE.txt"
     },
@@ -295,6 +355,46 @@
     {
       "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\lib\\jquery\\dist\\jquery.min.map",
       "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.min.map"
+    },
+    {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\lib\\sweetalert2\\sweetalert2.min.css",
+      "PackagePath": "staticwebassets\\lib\\sweetalert2\\sweetalert2.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\lib\\sweetalert2\\sweetalert2.min.js",
+      "PackagePath": "staticwebassets\\lib\\sweetalert2\\sweetalert2.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\uploads\\documents\\3a8c5611-4e97-4a7c-a621-42b125d29f7d_sample_payroll_slip_bank_copy.pdf",
+      "PackagePath": "staticwebassets\\uploads\\documents\\3a8c5611-4e97-4a7c-a621-42b125d29f7d_sample_payroll_slip_bank_copy.pdf"
+    },
+    {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\uploads\\documents\\45c76e05-f268-4f88-aa13-23c00771d410_Blue Simple Lines Circular Monogram Badge Logo.png",
+      "PackagePath": "staticwebassets\\uploads\\documents\\45c76e05-f268-4f88-aa13-23c00771d410_Blue Simple Lines Circular Monogram Badge Logo.png"
+    },
+    {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\uploads\\documents\\b35128d6-f5dc-475e-ab11-0d919b816fbb_Payroll Report Slip - HCM Portal.pdf",
+      "PackagePath": "staticwebassets\\uploads\\documents\\b35128d6-f5dc-475e-ab11-0d919b816fbb_Payroll Report Slip - HCM Portal.pdf"
+    },
+    {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\uploads\\documents\\c0ac6347-2938-4524-a9a2-cb30b97d12f2_Send to Bank - HCM Portal (1).pdf",
+      "PackagePath": "staticwebassets\\uploads\\documents\\c0ac6347-2938-4524-a9a2-cb30b97d12f2_Send to Bank - HCM Portal (1).pdf"
+    },
+    {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\uploads\\documents\\f69d9a40-3da3-41be-a912-e9ef5a4236a0_Send to Bank - HCM Portal.pdf",
+      "PackagePath": "staticwebassets\\uploads\\documents\\f69d9a40-3da3-41be-a912-e9ef5a4236a0_Send to Bank - HCM Portal.pdf"
+    },
+    {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\uploads\\photos\\36a45b79-0311-4eba-bf16-522c9c57be98_photo_2025-06-20_15-29-16.jpg",
+      "PackagePath": "staticwebassets\\uploads\\photos\\36a45b79-0311-4eba-bf16-522c9c57be98_photo_2025-06-20_15-29-16.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\uploads\\photos\\8e63d45e-099f-428a-88b5-73fa1b26ddf1_photo_2024-09-16_15-12-53.jpg",
+      "PackagePath": "staticwebassets\\uploads\\photos\\8e63d45e-099f-428a-88b5-73fa1b26ddf1_photo_2024-09-16_15-12-53.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Mik\\Desktop\\New Projects\\HCMPo\\HCMPo\\HCMPo\\wwwroot\\uploads\\stamps\\9eadcb1a-6821-4cba-9986-4dc112c73a3e.png",
+      "PackagePath": "staticwebassets\\uploads\\stamps\\9eadcb1a-6821-4cba-9986-4dc112c73a3e.png"
     },
     {
       "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.HCMPo.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",

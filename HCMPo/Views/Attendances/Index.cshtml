@@ -21,6 +21,24 @@
         }
     };
 
+    // Helper function to get badge CSS class for status reasons
+    Func<string, string> GetStatusReasonClass = status =>
+    {
+        switch (status?.ToLower())
+        {
+            case "absent": return "bg-danger"; // Red
+            case "late": return "bg-secondary"; // Gray
+            case "earlydeparture": return "bg-warning text-dark"; // Orange/Yellow
+            case "onfield": return "bg-info text-dark"; // Blue/Info
+            case "onleave": return "bg-primary"; // Blue
+            case "present": return "bg-success"; // Green
+            case "holiday": return "bg-light text-dark"; // Light Gray
+            case "weekend": return "bg-light text-dark"; // Light Gray
+            case "halfday": return "bg-warning text-dark"; // Orange
+            default: return "bg-secondary"; // Default gray
+        }
+    };
+
     var request = ViewContext.HttpContext.Request;
     int? selectedStartYear = request.Query["ethStartYear"].Count > 0 ? int.Parse(request.Query["ethStartYear"]) : (ViewBag.SelectedStartYear as int?);
     int? selectedStartMonth = request.Query["ethStartMonth"].Count > 0 ? int.Parse(request.Query["ethStartMonth"]) : (ViewBag.SelectedStartMonth as int?);
@@ -111,6 +129,16 @@
                     }
                 </select>
             </div>
+            <div class="col-md-3">
+                <label for="organizationUnitId" class="form-label">Organization Unit</label>
+                <select class="form-select" id="organizationUnitId" name="organizationUnitId">
+                    <option value="">All Organization Units</option>
+                    @foreach (var ou in ViewBag.OrganizationUnits as List<SelectListItem> ?? new List<SelectListItem>())
+                    {
+                        <option value="@ou.Value" selected="@(ou.Value == Model.OrganizationUnitId)">@ou.Text</option>
+                    }
+                </select>
+            </div>
             <div class="col-md-3 d-flex align-items-end">
                 <button type="submit" class="btn btn-primary me-2">Filter</button>
                 <a asp-action="Index" class="btn btn-secondary">Clear</a>
@@ -183,21 +211,45 @@
                     <td>
                         @if (slot.MorningCheckIns.Any())
                         {
-                            @string.Join(", ", slot.MorningCheckIns.Select(t => t.ToString("HH:mm")))
+                            <div>@string.Join(", ", slot.MorningCheckIns.Select(t => t.ToString("HH:mm")))</div>
+                            @if (!string.IsNullOrEmpty(slot.MorningStatusReason))
+                            {
+                                <div class="mt-1">
+                                    <span class="badge status-reason @GetStatusReasonClass(slot.MorningStatus)">
+                                        @slot.MorningStatusReason
+                                    </span>
+                                </div>
+                            }
                         }
                         else { <span class="text-danger">--</span> }
                     </td>
                     <td>
                         @if (slot.AfternoonCheckIns.Any())
                         {
-                            @string.Join(", ", slot.AfternoonCheckIns.Select(t => t.ToString("HH:mm")))
+                            <div>@string.Join(", ", slot.AfternoonCheckIns.Select(t => t.ToString("HH:mm")))</div>
+                            @if (!string.IsNullOrEmpty(slot.AfternoonStatusReason))
+                            {
+                                <div class="mt-1">
+                                    <span class="badge status-reason @GetStatusReasonClass(slot.AfternoonStatus)">
+                                        @slot.AfternoonStatusReason
+                                    </span>
+                                </div>
+                            }
                         }
                         else { <span class="text-danger">--</span> }
                     </td>
                     <td>
                         @if (slot.EveningCheckOuts.Any())
                         {
-                            @string.Join(", ", slot.EveningCheckOuts.Select(t => t.ToString("HH:mm")))
+                            <div>@string.Join(", ", slot.EveningCheckOuts.Select(t => t.ToString("HH:mm")))</div>
+                            @if (!string.IsNullOrEmpty(slot.EveningStatusReason))
+                            {
+                                <div class="mt-1">
+                                    <span class="badge status-reason @GetStatusReasonClass(slot.EveningStatus)">
+                                        @slot.EveningStatusReason
+                                    </span>
+                                </div>
+                            }
                         }
                         else { <span class="text-danger">--</span> }
                     </td>
@@ -273,7 +325,27 @@
     </div>
 }
 
-@* No specific styles needed as we are using Bootstrap table contextual classes *@
+<style>
+    .status-reason {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.375rem;
+        white-space: nowrap;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: inline-block;
+    }
+    
+    .table td {
+        vertical-align: top;
+    }
+    
+    .badge.status-reason:hover {
+        transform: scale(1.05);
+        transition: transform 0.2s ease;
+    }
+</style>
 
 @section Scripts {
 <script>

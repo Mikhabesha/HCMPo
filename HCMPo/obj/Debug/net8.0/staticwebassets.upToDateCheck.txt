@@ -1,5 +1,6 @@
 wwwroot\css\ethiopian-datepicker.css
 wwwroot\css\payrollreport.css
+wwwroot\css\payrollslip.css
 wwwroot\css\site.css
 wwwroot\favicon.ico
 wwwroot\images\logo.jpg
@@ -49,6 +50,20 @@ wwwroot\lib\bootstrap\dist\js\bootstrap.js.map
 wwwroot\lib\bootstrap\dist\js\bootstrap.min.js
 wwwroot\lib\bootstrap\dist\js\bootstrap.min.js.map
 wwwroot\lib\bootstrap\LICENSE
+wwwroot\lib\chartjs\chart.min.js
+wwwroot\lib\datatables\dataTables.bootstrap5.min.css
+wwwroot\lib\datatables\dataTables.bootstrap5.min.js
+wwwroot\lib\datatables\jquery.dataTables.min.js
+wwwroot\lib\font-awesome-cdn\all.min.css
+wwwroot\lib\font-awesome-cdn\webfonts\fa-brands-400.ttf
+wwwroot\lib\font-awesome-cdn\webfonts\fa-brands-400.woff2
+wwwroot\lib\font-awesome-cdn\webfonts\fa-regular-400.ttf
+wwwroot\lib\font-awesome-cdn\webfonts\fa-regular-400.woff2
+wwwroot\lib\font-awesome-cdn\webfonts\fa-solid-900.ttf
+wwwroot\lib\font-awesome-cdn\webfonts\fa-solid-900.woff2
+wwwroot\lib\font-awesome-cdn\webfonts\fa-v4compatibility.ttf
+wwwroot\lib\font-awesome-cdn\webfonts\fa-v4compatibility.woff2
+wwwroot\lib\fullcalendar\fullcalendar.min.js
 wwwroot\lib\jquery\dist\jquery.js
 wwwroot\lib\jquery\dist\jquery.min.js
 wwwroot\lib\jquery\dist\jquery.min.map
@@ -61,6 +76,8 @@ wwwroot\lib\jquery-validation\LICENSE.md
 wwwroot\lib\jquery-validation-unobtrusive\jquery.validate.unobtrusive.js
 wwwroot\lib\jquery-validation-unobtrusive\jquery.validate.unobtrusive.min.js
 wwwroot\lib\jquery-validation-unobtrusive\LICENSE.txt
+wwwroot\lib\sweetalert2\sweetalert2.min.css
+wwwroot\lib\sweetalert2\sweetalert2.min.js
 wwwroot\Rotativa\wkhtmltopdf.exe
 wwwroot\Rotativa\wkhtmltopdf\bin\wkhtmltoimage.exe
 wwwroot\Rotativa\wkhtmltopdf\bin\wkhtmltopdf.exe
@@ -71,3 +88,11 @@ wwwroot\Rotativa\wkhtmltopdf\include\wkhtmltox\image.h
 wwwroot\Rotativa\wkhtmltopdf\include\wkhtmltox\pdf.h
 wwwroot\Rotativa\wkhtmltopdf\lib\wkhtmltox.lib
 wwwroot\Rotativa\wkhtmltopdf\uninstall.exe
+wwwroot\uploads\documents\3a8c5611-4e97-4a7c-a621-42b125d29f7d_sample_payroll_slip_bank_copy.pdf
+wwwroot\uploads\documents\45c76e05-f268-4f88-aa13-23c00771d410_Blue Simple Lines Circular Monogram Badge Logo.png
+wwwroot\uploads\documents\b35128d6-f5dc-475e-ab11-0d919b816fbb_Payroll Report Slip - HCM Portal.pdf
+wwwroot\uploads\documents\c0ac6347-2938-4524-a9a2-cb30b97d12f2_Send to Bank - HCM Portal (1).pdf
+wwwroot\uploads\documents\f69d9a40-3da3-41be-a912-e9ef5a4236a0_Send to Bank - HCM Portal.pdf
+wwwroot\uploads\photos\36a45b79-0311-4eba-bf16-522c9c57be98_photo_2025-06-20_15-29-16.jpg
+wwwroot\uploads\photos\8e63d45e-099f-428a-88b5-73fa1b26ddf1_photo_2024-09-16_15-12-53.jpg
+wwwroot\uploads\stamps\9eadcb1a-6821-4cba-9986-4dc112c73a3e.png

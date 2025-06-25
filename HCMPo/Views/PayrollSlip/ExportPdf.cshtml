@@ -1,0 +1,253 @@
+@model List<Payroll>
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Payroll Slips Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            margin: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+
+        .company-logo {
+            max-height: 80px;
+            margin-bottom: 10px;
+        }
+
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .report-title {
+            font-size: 18px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .summary-section {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .summary-item {
+            text-align: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: white;
+        }
+
+        .summary-label {
+            font-weight: bold;
+            color: #666;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .summary-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-top: 5px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 10px;
+        }
+
+        .data-table th,
+        .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .data-table th {
+            background-color: #333;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .data-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .amount {
+            text-align: right;
+            font-family: 'Courier New', monospace;
+        }
+
+        .ethiopian-date {
+            color: #ff9800;
+            font-weight: bold;
+        }
+
+        .page-break {
+            page-break-after: always;
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+
+        .generated-info {
+            margin-top: 20px;
+            font-size: 10px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="company-name">HCM Portal</div>
+        <div class="report-title">Payroll Slips Report</div>
+        <div class="generated-info">
+            Generated on: @DateTime.Now.ToString("MMMM dd, yyyy HH:mm") | 
+            Total Records: @Model.Count | 
+            Currency: Ethiopian Birr (ETB)
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <!-- Summary Section -->
+        <div class="summary-section">
+            <h3 style="margin-top: 0; text-align: center; color: #333;">Financial Summary</h3>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-label">Total Employees</div>
+                    <div class="summary-value">@Model.Select(p => p.EmployeeId).Distinct().Count()</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Total Gross Salary</div>
+                    <div class="summary-value">@Model.Sum(p => p.GrossSalary).ToString("N2") ETB</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Total Deductions</div>
+                    <div class="summary-value">@Model.Sum(p => p.TotalDeductions).ToString("N2") ETB</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Total Net Salary</div>
+                    <div class="summary-value">@Model.Sum(p => p.NetSalary).ToString("N2") ETB</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Data Table -->
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">Employee</th>
+                    <th style="width: 8%;">Badge #</th>
+                    <th style="width: 12%;">Department/Directorate</th>
+                    <th style="width: 15%;">Pay Period (ET)</th>
+                    <th style="width: 10%;">Basic Salary</th>
+                    <th style="width: 10%;">Allowances</th>
+                    <th style="width: 10%;">Gross Salary</th>
+                    <th style="width: 10%;">Deductions</th>
+                    <th style="width: 10%;">Net Salary</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var payroll in Model.OrderBy(p => p.Employee.FirstName).ThenBy(p => p.Employee.LastName))
+                {
+                    <tr>
+                        <td>@payroll.Employee.FirstName @payroll.Employee.LastName</td>
+                        <td style="text-align: center;">@payroll.Employee.BadgeNumber</td>
+                        <td>@(payroll.Employee.OrganizationUnit?.Name ?? "N/A")</td>
+                        <td style="text-align: center;">
+                            <span class="ethiopian-date">@payroll.PayPeriodStartEt - @payroll.PayPeriodEndEt</span>
+                        </td>
+                        <td class="amount">@payroll.BasicSalary.ToString("N2")</td>
+                        <td class="amount">@((payroll.Allowances?.Sum(a => a.Amount) ?? 0).ToString("N2"))</td>
+                        <td class="amount">@payroll.GrossSalary.ToString("N2")</td>
+                        <td class="amount">@payroll.TotalDeductions.ToString("N2")</td>
+                        <td class="amount" style="font-weight: bold;">@payroll.NetSalary.ToString("N2")</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr style="background-color: #333; color: white; font-weight: bold;">
+                    <td colspan="4" style="text-align: center;">TOTAL</td>
+                    <td class="amount">@Model.Sum(p => p.BasicSalary).ToString("N2")</td>
+                    <td class="amount">@Model.Sum(p => p.Allowances?.Sum(a => a.Amount) ?? 0).ToString("N2")</td>
+                    <td class="amount">@Model.Sum(p => p.GrossSalary).ToString("N2")</td>
+                    <td class="amount">@Model.Sum(p => p.TotalDeductions).ToString("N2")</td>
+                    <td class="amount">@Model.Sum(p => p.NetSalary).ToString("N2")</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <!-- Statistics -->
+        <div style="margin-top: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <h4 style="color: #333; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Statistical Analysis</h4>
+                <p><strong>Average Gross Salary:</strong> @((Model.Count > 0 ? Model.Sum(p => p.GrossSalary) / Model.Count : 0).ToString("N2")) ETB</p>
+                <p><strong>Average Net Salary:</strong> @((Model.Count > 0 ? Model.Sum(p => p.NetSalary) / Model.Count : 0).ToString("N2")) ETB</p>
+                <p><strong>Average Deduction Rate:</strong> @((Model.Sum(p => p.GrossSalary) > 0 ? Model.Sum(p => p.TotalDeductions) / Model.Sum(p => p.GrossSalary) * 100 : 0).ToString("N1"))%</p>
+                <p><strong>Take-home Rate:</strong> @((Model.Sum(p => p.GrossSalary) > 0 ? Model.Sum(p => p.NetSalary) / Model.Sum(p => p.GrossSalary) * 100 : 0).ToString("N1"))%</p>
+            </div>
+            <div>
+                <h4 style="color: #333; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Report Information</h4>
+                <p><strong>Report Type:</strong> Detailed Payroll Slips</p>
+                                 <p><strong>Period Coverage:</strong> 
+                     @if (Model.Any())
+                     {
+                         <text>@Model.Min(p => p.PayPeriodStartEt) - @Model.Max(p => p.PayPeriodEndEt)</text>
+                     }
+                 </p>
+                <p><strong>Departments/Directorates Included:</strong> @Model.Select(p => p.Employee.OrganizationUnit?.Name).Where(d => !string.IsNullOrEmpty(d)).Distinct().Count()</p>
+                <p><strong>Currency:</strong> Ethiopian Birr (ETB)</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div style="text-align: center; margin: 50px 0;">
+            <h3 style="color: #666;">No payroll data found for the specified criteria.</h3>
+            <p style="color: #999;">Please adjust your filters and try again.</p>
+        </div>
+    }
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>This document is computer-generated and does not require a signature.</p>
+        <p>Generated by HCM Portal Payroll System | © @DateTime.Now.Year All Rights Reserved</p>
+    </div>
+</body>
+</html> 

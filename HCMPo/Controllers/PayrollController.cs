@@ -114,12 +114,23 @@ namespace HCMPo.Controllers
         // GET: Payroll/Generate
         public async Task<IActionResult> Generate()
         {
-            var viewModel = new Models.ViewModels.GeneratePayrollViewModel();
+            var viewModel = new PayrollGenerationViewModel();
 
             // Provide employee list for optional multi-select
             ViewData["EmployeeList"] = await _context.Employees
                                                 .OrderBy(e => e.FirstName).ThenBy(e => e.LastName)
-                                                .Select(e => new SelectListItem { Value = e.Id, Text = e.FullName })
+                                                .Select(e => new SelectListItem { Value = e.Id, Text = e.FirstName + " " + e.LastName })
+                                                .ToListAsync();
+
+            // Add missing ViewBag data for allowances and deductions
+            ViewData["AllowanceTypes"] = await _context.AllowanceTypes
+                                                .Where(at => at.IsActive)
+                                                .OrderBy(at => at.Name)
+                                                .ToListAsync();
+
+            ViewBag.DeductionTypes = await _context.DeductionTypes
+                                                .Where(dt => dt.IsActive)
+                                                .OrderBy(dt => dt.Order)
                                                 .ToListAsync();
 
             return View(viewModel);
@@ -238,14 +249,26 @@ namespace HCMPo.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Generate(Models.ViewModels.GeneratePayrollViewModel model)
+        public async Task<IActionResult> Generate(PayrollGenerationViewModel model)
         {
             if (!ModelState.IsValid)
             {
                 ViewData["EmployeeList"] = await _context.Employees
                                                     .OrderBy(e => e.FirstName).ThenBy(e => e.LastName)
-                                                    .Select(e => new SelectListItem { Value = e.Id, Text = e.FullName })
+                                                    .Select(e => new SelectListItem { Value = e.Id, Text = e.FirstName + " " + e.LastName })
                                                     .ToListAsync();
+
+                // Add missing ViewBag data for allowances and deductions
+                ViewData["AllowanceTypes"] = await _context.AllowanceTypes
+                                                    .Where(at => at.IsActive)
+                                                    .OrderBy(at => at.Name)
+                                                    .ToListAsync();
+
+                ViewBag.DeductionTypes = await _context.DeductionTypes
+                                                    .Where(dt => dt.IsActive)
+                                                    .OrderBy(dt => dt.Order)
+                                                    .ToListAsync();
+
                 return View(model);
             }
 
@@ -276,7 +299,7 @@ namespace HCMPo.Controllers
             foreach (var employeeId in employeeIdsToProcess)
             {
                 var employee = await _context.Employees
-                    .Include(e => e.Department)
+                    .Include(e => e.DirectorId)
                     .FirstOrDefaultAsync(e => e.Id == employeeId);
 
                 if (employee == null) continue;
@@ -657,7 +680,7 @@ namespace HCMPo.Controllers
             try
             {
                 var employee = await _context.Employees
-                    .Include(e => e.Department)
+                    .Include(e => e.DirectorId)
                     .FirstOrDefaultAsync(e => e.Id == employeeId);
 
                 if (employee == null)

@@ -1,0 +1,381 @@
+@model List<HCMPo.ViewModels.PayrollSlipViewModel>
+@{
+    ViewData["Title"] = "Bank Payment Slip";
+    var config = Model.FirstOrDefault()?.SlipConfiguration;
+    var stamp = Model.FirstOrDefault()?.ActiveStamp;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"]</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        
+        .slip-container {
+            background: white;
+            margin: 0 auto 30px;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            max-width: 800px;
+            position: relative;
+            page-break-after: always;
+        }
+        
+        .slip-container:last-child {
+            page-break-after: avoid;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .company-logo {
+            max-height: 80px;
+            margin-bottom: 10px;
+        }
+        
+        .company-name {
+            font-size: 28px;
+            font-weight: bold;
+            color: #007bff;
+            margin: 10px 0;
+        }
+        
+        .company-details {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .slip-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #28a745;
+            margin: 20px 0;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .employee-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dotted #ccc;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .detail-value {
+            color: #212529;
+            font-weight: 500;
+        }
+        
+        .amount {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        
+        .salary-section {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border: 2px solid #2196f3;
+        }
+        
+        .total-section {
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border: 2px solid #4caf50;
+        }
+        
+        .net-salary {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2e7d32;
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            margin-top: 15px;
+            border: 2px dashed #4caf50;
+        }
+        
+        .ethiopian-date {
+            color: #ff9800;
+            font-weight: bold;
+            font-style: italic;
+        }
+        
+        .stamp {
+            position: absolute;
+            opacity: 0.8;
+        }
+        
+        .stamp.top-left { top: 100px; left: 50px; }
+        .stamp.top-right { top: 100px; right: 50px; }
+        .stamp.bottom-left { bottom: 50px; left: 50px; }
+        .stamp.bottom-right { bottom: 50px; right: 50px; }
+        .stamp.center { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #dee2e6;
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        .qr-code {
+            float: right;
+            margin: 10px;
+        }
+        
+        .bank-details {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .bank-title {
+            font-weight: bold;
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        
+        @@media print {
+            body { 
+                background: white; 
+                padding: 0; 
+            }
+            .slip-container { 
+                box-shadow: none; 
+                margin: 0; 
+                padding: 20px;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    @foreach (var slip in Model)
+    {
+        <div class="slip-container">
+            <!-- Stamp -->
+            @if (stamp != null && stamp.ApplyOnBankSlip)
+            {
+                <div class="stamp @stamp.Position">
+                    <img src="@stamp.FilePath" width="@stamp.Width" height="@stamp.Height" alt="Official Stamp" />
+                </div>
+            }
+
+            <!-- Header -->
+            <div class="header">
+                @if (!string.IsNullOrEmpty(config?.CompanyLogo))
+                {
+                    <img src="@config.CompanyLogo" class="company-logo" alt="Company Logo" />
+                }
+                <div class="company-name">@(config?.CompanyName ?? "HCM Portal Company")</div>
+                <div class="company-details">
+                    @if (!string.IsNullOrEmpty(config?.CompanyAddress))
+                    {
+                        <div>@config.CompanyAddress</div>
+                    }
+                    @if (!string.IsNullOrEmpty(config?.CompanyPhone))
+                    {
+                        <div>Tel: @config.CompanyPhone</div>
+                    }
+                    @if (!string.IsNullOrEmpty(config?.CompanyEmail))
+                    {
+                        <div>Email: @config.CompanyEmail</div>
+                    }
+                </div>
+            </div>
+
+            <div class="slip-title">@(config?.BankSlipTitle ?? "Bank Payment Slip")</div>
+
+            <!-- Employee Information -->
+            <div class="employee-section">
+                <div class="section-title">Employee Information</div>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Employee Name:</span>
+                        <span class="detail-value">@slip.EmployeeName</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Badge Number:</span>
+                        <span class="detail-value">@slip.BadgeNumber</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Department/Directorate:</span>
+                        <span class="detail-value">@slip.OrganizationUnit</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Position:</span>
+                        <span class="detail-value">@slip.Position</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pay Period Information -->
+            <div class="employee-section">
+                <div class="section-title">Pay Period Information</div>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Ethiopian Period:</span>
+                        <span class="detail-value ethiopian-date">@slip.PayPeriodStartEt - @slip.PayPeriodEndEt</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Gregorian Period:</span>
+                        <span class="detail-value">@slip.PayPeriodStart.ToString("MMM dd, yyyy") - @slip.PayPeriodEnd.ToString("MMM dd, yyyy")</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Working Days:</span>
+                        <span class="detail-value">@slip.WorkingDays</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Days Worked:</span>
+                        <span class="detail-value">@slip.DaysWorked.ToString("N1")</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Salary Breakdown -->
+            <div class="salary-section">
+                <div class="section-title">Salary Details</div>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Basic Salary:</span>
+                        <span class="detail-value amount">@slip.BasicSalary.ToString("N2") ETB</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Total Allowances:</span>
+                        <span class="detail-value amount">@slip.Allowances.ToString("N2") ETB</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Gross Salary:</span>
+                        <span class="detail-value amount">@slip.GrossSalary.ToString("N2") ETB</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Income Tax:</span>
+                        <span class="detail-value amount">(@slip.IncomeTax.ToString("N2")) ETB</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Pension (7%):</span>
+                        <span class="detail-value amount">(@slip.PensionDeduction.ToString("N2")) ETB</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Other Deductions:</span>
+                        <span class="detail-value amount">(@slip.OtherDeductions.ToString("N2")) ETB</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bank Payment Details -->
+            <div class="bank-details">
+                <div class="bank-title">BANK PAYMENT AUTHORIZATION</div>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Total Deductions:</span>
+                        <span class="detail-value amount">@slip.TotalDeductions.ToString("N2") ETB</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Payment Date:</span>
+                        <span class="detail-value">@DateTime.Now.ToString("MMM dd, yyyy")</span>
+                    </div>
+                </div>
+                
+                <div class="net-salary">
+                    NET AMOUNT TO BE PAID: @slip.NetSalary.ToString("N2") ETB
+                </div>
+            </div>
+
+            <!-- Attendance Summary -->
+            <div class="total-section">
+                <div class="section-title">Attendance Summary</div>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Absent Days:</span>
+                        <span class="detail-value">@slip.AbsentDays</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Late Days:</span>
+                        <span class="detail-value">@slip.LateDays</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Attendance Rate:</span>
+                        <span class="detail-value">@((slip.DaysWorked / slip.WorkingDays * 100).ToString("N1"))%</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Generated On:</span>
+                        <span class="detail-value">@DateTime.Now.ToString("MMM dd, yyyy HH:mm")</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
+                @if (!string.IsNullOrEmpty(config?.FooterText))
+                {
+                    <p>@config.FooterText</p>
+                }
+                <p><strong>This is an official bank payment slip - Please present to your bank for processing</strong></p>
+                <p>Generated from HCM Portal System | Ethiopian Calendar: @slip.PayPeriodStartEt - @slip.PayPeriodEndEt</p>
+            </div>
+        </div>
+    }
+
+    <script>
+        // Auto-print for direct print requests
+        if (window.location.search.includes('print=true')) {
+            window.onload = function() {
+                window.print();
+            };
+        }
+    </script>
+</body>
+</html> 

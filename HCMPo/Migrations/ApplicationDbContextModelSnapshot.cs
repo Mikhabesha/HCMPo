@@ -88,7 +88,7 @@ namespace HCMPo.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("EmployeeId")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Language")
                         .HasColumnType("nvarchar(max)");
@@ -145,6 +145,10 @@ namespace HCMPo.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId")
+                        .IsUnique()
+                        .HasFilter("[EmployeeId] IS NOT NULL");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -493,42 +497,193 @@ namespace HCMPo.Migrations
                         });
                 });
 
-            modelBuilder.Entity("HCMPo.Models.Department", b =>
+            modelBuilder.Entity("HCMPo.Models.Directorate", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("ParentDirectorateId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Departments");
+                    b.HasIndex("ParentDirectorateId");
+
+                    b.ToTable("Directorates");
 
                     b.HasData(
                         new
                         {
                             Id = "1",
-                            Description = "HR Department",
-                            Name = "Human Resources"
+                            Code = "OCG",
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(4172),
+                            Description = "",
+                            IsActive = true,
+                            Level = 1,
+                            Name = "Office of the Director General"
                         },
                         new
                         {
                             Id = "2",
-                            Description = "IT Department",
-                            Name = "Information Technology"
+                            Code = "RMD",
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(4180),
+                            Description = "",
+                            IsActive = true,
+                            Level = 1,
+                            Name = "Operations Management Directorate"
                         },
                         new
                         {
                             Id = "3",
-                            Description = "Finance Department",
-                            Name = "Finance"
+                            Code = "COD",
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(4186),
+                            Description = "",
+                            IsActive = true,
+                            Level = 1,
+                            Name = "Member Services Directorate"
+                        },
+                        new
+                        {
+                            Id = "4",
+                            Code = "TAD",
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(4192),
+                            Description = "",
+                            IsActive = true,
+                            Level = 1,
+                            Name = "Benefits Administration Directorate"
+                        },
+                        new
+                        {
+                            Id = "5",
+                            Code = "IID",
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(4199),
+                            Description = "",
+                            IsActive = true,
+                            Level = 1,
+                            Name = "Investigation and Intelligence Directorate"
+                        },
+                        new
+                        {
+                            Id = "6",
+                            Code = "LAD",
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(4204),
+                            Description = "",
+                            IsActive = true,
+                            Level = 1,
+                            Name = "Legal Affairs Directorate"
+                        },
+                        new
+                        {
+                            Id = "7",
+                            Code = "IAD",
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(4210),
+                            Description = "",
+                            IsActive = true,
+                            Level = 1,
+                            Name = "Internal Audit Directorate"
+                        },
+                        new
+                        {
+                            Id = "8",
+                            Code = "HRD",
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(4218),
+                            Description = "",
+                            IsActive = true,
+                            Level = 1,
+                            Name = "Human Resources Directorate"
+                        },
+                        new
+                        {
+                            Id = "9",
+                            Code = "FPD",
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(4262),
+                            Description = "",
+                            IsActive = true,
+                            Level = 1,
+                            Name = "Finance and Procurement Directorate"
+                        },
+                        new
+                        {
+                            Id = "10",
+                            Code = "ITD",
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(4268),
+                            Description = "",
+                            IsActive = true,
+                            Level = 1,
+                            Name = "Information Technology Directorate"
+                        },
+                        new
+                        {
+                            Id = "11",
+                            Code = "PPD",
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(4273),
+                            Description = "",
+                            IsActive = true,
+                            Level = 1,
+                            Name = "Planning and Performance Directorate"
+                        },
+                        new
+                        {
+                            Id = "12",
+                            Code = "CCD",
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(4279),
+                            Description = "",
+                            IsActive = true,
+                            Level = 1,
+                            Name = "Corporate Communication Directorate"
+                        },
+                        new
+                        {
+                            Id = "13",
+                            Code = "RID",
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(4285),
+                            Description = "",
+                            IsActive = true,
+                            Level = 1,
+                            Name = "Policy and Research Directorate"
+                        },
+                        new
+                        {
+                            Id = "14",
+                            Code = "ROD",
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(4290),
+                            Description = "",
+                            IsActive = true,
+                            Level = 1,
+                            Name = "Regional Operations Directorate"
                         });
                 });
 
@@ -600,6 +755,9 @@ namespace HCMPo.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("AttendanceRuleId")
                         .HasColumnType("nvarchar(450)");
 
@@ -622,14 +780,22 @@ namespace HCMPo.Migrations
                     b.Property<string>("City")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("DateOfBirthEt")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DepartmentId")
-                        .IsRequired()
+                    b.Property<string>("DirectorId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DirectorateId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Email")
@@ -652,6 +818,9 @@ namespace HCMPo.Migrations
                     b.Property<DateTime>("HireDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<string>("JobTitleId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -659,6 +828,16 @@ namespace HCMPo.Migrations
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OrganizationUnitId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Phone")
                         .HasColumnType("nvarchar(max)");
@@ -668,6 +847,9 @@ namespace HCMPo.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhotoUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Position")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Salary")
@@ -680,6 +862,9 @@ namespace HCMPo.Migrations
                     b.Property<string>("SupervisorId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("TeamLeaderId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("TerminationDate")
                         .HasColumnType("datetime2");
 
@@ -689,26 +874,69 @@ namespace HCMPo.Migrations
                     b.Property<string>("TinNumber")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AttendanceRuleId");
 
                     b.HasIndex("AttendanceScheduleId");
 
-                    b.HasIndex("DepartmentId");
+                    b.HasIndex("DirectorateId");
 
                     b.HasIndex("JobTitleId");
 
+                    b.HasIndex("OrganizationUnitId");
+
                     b.HasIndex("SupervisorId");
 
-                    b.HasIndex("UserId")
-                        .IsUnique()
-                        .HasFilter("[UserId] IS NOT NULL");
-
                     b.ToTable("Employees");
+                });
+
+            modelBuilder.Entity("HCMPo.Models.EmployeeAllowance", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("AllowanceTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<string>("EmployeeId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AllowanceTypeId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("EmployeeAllowances");
+                });
+
+            modelBuilder.Entity("HCMPo.Models.EmployeeDeduction", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<int>("DeductionTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EmployeeId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeductionTypeId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("EmployeeDeductions");
                 });
 
             modelBuilder.Entity("HCMPo.Models.EmployeeDependent", b =>
@@ -896,6 +1124,16 @@ namespace HCMPo.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<decimal>("CarryoverDays")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("EmployeeId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -906,6 +1144,16 @@ namespace HCMPo.Migrations
                     b.Property<string>("LeaveTypeId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<decimal>("MaxCarryoverDays")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("RemainingDays")
                         .HasPrecision(18, 2)
@@ -929,6 +1177,186 @@ namespace HCMPo.Migrations
                     b.HasIndex("LeaveTypeId");
 
                     b.ToTable("EmployeeLeaves");
+                });
+
+            modelBuilder.Entity("HCMPo.Models.EmployeeLeaveEntitlement", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("AllowCarryover")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("AnnualIncrement")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("BaseEntitlement")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal?>("CustomEntitlementDays")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("EffectiveDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EmployeeId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LeaveTypeId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<decimal>("MaxCarryoverDays")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("MaxEntitlement")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("UseCustomEntitlement")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("LeaveTypeId");
+
+                    b.ToTable("EmployeeLeaveEntitlements");
+                });
+
+            modelBuilder.Entity("HCMPo.Models.EmployeeMigrationLog", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AssignedDirectorate")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AssignedOrganizationUnit")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AssignedRole")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DefaultPassword")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmployeeId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SourceData")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SourceSystemId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SourceSystemName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("WarningMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EmployeeMigrationLogs");
+                });
+
+            modelBuilder.Entity("HCMPo.Models.EmployeePosition", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DirectorateId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("EmployeeId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsCurrentPosition")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPrimaryPosition")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("OrganizationUnitId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("RoleHierarchyId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SupervisorEmployeeId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DirectorateId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("OrganizationUnitId");
+
+                    b.HasIndex("RoleHierarchyId");
+
+                    b.HasIndex("SupervisorEmployeeId");
+
+                    b.ToTable("EmployeePositions");
                 });
 
             modelBuilder.Entity("HCMPo.Models.EmployeeSkill", b =>
@@ -1049,9 +1477,29 @@ namespace HCMPo.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("Description")
-                        .IsRequired()
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Grade")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OrganizationUnitId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -1059,25 +1507,33 @@ namespace HCMPo.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("OrganizationUnitId");
+
                     b.ToTable("JobTitles");
 
                     b.HasData(
                         new
                         {
                             Id = "1",
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(443),
                             Description = "Human Resources Manager",
+                            IsActive = true,
                             Title = "HR Manager"
                         },
                         new
                         {
                             Id = "2",
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(454),
                             Description = "IT Software Developer",
+                            IsActive = true,
                             Title = "Software Developer"
                         },
                         new
                         {
                             Id = "3",
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(465),
                             Description = "Finance Accountant",
+                            IsActive = true,
                             Title = "Accountant"
                         });
                 });
@@ -1157,31 +1613,87 @@ namespace HCMPo.Migrations
                     b.ToTable("Leaves");
                 });
 
+            modelBuilder.Entity("HCMPo.Models.LeaveCarryover", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ApprovedBy")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<decimal>("AvailableDays")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("CarriedOverDays")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmployeeId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<decimal>("ExpiredDays")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("FromYear")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LeaveTypeId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Remarks")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ToYear")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApprovedBy");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("LeaveTypeId");
+
+                    b.ToTable("LeaveCarryovers");
+                });
+
             modelBuilder.Entity("HCMPo.Models.LeaveRequest", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("AttachmentUrl")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("CurrentApprover")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("DirectorApprovalDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("DirectorId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("DirectorRemarks")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("EmployeeId")
@@ -1192,18 +1704,15 @@ namespace HCMPo.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("EndDateEt")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("HRApprovalDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("HRId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("HRRemarks")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsHalfDay")
@@ -1217,7 +1726,6 @@ namespace HCMPo.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("ModifiedBy")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Reason")
@@ -1225,11 +1733,13 @@ namespace HCMPo.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("Remarks")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("StartDateEt")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
@@ -1239,11 +1749,9 @@ namespace HCMPo.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("TeamLeaderId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("TeamLeaderRemarks")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("TotalDays")
@@ -1295,7 +1803,7 @@ namespace HCMPo.Migrations
                     b.Property<bool>("IsPaidLeave")
                         .HasColumnType("bit");
 
-                    b.Property<int>("MaxDaysPerRequest")
+                    b.Property<int?>("MaxDaysPerRequest")
                         .HasColumnType("int");
 
                     b.Property<int?>("MaximumConsecutiveDays")
@@ -1330,7 +1838,7 @@ namespace HCMPo.Migrations
                         {
                             Id = "1",
                             AllowHalfDay = true,
-                            CreatedAt = new DateTime(2025, 5, 27, 13, 49, 1, 783, DateTimeKind.Utc).AddTicks(6605),
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(586),
                             DefaultDays = 20,
                             Description = "Paid vacation leave",
                             IsActive = true,
@@ -1345,7 +1853,7 @@ namespace HCMPo.Migrations
                         {
                             Id = "2",
                             AllowHalfDay = true,
-                            CreatedAt = new DateTime(2025, 5, 27, 13, 49, 1, 783, DateTimeKind.Utc).AddTicks(6616),
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(595),
                             DefaultDays = 10,
                             Description = "Paid sick leave",
                             IsActive = true,
@@ -1360,7 +1868,7 @@ namespace HCMPo.Migrations
                         {
                             Id = "3",
                             AllowHalfDay = false,
-                            CreatedAt = new DateTime(2025, 5, 27, 13, 49, 1, 783, DateTimeKind.Utc).AddTicks(6628),
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(616),
                             DefaultDays = 0,
                             Description = "Unpaid leave of absence",
                             IsActive = true,
@@ -1413,6 +1921,54 @@ namespace HCMPo.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Notifications");
+                });
+
+            modelBuilder.Entity("HCMPo.Models.OrganizationUnit", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("DirectorId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ParentId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("TeamLeaderId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
+
+                    b.ToTable("OrganizationUnits");
                 });
 
             modelBuilder.Entity("HCMPo.Models.Payroll", b =>
@@ -1712,6 +2268,136 @@ namespace HCMPo.Migrations
                     b.ToTable("PayrollDeductions");
                 });
 
+            modelBuilder.Entity("HCMPo.Models.PayrollSlipConfiguration", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BankSlipTitle")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("CompanyAddress")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("CompanyEmail")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("CompanyLogo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CompanyName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("CompanyPhone")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FooterText")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReportSlipTitle")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool>("ShowBarcode")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("ShowEmployeePhoto")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("ShowQRCode")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PayrollSlipConfigurations");
+                });
+
+            modelBuilder.Entity("HCMPo.Models.PayrollStamp", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("ApplyOnBankSlip")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("ApplyOnReportSlip")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Position")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UploadedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PayrollStamps");
+                });
+
             modelBuilder.Entity("HCMPo.Models.PerformanceReview", b =>
                 {
                     b.Property<string>("Id")
@@ -1755,6 +2441,132 @@ namespace HCMPo.Migrations
                     b.HasIndex("ReviewerId");
 
                     b.ToTable("PerformanceReviews");
+                });
+
+            modelBuilder.Entity("HCMPo.Models.RoleHierarchy", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("CanAccessPayroll")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanApproveLeave")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanManageAttendance")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanManageEmployees")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("HierarchyLevel")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MaxApprovalLevel")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RoleName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RoleHierarchies");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "1",
+                            CanAccessPayroll = false,
+                            CanApproveLeave = false,
+                            CanManageAttendance = false,
+                            CanManageEmployees = false,
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(4326),
+                            Description = "",
+                            DisplayName = "Employee",
+                            HierarchyLevel = 1,
+                            IsActive = true,
+                            MaxApprovalLevel = 0,
+                            RoleName = "Employee"
+                        },
+                        new
+                        {
+                            Id = "2",
+                            CanAccessPayroll = false,
+                            CanApproveLeave = true,
+                            CanManageAttendance = true,
+                            CanManageEmployees = false,
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(4333),
+                            Description = "",
+                            DisplayName = "Team Leader",
+                            HierarchyLevel = 2,
+                            IsActive = true,
+                            MaxApprovalLevel = 1,
+                            RoleName = "TeamLeader"
+                        },
+                        new
+                        {
+                            Id = "3",
+                            CanAccessPayroll = true,
+                            CanApproveLeave = true,
+                            CanManageAttendance = true,
+                            CanManageEmployees = true,
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(4339),
+                            Description = "",
+                            DisplayName = "Human Resources",
+                            HierarchyLevel = 3,
+                            IsActive = true,
+                            MaxApprovalLevel = 2,
+                            RoleName = "HR"
+                        },
+                        new
+                        {
+                            Id = "4",
+                            CanAccessPayroll = true,
+                            CanApproveLeave = true,
+                            CanManageAttendance = true,
+                            CanManageEmployees = true,
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(4345),
+                            Description = "",
+                            DisplayName = "Director",
+                            HierarchyLevel = 4,
+                            IsActive = true,
+                            MaxApprovalLevel = 3,
+                            RoleName = "Director"
+                        },
+                        new
+                        {
+                            Id = "5",
+                            CanAccessPayroll = true,
+                            CanApproveLeave = true,
+                            CanManageAttendance = true,
+                            CanManageEmployees = true,
+                            CreatedAt = new DateTime(2025, 6, 20, 21, 18, 42, 874, DateTimeKind.Utc).AddTicks(4351),
+                            Description = "",
+                            DisplayName = "Administrator",
+                            HierarchyLevel = 5,
+                            IsActive = true,
+                            MaxApprovalLevel = 5,
+                            RoleName = "Admin"
+                        });
                 });
 
             modelBuilder.Entity("HCMPo.Models.SyncLog", b =>
@@ -1999,6 +2811,16 @@ namespace HCMPo.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("HCMPo.Models.ApplicationUser", b =>
+                {
+                    b.HasOne("HCMPo.Models.Employee", "Employee")
+                        .WithOne("ApplicationUser")
+                        .HasForeignKey("HCMPo.Models.ApplicationUser", "EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Employee");
+                });
+
             modelBuilder.Entity("HCMPo.Models.Attendance", b =>
                 {
                     b.HasOne("HCMPo.Models.Employee", "Employee")
@@ -2019,6 +2841,16 @@ namespace HCMPo.Migrations
                         .IsRequired();
 
                     b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("HCMPo.Models.Directorate", b =>
+                {
+                    b.HasOne("HCMPo.Models.Directorate", "ParentDirectorate")
+                        .WithMany("SubDirectorates")
+                        .HasForeignKey("ParentDirectorateId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ParentDirectorate");
                 });
 
             modelBuilder.Entity("HCMPo.Models.EmergencyContact", b =>
@@ -2042,11 +2874,9 @@ namespace HCMPo.Migrations
                         .WithMany("Employees")
                         .HasForeignKey("AttendanceScheduleId");
 
-                    b.HasOne("HCMPo.Models.Department", "Department")
+                    b.HasOne("HCMPo.Models.Directorate", null)
                         .WithMany("Employees")
-                        .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("DirectorateId");
 
                     b.HasOne("HCMPo.Models.JobTitle", "JobTitle")
                         .WithMany("Employees")
@@ -2054,27 +2884,64 @@ namespace HCMPo.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("HCMPo.Models.OrganizationUnit", "OrganizationUnit")
+                        .WithMany("Employees")
+                        .HasForeignKey("OrganizationUnitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("HCMPo.Models.Employee", "Supervisor")
                         .WithMany()
                         .HasForeignKey("SupervisorId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("HCMPo.Models.ApplicationUser", "User")
-                        .WithOne("Employee")
-                        .HasForeignKey("HCMPo.Models.Employee", "UserId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("AttendanceRule");
 
                     b.Navigation("AttendanceSchedule");
 
-                    b.Navigation("Department");
-
                     b.Navigation("JobTitle");
 
-                    b.Navigation("Supervisor");
+                    b.Navigation("OrganizationUnit");
 
-                    b.Navigation("User");
+                    b.Navigation("Supervisor");
+                });
+
+            modelBuilder.Entity("HCMPo.Models.EmployeeAllowance", b =>
+                {
+                    b.HasOne("HCMPo.Models.AllowanceType", "AllowanceType")
+                        .WithMany()
+                        .HasForeignKey("AllowanceTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HCMPo.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AllowanceType");
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("HCMPo.Models.EmployeeDeduction", b =>
+                {
+                    b.HasOne("HCMPo.Models.DeductionType", "DeductionType")
+                        .WithMany()
+                        .HasForeignKey("DeductionTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HCMPo.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DeductionType");
+
+                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("HCMPo.Models.EmployeeDependent", b =>
@@ -2129,6 +2996,66 @@ namespace HCMPo.Migrations
                     b.Navigation("LeaveType");
                 });
 
+            modelBuilder.Entity("HCMPo.Models.EmployeeLeaveEntitlement", b =>
+                {
+                    b.HasOne("HCMPo.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HCMPo.Models.LeaveType", "LeaveType")
+                        .WithMany()
+                        .HasForeignKey("LeaveTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("LeaveType");
+                });
+
+            modelBuilder.Entity("HCMPo.Models.EmployeePosition", b =>
+                {
+                    b.HasOne("HCMPo.Models.Directorate", "Directorate")
+                        .WithMany()
+                        .HasForeignKey("DirectorateId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HCMPo.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HCMPo.Models.OrganizationUnit", "OrganizationUnit")
+                        .WithMany()
+                        .HasForeignKey("OrganizationUnitId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("HCMPo.Models.RoleHierarchy", "RoleHierarchy")
+                        .WithMany()
+                        .HasForeignKey("RoleHierarchyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HCMPo.Models.Employee", "SupervisorEmployee")
+                        .WithMany()
+                        .HasForeignKey("SupervisorEmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Directorate");
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("OrganizationUnit");
+
+                    b.Navigation("RoleHierarchy");
+
+                    b.Navigation("SupervisorEmployee");
+                });
+
             modelBuilder.Entity("HCMPo.Models.EmployeeSkill", b =>
                 {
                     b.HasOne("HCMPo.Models.Employee", "Employee")
@@ -2151,6 +3078,15 @@ namespace HCMPo.Migrations
                     b.Navigation("Employee");
                 });
 
+            modelBuilder.Entity("HCMPo.Models.JobTitle", b =>
+                {
+                    b.HasOne("HCMPo.Models.OrganizationUnit", "OrganizationUnit")
+                        .WithMany()
+                        .HasForeignKey("OrganizationUnitId");
+
+                    b.Navigation("OrganizationUnit");
+                });
+
             modelBuilder.Entity("HCMPo.Models.Leave", b =>
                 {
                     b.HasOne("HCMPo.Models.Employee", "Employee")
@@ -2170,13 +3106,38 @@ namespace HCMPo.Migrations
                     b.Navigation("LeaveType");
                 });
 
+            modelBuilder.Entity("HCMPo.Models.LeaveCarryover", b =>
+                {
+                    b.HasOne("HCMPo.Models.Employee", "ApprovedByEmployee")
+                        .WithMany()
+                        .HasForeignKey("ApprovedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("HCMPo.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HCMPo.Models.LeaveType", "LeaveType")
+                        .WithMany()
+                        .HasForeignKey("LeaveTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ApprovedByEmployee");
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("LeaveType");
+                });
+
             modelBuilder.Entity("HCMPo.Models.LeaveRequest", b =>
                 {
                     b.HasOne("HCMPo.Models.Employee", "Director")
                         .WithMany()
                         .HasForeignKey("DirectorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("HCMPo.Models.Employee", "Employee")
                         .WithMany("LeaveRequests")
@@ -2187,8 +3148,7 @@ namespace HCMPo.Migrations
                     b.HasOne("HCMPo.Models.Employee", "HR")
                         .WithMany()
                         .HasForeignKey("HRId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("HCMPo.Models.LeaveType", "LeaveType")
                         .WithMany()
@@ -2199,8 +3159,7 @@ namespace HCMPo.Migrations
                     b.HasOne("HCMPo.Models.Employee", "TeamLeader")
                         .WithMany()
                         .HasForeignKey("TeamLeaderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Director");
 
@@ -2211,6 +3170,15 @@ namespace HCMPo.Migrations
                     b.Navigation("LeaveType");
 
                     b.Navigation("TeamLeader");
+                });
+
+            modelBuilder.Entity("HCMPo.Models.OrganizationUnit", b =>
+                {
+                    b.HasOne("HCMPo.Models.OrganizationUnit", "Parent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParentId");
+
+                    b.Navigation("Parent");
                 });
 
             modelBuilder.Entity("HCMPo.Models.Payroll", b =>
@@ -2330,11 +3298,6 @@ namespace HCMPo.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("HCMPo.Models.ApplicationUser", b =>
-                {
-                    b.Navigation("Employee");
-                });
-
             modelBuilder.Entity("HCMPo.Models.AttendanceRule", b =>
                 {
                     b.Navigation("Employees");
@@ -2345,13 +3308,17 @@ namespace HCMPo.Migrations
                     b.Navigation("Employees");
                 });
 
-            modelBuilder.Entity("HCMPo.Models.Department", b =>
+            modelBuilder.Entity("HCMPo.Models.Directorate", b =>
                 {
                     b.Navigation("Employees");
+
+                    b.Navigation("SubDirectorates");
                 });
 
             modelBuilder.Entity("HCMPo.Models.Employee", b =>
                 {
+                    b.Navigation("ApplicationUser");
+
                     b.Navigation("Attendances");
 
                     b.Navigation("Dependents");
@@ -2383,6 +3350,13 @@ namespace HCMPo.Migrations
             modelBuilder.Entity("HCMPo.Models.LeaveType", b =>
                 {
                     b.Navigation("Leaves");
+                });
+
+            modelBuilder.Entity("HCMPo.Models.OrganizationUnit", b =>
+                {
+                    b.Navigation("Children");
+
+                    b.Navigation("Employees");
                 });
 
             modelBuilder.Entity("HCMPo.Models.Payroll", b =>

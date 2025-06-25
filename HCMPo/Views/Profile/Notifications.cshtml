@@ -1,0 +1,278 @@
+@model HCMPo.Controllers.NotificationsViewModel
+@using HCMPo.Helpers
+
+@{
+    ViewData["Title"] = "Notifications";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-bell text-primary"></i> Notifications</h2>
+                <div>
+                    <button type="button" class="btn btn-outline-success" onclick="markAllAsRead()">
+                        <i class="fas fa-check-double"></i> Mark All as Read
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list"></i> Notification History
+                    </h5>
+                    <span class="badge bg-light text-dark" id="notificationCount">
+                        @Model.Notifications.Count notifications
+                    </span>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.Notifications.Any())
+                    {
+                        <div class="list-group list-group-flush" id="notificationsList">
+                            @foreach (var notification in Model.Notifications)
+                            {
+                                <div class="list-group-item notification-item @(!notification.IsRead ? "unread" : "")" 
+                                     data-notification-id="@notification.Id">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fas @GetNotificationIcon(notification.Type) text-primary me-2"></i>
+                                                <h6 class="mb-0 @(!notification.IsRead ? "fw-bold" : "")">
+                                                    @notification.Title
+                                                </h6>
+                                                @if (!notification.IsRead)
+                                                {
+                                                    <span class="badge bg-primary ms-2">New</span>
+                                                }
+                                            </div>
+                                            <p class="text-muted mb-2">@notification.Message</p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-clock"></i> @Html.Raw(EthiopianCalendarHelper.FormatDateWithEthiopian(notification.CreatedAt, "MMM dd, yyyy HH:mm"))
+                                                </small>
+                                                @if (!notification.IsRead)
+                                                {
+                                                    <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                            onclick="markAsRead('@notification.Id')">
+                                                        <i class="fas fa-check"></i> Mark as Read
+                                                    </button>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Notifications</h5>
+                            <p class="text-muted">You're all caught up! No new notifications at the moment.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification Settings Sidebar -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-cog"></i> Notification Settings
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="leaveNotificationsSetting" 
+                                   @(Model.LeaveRequestAlerts ? "checked" : "") onchange="updateNotificationSettings()">
+                            <label class="form-check-label" for="leaveNotificationsSetting">
+                                Leave Request Alerts
+                            </label>
+                            <div class="form-text">Receive notifications for leave requests and approvals</div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="payrollAlertsSetting" 
+                                   @(Model.PayrollAlerts ? "checked" : "") onchange="updateNotificationSettings()">
+                            <label class="form-check-label" for="payrollAlertsSetting">
+                                Payroll Alerts
+                            </label>
+                            <div class="form-text">Receive notifications for payroll and salary updates</div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="attendanceAlertsSetting" 
+                                   @(Model.AttendanceAlerts ? "checked" : "") onchange="updateNotificationSettings()">
+                            <label class="form-check-label" for="attendanceAlertsSetting">
+                                Attendance Alerts
+                            </label>
+                            <div class="form-text">Get alerts for attendance issues</div>
+                        </div>
+                    </div>
+                    <hr>
+                    <a asp-action="Settings" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-cog"></i> More Settings
+                    </a>
+                </div>
+            </div>
+
+            <!-- Notification Types Info -->
+            <div class="card mt-3">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-info-circle"></i> Notification Types
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <i class="fas fa-calendar-check text-success"></i>
+                        <small class="text-muted">Leave requests and approvals</small>
+                    </div>
+                    <div class="mb-2">
+                        <i class="fas fa-money-bill-wave text-info"></i>
+                        <small class="text-muted">Payroll and salary notifications</small>
+                    </div>
+                    <div class="mb-2">
+                        <i class="fas fa-clock text-warning"></i>
+                        <small class="text-muted">Attendance alerts and reminders</small>
+                    </div>
+                    <div class="mb-2">
+                        <i class="fas fa-exclamation-triangle text-danger"></i>
+                        <small class="text-muted">System alerts and warnings</small>
+                    </div>
+                    <div class="mb-2">
+                        <i class="fas fa-info-circle text-primary"></i>
+                        <small class="text-muted">General information updates</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function markAsRead(notificationId) {
+            $.post('@Url.Action("MarkNotificationAsRead", "Profile")', {
+                notificationId: notificationId,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            })
+            .done(function(response) {
+                if (response.success) {
+                    var $notification = $('[data-notification-id="' + notificationId + '"]');
+                    $notification.removeClass('unread');
+                    $notification.find('.fw-bold').removeClass('fw-bold');
+                    $notification.find('.badge').remove();
+                    $notification.find('.btn').remove();
+                    updateNotificationCount();
+                } else {
+                    showAlert('Failed to mark notification as read', 'danger');
+                }
+            })
+            .fail(function() {
+                showAlert('An error occurred while processing your request', 'danger');
+            });
+        }
+
+        function markAllAsRead() {
+            if (!confirm('Are you sure you want to mark all notifications as read?')) {
+                return;
+            }
+
+            $.post('@Url.Action("MarkAllNotificationsAsRead", "Profile")', {
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            })
+            .done(function(response) {
+                if (response.success) {
+                    $('.notification-item').removeClass('unread');
+                    $('.notification-item .fw-bold').removeClass('fw-bold');
+                    $('.notification-item .badge').remove();
+                    $('.notification-item .btn').remove();
+                    updateNotificationCount();
+                    showAlert('All notifications marked as read', 'success');
+                } else {
+                    showAlert('Failed to mark notifications as read', 'danger');
+                }
+            })
+            .fail(function() {
+                showAlert('An error occurred while processing your request', 'danger');
+            });
+        }
+
+        function updateNotificationSettings() {
+            var leaveRequestAlerts = $('#leaveNotificationsSetting').is(':checked');
+            var payrollAlerts = $('#payrollAlertsSetting').is(':checked');
+            var attendanceAlerts = $('#attendanceAlertsSetting').is(':checked');
+
+            $.post('@Url.Action("UpdateNotificationSettings", "Profile")', {
+                leaveRequestAlerts: leaveRequestAlerts,
+                payrollAlerts: payrollAlerts,
+                attendanceAlerts: attendanceAlerts,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            })
+            .done(function(response) {
+                if (response.success) {
+                    showAlert('Notification settings updated successfully', 'success');
+                } else {
+                    showAlert('Failed to update notification settings', 'danger');
+                }
+            })
+            .fail(function() {
+                showAlert('An error occurred while updating settings', 'danger');
+            });
+        }
+
+        function updateNotificationCount() {
+            var unreadCount = $('.notification-item.unread').length;
+            var totalCount = $('.notification-item').length;
+            $('#notificationCount').text(totalCount + ' notifications');
+        }
+
+        function showAlert(message, type) {
+            var alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            $('.container-fluid').prepend(alertHtml);
+            
+            setTimeout(function() {
+                $('.alert').alert('close');
+            }, 3000);
+        }
+
+        $(document).ready(function() {
+            updateNotificationCount();
+        });
+    </script>
+}
+
+@functions {
+    private string GetNotificationIcon(string notificationType)
+    {
+        return notificationType?.ToLower() switch
+        {
+            "leave" => "fa-calendar-check",
+            "attendance" => "fa-clock",
+            "payroll" => "fa-money-bill-wave",
+            "warning" => "fa-exclamation-triangle",
+            "info" => "fa-info-circle",
+            _ => "fa-bell"
+        };
+    }
+} 

@@ -1,40 +1,55 @@
-@model HCMPo.Models.Employee
+@model object
+@using HCMPo.Helpers
 
 @{
     ViewData["Title"] = "Employee Documents";
+    var viewMode = ViewBag.ViewMode as string;
 }
 
-<div class="container">
+<div class="container-fluid">
     <div class="row">
-        <div class="col-md-12">
-            <h2>@ViewData["Title"] - @Model.FullName</h2>
-            
+        <div class="col-12">
             @if (TempData["SuccessMessage"] != null)
             {
-                <div class="alert alert-success">
+                <div class="alert alert-success alert-dismissible fade show">
                     @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             }
             
             @if (TempData["ErrorMessage"] != null)
             {
-                <div class="alert alert-danger">
+                <div class="alert alert-danger alert-dismissible fade show">
                     @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             }
 
-            <p>
-                <a asp-action="Create" asp-route-employeeId="@Model.Id" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Upload New Document
+            @if (viewMode == "Documents")
+            {
+                @* Show documents for specific employee *@
+                var employee = Model as HCMPo.Models.Employee;
+                
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-file-alt me-2"></i>Documents - @employee.FullName
+                        </h4>
+                        <div>
+                            <a asp-action="Create" asp-route-employeeId="@employee.Id" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>Upload Document
                 </a>
-                <a asp-controller="Employees" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back to Employee
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Back to List
                 </a>
-            </p>
-
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        @if (employee.Documents?.Any() == true)
+                        {
             <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
+                                <table class="table table-hover">
+                                    <thead class="table-dark">
                         <tr>
                             <th>Document Type</th>
                             <th>File Name</th>
@@ -46,39 +61,210 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var document in Model.Documents)
+                                        @foreach (var document in employee.Documents)
                         {
                             <tr>
                                 <td>@document.DocumentType</td>
                                 <td>@document.FileName</td>
-                                <td>@document.UploadDate.ToString("dd/MM/yyyy")</td>
+                                <td>@Html.Raw(EthiopianCalendarHelper.FormatDateWithEthiopian(document.UploadDate, "dd/MM/yyyy"))</td>
                                 <td>@document.UploadedBy</td>
-                                <td>@(document.ExpiryDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                <td>@(document.ExpiryDate.HasValue ? Html.Raw(EthiopianCalendarHelper.FormatDateWithEthiopian(document.ExpiryDate.Value, "dd/MM/yyyy")) : "N/A")</td>
                                 <td>
                                     @if (document.IsActive)
                                     {
-                                        <span class="badge badge-success">Active</span>
+                                                        <span class="badge bg-success">Active</span>
                                     }
                                     else
                                     {
-                                        <span class="badge badge-danger">Inactive</span>
+                                                        <span class="badge bg-danger">Inactive</span>
                                     }
                                 </td>
                                 <td>
-                                    <div class="btn-group">
-                                        <a asp-action="Download" asp-route-id="@document.Id" class="btn btn-sm btn-info">
-                                            <i class="fas fa-download"></i> Download
-                                        </a>
-                                        <a asp-action="Delete" asp-route-id="@document.Id" class="btn btn-sm btn-danger">
-                                            <i class="fas fa-trash"></i> Delete
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
+                                                    <div class="btn-group btn-group-sm">
+                                                        <a asp-action="Details" asp-route-id="@document.Id" class="btn btn-outline-secondary">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <a asp-action="Download" asp-route-id="@document.Id" class="btn btn-outline-info">
+                                                            <i class="fas fa-download"></i>
+                                                        </a>
+                                                        <a asp-action="Delete" asp-route-id="@document.Id" class="btn btn-outline-danger">
+                                                            <i class="fas fa-trash"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
                         }
-                    </tbody>
-                </table>
-            </div>
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">No documents uploaded yet</h5>
+                                <p class="text-muted">Click "Upload Document" to add the first document for this employee.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                @* Show list of all employees with dropdown filter *@
+                var employees = ViewBag.Employees as List<HCMPo.Models.Employee>;
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h4 class="mb-0">
+                                    <i class="fas fa-users me-2"></i>Employee Documents Management
+                                </h4>
+                                <p class="mb-0 text-muted">Select an employee to view and manage their documents</p>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <!-- Employee Dropdown Filter -->
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-primary dropdown-toggle" type="button" id="employeeDropdown" 
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-user-plus me-1"></i>Quick Upload
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="employeeDropdown" style="max-height: 300px; overflow-y: auto;">
+                                        <li><h6 class="dropdown-header">Select Employee for Quick Upload</h6></li>
+                                        @if (employees?.Any() == true)
+                                        {
+                                            @foreach (var emp in employees.OrderBy(e => e.FirstName).ThenBy(e => e.LastName))
+                                            {
+                                                <li>
+                                                    <a class="dropdown-item" href="@Url.Action("Create", new { employeeId = emp.Id })">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fas fa-user-circle text-primary me-2"></i>
+                                                            <div>
+                                                                <strong>@emp.FullName</strong>
+                                                                <br><small class="text-muted">@emp.BadgeNumber - @(emp.OrganizationUnit?.Name ?? "N/A")</small>
+                                                            </div>
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <li><span class="dropdown-item-text text-muted">No employees available</span></li>
+                                        }
+                                    </ul>
+                                </div>
+                                
+                                <!-- Search Box -->
+                                <div class="input-group" style="width: 300px;">
+                                    <input type="text" class="form-control" id="employeeSearch" placeholder="Search employees...">
+                                    <button class="btn btn-outline-secondary" type="button">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        @if (employees?.Any() == true)
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="employeesTable">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Badge Number</th>
+                                            <th>Department/Directorate</th>
+                                            <th>Documents Count</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var emp in employees)
+                                        {
+                                            <tr class="employee-row" data-search="@emp.FullName.ToLower() @emp.BadgeNumber.ToLower() @(emp.OrganizationUnit?.Name?.ToLower() ?? "")">
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="fas fa-user-circle text-primary me-2 fa-lg"></i>
+                                                        <div>
+                                                            <strong>@emp.FullName</strong>
+                                                            <br><small class="text-muted">@emp.Email</small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>@emp.BadgeNumber</td>
+                                                <td>@emp.OrganizationUnit?.Name</td>
+                                                <td>
+                                                    <span class="badge bg-info">@(emp.Documents?.Count ?? 0) docs</span>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group btn-group-sm">
+                                                        <a asp-action="Index" asp-route-employeeId="@emp.Id" class="btn btn-outline-primary">
+                                                            <i class="fas fa-folder-open me-1"></i>View Documents
+                                                        </a>
+                                                        <a asp-action="Create" asp-route-employeeId="@emp.Id" class="btn btn-outline-success">
+                                                            <i class="fas fa-plus me-1"></i>Upload
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">No employees found</h5>
+                                <p class="text-muted">There are no employees in the system to manage documents for.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
         </div>
     </div>
-</div> 
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Employee search functionality
+            $('#employeeSearch').on('input', function() {
+                const searchTerm = $(this).val().toLowerCase();
+                
+                $('.employee-row').each(function() {
+                    const searchData = $(this).data('search');
+                    if (searchData.includes(searchTerm)) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+                
+                // Show/hide table based on results
+                const visibleRows = $('.employee-row:visible').length;
+                if (visibleRows === 0 && searchTerm.length > 0) {
+                    $('#employeesTable tbody').append(`
+                        <tr id="no-results">
+                            <td colspan="5" class="text-center text-muted">
+                                <i class="fas fa-search fa-2x mb-2"></i>
+                                <br>No employees found matching "${searchTerm}"
+                            </td>
+                        </tr>
+                    `);
+                } else {
+                    $('#no-results').remove();
+                }
+            });
+            
+            // Clear search when clicking clear button
+            $('.btn-outline-secondary').click(function() {
+                $('#employeeSearch').val('').trigger('input');
+            });
+        });
+    </script>
+} 

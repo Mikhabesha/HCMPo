@@ -1,0 +1,40 @@
+@model IEnumerable<HCMPo.Models.JobTitle>
+@{
+    ViewData["Title"] = "Job Titles";
+}
+
+<h2>Job Titles</h2>
+
+<p>
+    <a asp-action="Create" class="btn btn-success">Create New Job Title</a>
+</p>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Grade</th>
+            <th>Organization Unit</th>
+            <th>Is Active</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Title</td>
+                <td>@item.Description</td>
+                <td>@item.Grade</td>
+                <td>@item.OrganizationUnit?.Name</td>
+                <td>@item.IsActive</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">Details</a>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-primary btn-sm">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table> 

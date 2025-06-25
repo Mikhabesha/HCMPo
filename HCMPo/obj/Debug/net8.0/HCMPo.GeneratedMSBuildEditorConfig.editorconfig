@@ -112,8 +112,36 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbG95ZWVEb2N1bWVudHNcRGVsZXRlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/EmployeeDocuments/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbG95ZWVEb2N1bWVudHNcRGV0YWlscy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/EmployeeDocuments/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbG95ZWVEb2N1bWVudHNcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/EmployeeManagement/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbG95ZWVNYW5hZ2VtZW50XENyZWF0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/EmployeeManagement/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbG95ZWVNYW5hZ2VtZW50XERlbGV0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/EmployeeManagement/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbG95ZWVNYW5hZ2VtZW50XERldGFpbHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/EmployeeManagement/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbG95ZWVNYW5hZ2VtZW50XEVkaXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/EmployeeManagement/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbG95ZWVNYW5hZ2VtZW50XEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/EmployeeSetup/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbG95ZWVTZXR1cFxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/Employees/Create.cshtml]
@@ -152,6 +180,82 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/JobTitles/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSm9iVGl0bGVzXENyZWF0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/JobTitles/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSm9iVGl0bGVzXERlbGV0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/JobTitles/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSm9iVGl0bGVzXERldGFpbHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/JobTitles/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSm9iVGl0bGVzXEVkaXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/JobTitles/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSm9iVGl0bGVzXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/LeaveRequests/Calendar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGVhdmVSZXF1ZXN0c1xDYWxlbmRhci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/LeaveRequests/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGVhdmVSZXF1ZXN0c1xDcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/LeaveRequests/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGVhdmVSZXF1ZXN0c1xEZXRhaWxzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/LeaveRequests/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGVhdmVSZXF1ZXN0c1xJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/LeaveRequests/ManageCarryovers.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGVhdmVSZXF1ZXN0c1xNYW5hZ2VDYXJyeW92ZXJzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/LeaveRequests/ManageEntitlements.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGVhdmVSZXF1ZXN0c1xNYW5hZ2VFbnRpdGxlbWVudHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/LeaveRequests/MyApprovals.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGVhdmVSZXF1ZXN0c1xNeUFwcHJvdmFscy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/LeaveRequests/MyBalance.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGVhdmVSZXF1ZXN0c1xNeUJhbGFuY2UuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/LeaveRequests/Reports.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGVhdmVSZXF1ZXN0c1xSZXBvcnRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/OrganizationUnit/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3JnYW5pemF0aW9uVW5pdFxDcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/OrganizationUnit/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3JnYW5pemF0aW9uVW5pdFxEZWxldGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/OrganizationUnit/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3JnYW5pemF0aW9uVW5pdFxEZXRhaWxzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/OrganizationUnit/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3JnYW5pemF0aW9uVW5pdFxFZGl0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/OrganizationUnit/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3JnYW5pemF0aW9uVW5pdFxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/PayrollConfiguration/Edit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGF5cm9sbENvbmZpZ3VyYXRpb25cRWRpdC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
@@ -166,6 +270,50 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/PayrollReport/PdfReport.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGF5cm9sbFJlcG9ydFxQZGZSZXBvcnQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/PayrollSlip/BankSlip.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGF5cm9sbFNsaXBcQmFua1NsaXAuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/PayrollSlip/BankSlipPdf.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGF5cm9sbFNsaXBcQmFua1NsaXBQZGYuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/PayrollSlip/BankSlipss.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGF5cm9sbFNsaXBcQmFua1NsaXBzcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/PayrollSlip/CheckMissingPayrolls.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGF5cm9sbFNsaXBcQ2hlY2tNaXNzaW5nUGF5cm9sbHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/PayrollSlip/ExportPdf.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGF5cm9sbFNsaXBcRXhwb3J0UGRmLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/PayrollSlip/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGF5cm9sbFNsaXBcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/PayrollSlip/ReportSlip.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGF5cm9sbFNsaXBcUmVwb3J0U2xpcC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/PayrollSlip/ReportSlipPdf.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGF5cm9sbFNsaXBcUmVwb3J0U2xpcFBkZi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/PayrollSlip/SendToBank.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGF5cm9sbFNsaXBcU2VuZFRvQmFuay5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/PayrollSlip/StampManagement.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGF5cm9sbFNsaXBcU3RhbXBNYW5hZ2VtZW50LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/PayrollSlip/Summary.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGF5cm9sbFNsaXBcU3VtbWFyeS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/Payroll/Create.cshtml]
@@ -216,6 +364,26 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGF5cm9sbFxSZXZpZXdQYXlyb2xsLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/Profile/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZmlsZVxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/Profile/Notifications.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZmlsZVxOb3RpZmljYXRpb25zLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/Profile/Settings.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZmlsZVxTZXR0aW5ncy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/Profile/UploadPhoto.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZmlsZVxVcGxvYWRQaG90by5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/Profile/ViewPhoto.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZmlsZVxWaWV3UGhvdG8uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/Shared/Components/EthiopianDatePicker/Default.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXENvbXBvbmVudHNcRXRoaW9waWFuRGF0ZVBpY2tlclxEZWZhdWx0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -224,12 +392,20 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXENvbXBvbmVudHNcTm90aWZpY2F0aW9uc0Ryb3Bkb3duXERlZmF1bHQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/Shared/Components/UserProfilePhoto/Default.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXENvbXBvbmVudHNcVXNlclByb2ZpbGVQaG90b1xEZWZhdWx0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/Shared/Default.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXERlZmF1bHQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/Shared/_EthiopianDatePicker.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9FdGhpb3BpYW5EYXRlUGlja2VyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/Shared/_LoginPartial.cshtml]
@@ -254,6 +430,22 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/TaxSettings/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGF4U2V0dGluZ3NcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/Test/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVzdFxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/UserManagement/ArchivedUsers.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlck1hbmFnZW1lbnRcQXJjaGl2ZWRVc2Vycy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/UserManagement/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlck1hbmFnZW1lbnRcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/UserManagement/Test.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlck1hbmFnZW1lbnRcVGVzdC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Mik/Desktop/New Projects/HCMPo/HCMPo/HCMPo/Views/_ViewImports.cshtml]

@@ -1,0 +1,340 @@
+@{
+    ViewData["Title"] = "Employee Setup & ZKTime Integration";
+    var stats = ViewBag.Stats as dynamic;
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">Employee Setup & ZKTime Integration</h2>
+                    <p class="text-muted">Manage employee migration from ZKTime attendance system and user account creation</p>
+                </div>
+                <div>
+                    <span class="badge bg-info fs-6">Private Organizations Employees' Social Security Administration</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Total Employees</h5>
+                            <h3 class="mb-0">@stats?.TotalEmployees</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">With User Accounts</h5>
+                            <h3 class="mb-0">@stats?.EmployeesWithUsers</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-user-check fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Without Accounts</h5>
+                            <h3 class="mb-0">@stats?.EmployeesWithoutUsers</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-user-times fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">ZKTime Records</h5>
+                            <h3 class="mb-0">@stats?.ZKTimeEmployeeCount</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-database fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Actions -->
+    <div class="row">
+        <!-- User Account Creation -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user-plus text-primary me-2"></i>
+                        User Account Creation
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Create user accounts for employees without login credentials. Default passwords will be generated based on badge number and first name.</p>
+                    
+                    <div class="mb-3">
+                        <h6>Password Format:</h6>
+                        <code>firstname + badge + random3digits</code>
+                        <small class="d-block text-muted">Example: john1234567</small>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" onclick="createUserAccounts()">
+                            <i class="fas fa-magic me-2"></i>Create User Accounts
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="downloadPasswordReport()" id="downloadBtn" style="display:none;">
+                            <i class="fas fa-download me-2"></i>Download Password Report
+                        </button>
+                    </div>
+
+                    <div id="creationResult" class="mt-3" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ZKTime Integration -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-sync text-success me-2"></i>
+                        ZKTime Integration
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">View and manage employee data from ZKTime attendance machine. Assign roles based on user privilege levels.</p>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success" onclick="showZKTimePreview()">
+                            <i class="fas fa-eye me-2"></i>Preview ZKTime Data
+                        </button>
+                        <button class="btn btn-outline-success" onclick="assignRolesByUserLevel()">
+                            <i class="fas fa-user-tag me-2"></i>Assign Roles by User Level
+                        </button>
+                    </div>
+
+                    <div id="zkTimeResult" class="mt-3" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Organizational Structure -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-sitemap text-info me-2"></i>
+                        14 Directorates Structure
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Setup and manage the organizational structure for the 14 directorates of the organization.</p>
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-building text-primary me-2"></i>Director General's Office</li>
+                                        <li><i class="fas fa-building text-primary me-2"></i>Operations Management</li>
+                                        <li><i class="fas fa-building text-primary me-2"></i>Member Services</li>
+                                        <li><i class="fas fa-building text-primary me-2"></i>Benefits Administration</li>
+                                        <li><i class="fas fa-building text-primary me-2"></i>Investigation & Compliance</li>
+                                        <li><i class="fas fa-building text-primary me-2"></i>Legal Affairs</li>
+                                        <li><i class="fas fa-building text-primary me-2"></i>Internal Audit</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-building text-primary me-2"></i>Human Resources</li>
+                                        <li><i class="fas fa-building text-primary me-2"></i>Finance & Procurement</li>
+                                        <li><i class="fas fa-building text-primary me-2"></i>Information Technology</li>
+                                        <li><i class="fas fa-building text-primary me-2"></i>Planning & Performance</li>
+                                        <li><i class="fas fa-building text-primary me-2"></i>Corporate Communication</li>
+                                        <li><i class="fas fa-building text-primary me-2"></i>Policy & Research</li>
+                                        <li><i class="fas fa-building text-primary me-2"></i>Regional Operations</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-info" onclick="setupDirectorateMapping()">
+                                    <i class="fas fa-cogs me-2"></i>Setup Directorate Mapping
+                                </button>
+                                <button class="btn btn-outline-info" onclick="viewOrganizationChart()">
+                                    <i class="fas fa-chart-tree me-2"></i>View Organization Chart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="directorateResult" class="mt-3" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ZKTime Preview Modal -->
+    <div class="modal fade" id="zkTimeModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">ZKTime Employee Data Preview</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="zkTimePreviewContent">
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function createUserAccounts() {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Accounts...';
+    btn.disabled = true;
+
+    fetch('/EmployeeSetup/CreateUserAccounts', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const resultDiv = document.getElementById('creationResult');
+        if (data.success) {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6>User Creation Complete!</h6>
+                    <ul class="mb-0">
+                        <li>Created: ${data.created} new accounts</li>
+                        <li>Linked: ${data.linked} existing accounts</li>
+                        <li>Failed: ${data.failed} accounts</li>
+                    </ul>
+                </div>`;
+            document.getElementById('downloadBtn').style.display = 'block';
+        } else {
+            resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${data.message}</div>`;
+        }
+        resultDiv.style.display = 'block';
+    })
+    .catch(error => {
+        const resultDiv = document.getElementById('creationResult');
+        resultDiv.innerHTML = `<div class="alert alert-danger">An unexpected error occurred: ${error}</div>`;
+        resultDiv.style.display = 'block';
+    })
+    .finally(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+
+function downloadPasswordReport() {
+    window.location.href = '/EmployeeSetup/DownloadPasswordReport';
+}
+
+function showZKTimePreview() {
+    const modal = new bootstrap.Modal(document.getElementById('zkTimeModal'));
+    const contentDiv = document.getElementById('zkTimePreviewContent');
+    contentDiv.innerHTML = '<div class="text-center"><div class="spinner-border"></div></div>';
+    modal.show();
+
+    fetch('/EmployeeSetup/GetZKTimeEmployees')
+    .then(response => response.text())
+    .then(html => {
+        contentDiv.innerHTML = html;
+        // Re-initialize datatables if needed
+        if ($.fn.dataTable) {
+            $('#zkTimeTable').DataTable();
+        }
+    })
+    .catch(error => {
+        contentDiv.innerHTML = '<div class="alert alert-danger">Failed to load data.</div>';
+    });
+}
+
+function assignRolesByUserLevel() {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Assigning Roles...';
+    btn.disabled = true;
+
+    fetch('/EmployeeSetup/AssignRolesByUserLevel', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const resultDiv = document.getElementById('zkTimeResult');
+        if (data.success) {
+            resultDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+        } else {
+            resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${data.message}</div>`;
+        }
+        resultDiv.style.display = 'block';
+    })
+    .catch(error => {
+        const resultDiv = document.getElementById('zkTimeResult');
+        resultDiv.innerHTML = `<div class="alert alert-danger">An unexpected error occurred.</div>`;
+        resultDiv.style.display = 'block';
+    })
+    .finally(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+
+function setupDirectorateMapping() {
+    // Placeholder for actual implementation
+    Swal.fire('Coming Soon', 'Directorate mapping setup is under development.', 'info');
+}
+
+function viewOrganizationChart() {
+    // Placeholder for actual implementation
+    Swal.fire('Coming Soon', 'Organization chart viewer is under development.', 'info');
+}
+</script>
+}

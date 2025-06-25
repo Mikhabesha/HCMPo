@@ -64,7 +64,7 @@ namespace HCMPo.Services
                             d.DEPTNAME as DeviceName
                         FROM CHECKINOUT cio
                         LEFT JOIN USERINFO u ON cio.USERID = u.USERID
-                        LEFT JOIN DEPARTMENTS d ON u.DEFAULTDEPTID = d.DEPTID
+                        LEFT JOIN ORGANIZATIONUNITS d ON u.DEFAULTDEPTID = d.Id
                         WHERE (@FromDate IS NULL OR cio.CHECKTIME >= @FromDate)
                         ORDER BY cio.CHECKTIME";
 
@@ -136,18 +136,33 @@ namespace HCMPo.Services
 
                 foreach (var rawRecord in rawAttendanceData)
                 {
-                    // Get or create mapping between ZKTime UserID and HCMDb EmployeeId
+                    // Get or create mapping between ZKTime BADGENUMBER and HCMDb EmployeeId
                     if (!employeeMap.TryGetValue(rawRecord.UserId, out var employeeId))
                     {
+                        // Fetch BADGENUMBER for this USERID from USERINFO
+                        string badgeNumber = null;
+                        using (var connection = new SqlConnection(_configuration.GetConnectionString("ZKTimeConnection")))
+                        {
+                            await connection.OpenAsync();
+                            var badgeQuery = "SELECT u.BADGENUMBER FROM USERINFO u WHERE u.USERID = @UserId";
+                            using (var badgeCmd = new SqlCommand(badgeQuery, connection))
+                            {
+                                badgeCmd.Parameters.AddWithValue("@UserId", rawRecord.UserId);
+                                var result = await badgeCmd.ExecuteScalarAsync();
+                                badgeNumber = result?.ToString();
+                            }
+                        }
+                        if (string.IsNullOrWhiteSpace(badgeNumber))
+                        {
+                            badgeNumber = rawRecord.UserId.ToString();
+                        }
                         var employee = await _context.Employees
-                            .FirstOrDefaultAsync(e => e.BadgeNumber == rawRecord.UserId.ToString());
-
+                            .FirstOrDefaultAsync(e => e.BadgeNumber == badgeNumber);
                         if (employee == null)
                         {
-                            _logger.LogWarning($"Employee with ZKTime UserID {rawRecord.UserId} not found in HCMDb");
+                            _logger.LogWarning($"Employee with BADGENUMBER {badgeNumber} not found in HCMDb");
                             continue;
                         }
-
                         employeeId = employee.Id;
                         employeeMap[rawRecord.UserId] = employeeId;
                     }
@@ -213,31 +228,35 @@ namespace HCMPo.Services
         {
             int addedCount = 0;
             int batchSize = 500;
-            var connectionString = _configuration.GetConnectionString("ZKTimeConnection");
-            var existingDepartments = await _context.Departments.AsNoTracking()
-                .GroupBy(d => d.Id).Select(g => g.First()).ToDictionaryAsync(d => d.Id);
+            var connectionString = _configuration.GetConnectionString("ZKTimeConnection") ?? throw new InvalidOperationException("ZKTimeConnection connection string is not configured");
+            var existingOrganizationUnits = await _context.OrganizationUnits.AsNoTracking()
+                .GroupBy(ou => ou.Id).Select(g => g.First()).ToDictionaryAsync(ou => ou.Id);
             var existingEmployees = await _context.Employees.AsNoTracking()
                 .GroupBy(e => e.BadgeNumber).Select(g => g.First()).ToDictionaryAsync(e => e.BadgeNumber);
-            var newDepartments = new List<Department>();
+            var newOrganizationUnits = new List<OrganizationUnit>();
             var newEmployees = new List<Employee>();
             int total = 0;
             using (var connection = new SqlConnection(connectionString))
             {
                 await connection.OpenAsync();
-                var query = @"SELECT USERID, BADGENUMBER, NAME, DEFAULTDEPTID, GENDER, BIRTHDAY FROM USERINFO";
+                var query = @"SELECT u.USERID, u.BADGENUMBER, u.NAME, u.DEFAULTDEPTID, u.GENDER, u.BIRTHDAY FROM USERINFO u";
                 using (var command = new SqlCommand(query, connection))
                 using (var reader = await command.ExecuteReaderAsync())
                 {
                     var allRows = new List<(string userId, string badgeNumber, string name, string deptId, string gender, DateTime birthday, string badgeForEmail)>();
                     while (await reader.ReadAsync())
                     {
-                        var userId = reader["USERID"].ToString();
-                        var badgeNumber = userId;
+                        var userId = reader["USERID"].ToString() ?? "";
+                        var badgeNumber = reader["BADGENUMBER"].ToString() ?? "";
+                        if (string.IsNullOrWhiteSpace(badgeNumber))
+                        {
+                            badgeNumber = userId;
+                        }
                         var name = reader["NAME"].ToString() ?? "Unknown";
-                        var deptId = reader["DEFAULTDEPTID"].ToString();
-                        var gender = reader["GENDER"].ToString();
+                        var deptId = reader["DEFAULTDEPTID"].ToString() ?? "";
+                        var gender = reader["GENDER"].ToString() ?? "";
                         var birthday = reader["BIRTHDAY"] != DBNull.Value ? Convert.ToDateTime(reader["BIRTHDAY"]) : DateTime.Now;
-                        var badgeForEmail = reader["BADGENUMBER"].ToString() ?? badgeNumber;
+                        var badgeForEmail = badgeNumber;
                         allRows.Add((userId, badgeNumber, name, deptId, gender, birthday, badgeForEmail));
                     }
                     total = allRows.Count;
@@ -245,20 +264,38 @@ namespace HCMPo.Services
                     int processed = 0;
                     foreach (var row in allRows)
                     {
-                        if (existingEmployees.ContainsKey(row.badgeNumber) || newEmployees.Any(e => e.BadgeNumber == row.badgeNumber)) continue;
-                        if (!existingDepartments.ContainsKey(row.deptId) && !newDepartments.Any(d => d.Id == row.deptId))
-                        {
-                            newDepartments.Add(new Department { Id = row.deptId, Name = $"Dept {row.deptId}", Description = "Imported from Att_db" });
-                        }
+                        var existingEmployee = existingEmployees.ContainsKey(row.badgeNumber) ? existingEmployees[row.badgeNumber] : null;
                         var nameParts = row.name.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
-                        var firstName = nameParts.Length > 0 ? nameParts[0] : row.name;
-                        var lastName = nameParts.Length > 1 ? nameParts[1] : nameParts[0];
+                        var firstName = nameParts.Length > 0 ? nameParts[0] : "Unknown";
+                        var lastName = nameParts.Length > 1 ? nameParts[1] : "";
+                        if (int.TryParse(firstName, out _) && string.IsNullOrEmpty(lastName))
+                        {
+                            firstName = "Unknown";
+                            lastName = "";
+                        }
+                        if (existingEmployee != null)
+                        {
+                            // Update existing employee's info
+                            existingEmployee.FirstName = firstName;
+                            existingEmployee.LastName = lastName;
+                            existingEmployee.OrganizationUnitId = row.deptId;
+                            existingEmployee.Gender = row.gender;
+                            existingEmployee.DateOfBirth = row.birthday;
+                            existingEmployee.Email = $"{row.badgeForEmail}@hcm.com";
+                            // Optionally update other fields as needed
+                            _context.Employees.Update(existingEmployee);
+                            continue;
+                        }
+                        if (!existingOrganizationUnits.ContainsKey(row.deptId) && !newOrganizationUnits.Any(ou => ou.Id == row.deptId))
+                        {
+                            newOrganizationUnits.Add(new OrganizationUnit { Id = row.deptId, Name = $"Dept {row.deptId}", Description = "Imported from Att_db" });
+                        }
                         newEmployees.Add(new Employee
                         {
                             BadgeNumber = row.badgeNumber,
                             FirstName = firstName,
                             LastName = lastName,
-                            DepartmentId = row.deptId,
+                            OrganizationUnitId = row.deptId,
                             Gender = row.gender,
                             DateOfBirth = row.birthday,
                             Email = $"{row.badgeForEmail}@hcm.com",
@@ -275,18 +312,18 @@ namespace HCMPo.Services
                         if (progressKey != null) SyncProgress[progressKey] = processed;
                         if (newEmployees.Count >= batchSize)
                         {
-                            if (newDepartments.Any())
+                            if (newOrganizationUnits.Any())
                             {
-                                await _context.Departments.AddRangeAsync(newDepartments);
-                                newDepartments.Clear();
+                                await _context.OrganizationUnits.AddRangeAsync(newOrganizationUnits);
+                                newOrganizationUnits.Clear();
                             }
                             await _context.Employees.AddRangeAsync(newEmployees);
                             await _context.SaveChangesAsync();
                             newEmployees.Clear();
                         }
                     }
-                    if (newDepartments.Any())
-                        await _context.Departments.AddRangeAsync(newDepartments);
+                    if (newOrganizationUnits.Any())
+                        await _context.OrganizationUnits.AddRangeAsync(newOrganizationUnits);
                     if (newEmployees.Any())
                         await _context.Employees.AddRangeAsync(newEmployees);
                     await _context.SaveChangesAsync();
@@ -300,7 +337,7 @@ namespace HCMPo.Services
         {
             int addedCount = 0;
             int batchSize = 500;
-            var connectionString = _configuration.GetConnectionString("ZKTimeConnection");
+            var connectionString = _configuration.GetConnectionString("ZKTimeConnection") ?? throw new InvalidOperationException("ZKTimeConnection connection string is not configured");
             var employees = await _context.Employees.AsNoTracking()
                 .GroupBy(e => e.BadgeNumber).Select(g => g.First()).ToDictionaryAsync(e => e.BadgeNumber);
             var newAttendances = new List<Attendance>();
@@ -316,27 +353,31 @@ namespace HCMPo.Services
             using (var connection = new SqlConnection(connectionString))
             {
                 await connection.OpenAsync();
-                var query = @"SELECT USERID, CHECKTIME, CHECKTYPE, VERIFYCODE, SENSORID, WorkCode FROM CHECKINOUT";
+                var query = @"SELECT c.USERID, u.BADGENUMBER, c.CHECKTIME, c.CHECKTYPE, c.VERIFYCODE, c.SENSORID, c.WorkCode FROM CHECKINOUT c LEFT JOIN USERINFO u ON c.USERID = u.USERID";
                 using (var command = new SqlCommand(query, connection))
                 using (var reader = await command.ExecuteReaderAsync())
                 {
-                    var allRows = new List<(string userId, DateTime checkTime, string checkType, string verifyCode, string sensorId, string workCode)>();
+                    var allRows = new List<(string badgeNumber, DateTime checkTime, string checkType, string verifyCode, string sensorId, string workCode)>();
                     while (await reader.ReadAsync())
                     {
-                        var userId = reader["USERID"].ToString();
+                        var badgeNumber = reader["BADGENUMBER"].ToString() ?? "";
+                        if (string.IsNullOrWhiteSpace(badgeNumber))
+                        {
+                            badgeNumber = reader["USERID"].ToString() ?? "";
+                        }
                         var checkTime = reader["CHECKTIME"] != DBNull.Value ? Convert.ToDateTime(reader["CHECKTIME"]) : DateTime.Now;
-                        var checkType = reader["CHECKTYPE"].ToString();
-                        var verifyCode = reader["VERIFYCODE"].ToString();
-                        var sensorId = reader["SENSORID"].ToString();
-                        var workCode = reader["WorkCode"].ToString();
-                        allRows.Add((userId, checkTime, checkType, verifyCode, sensorId, workCode));
+                        var checkType = reader["CHECKTYPE"].ToString() ?? "";
+                        var verifyCode = reader["VERIFYCODE"].ToString() ?? "";
+                        var sensorId = reader["SENSORID"].ToString() ?? "";
+                        var workCode = reader["WorkCode"].ToString() ?? "";
+                        allRows.Add((badgeNumber, checkTime, checkType, verifyCode, sensorId, workCode));
                     }
                     total = allRows.Count;
                     if (progressKey != null) SyncTotal[progressKey] = total;
                     int processed = 0;
                     foreach (var row in allRows)
                     {
-                        if (!employees.TryGetValue(row.userId, out var employee)) continue;
+                        if (!employees.TryGetValue(row.badgeNumber, out var employee)) continue;
                         string attKey = employee.Id + "|" + row.checkTime.ToString("o") + "|" + row.checkType;
                         if (existingAttendanceKeys.Contains(attKey) || newAttendances.Any(a => a.EmployeeId == employee.Id && a.CheckInTime == row.checkTime && a.PunchType == row.checkType)) continue;
                         newAttendances.Add(new Attendance

@@ -12,7 +12,7 @@
         <div class="card shadow-sm">
             <div class="card-body">
                 <h5 class="card-title">Employee Management</h5>
-                <p class="card-text">Manage employee information, departments, and positions efficiently.</p>
+                <p class="card-text">Manage employee information, organization units (departments/directorates), and positions efficiently.</p>
                 @if (User.Identity?.IsAuthenticated == true)
                 {
                     <a asp-controller="Employees" asp-action="Index" class="btn btn-primary">View Employees</a>

@@ -11,7 +11,6 @@ namespace HCMPo.Data
         {
         }
         public DbSet<Employee> Employees { get; set; }
-        public DbSet<Department> Departments { get; set; }
         public DbSet<JobTitle> JobTitles { get; set; }
         public DbSet<AttendanceRecord> AttendanceRecords { get; set; }
         public DbSet<Payroll> Payrolls { get; set; }
@@ -37,25 +36,38 @@ namespace HCMPo.Data
         public DbSet<PayrollConfiguration> PayrollConfigurations { get; set; }
         public DbSet<DeductionType> DeductionTypes { get; set; }
         public DbSet<AllowanceType> AllowanceTypes { get; set; }
+        public DbSet<EmployeeAllowance> EmployeeAllowances { get; set; }
+        public DbSet<EmployeeDeduction> EmployeeDeductions { get; set; }
+        public DbSet<EmployeeLeaveEntitlement> EmployeeLeaveEntitlements { get; set; }
+        public DbSet<LeaveCarryover> LeaveCarryovers { get; set; }
+        public DbSet<PayrollStamp> PayrollStamps { get; set; }
+        public DbSet<PayrollSlipConfiguration> PayrollSlipConfigurations { get; set; }
+        public DbSet<OrganizationUnit> OrganizationUnits { get; set; }
+        
+        // New organization structure models
+        public DbSet<Directorate> Directorates { get; set; }
+        public DbSet<RoleHierarchy> RoleHierarchies { get; set; }
+        public DbSet<EmployeePosition> EmployeePositions { get; set; }
+        public DbSet<EmployeeMigrationLog> EmployeeMigrationLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             // Configure one-to-one relationship between Employee and ApplicationUser
-            modelBuilder.Entity<Employee>()
-                .HasOne(e => e.User)
-                .WithOne(u => u.Employee)
-                .HasForeignKey<Employee>(e => e.UserId)
+            // Only use ApplicationUser.EmployeeId as the foreign key
+            modelBuilder.Entity<ApplicationUser>()
+                .HasOne(u => u.Employee)
+                .WithOne(e => e.ApplicationUser)
+                .HasForeignKey<ApplicationUser>(u => u.EmployeeId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Ignore the UserId and ApplicationUserId properties on Employee to prevent shadow FK creation
+            modelBuilder.Entity<Employee>()
+                .Ignore(e => e.UserId);
+                //.Ignore(e => e.ApplicationUserId);
 
             // Configure Employee relationships
-            modelBuilder.Entity<Employee>()
-                .HasOne(e => e.Department)
-                .WithMany(d => d.Employees)
-                .HasForeignKey(e => e.DepartmentId)
-                .OnDelete(DeleteBehavior.Restrict);
-
             modelBuilder.Entity<Employee>()
                 .HasOne(e => e.JobTitle)
                 .WithMany(j => j.Employees)
@@ -69,10 +81,20 @@ namespace HCMPo.Data
                 .HasForeignKey(e => e.SupervisorId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Ignore the UserId and ApplicationUserId properties on Employee to prevent shadow FK creation
+            modelBuilder.Entity<Employee>()
+                .Ignore(e => e.UserId);
+                //.Ignore(e => e.ApplicationUserId);
+
             // Configure Employee decimal precision
             modelBuilder.Entity<Employee>()
                 .Property(e => e.Salary)
                 .HasPrecision(18, 2);
+
+            // Ignore the UserId and ApplicationUserId properties on Employee to prevent shadow FK creation
+            modelBuilder.Entity<Employee>()
+                .Ignore(e => e.UserId);
+                //.Ignore(e => e.ApplicationUserId);
 
             // Configure EmployeeLeave relationships and decimal precision
             modelBuilder.Entity<EmployeeLeave>()
@@ -123,6 +145,79 @@ namespace HCMPo.Data
                 .Property(lr => lr.TotalDays)
                 .HasPrecision(18, 2);
 
+            // Configure EmployeeLeaveEntitlement relationships
+            modelBuilder.Entity<EmployeeLeaveEntitlement>()
+                .HasOne(ele => ele.Employee)
+                .WithMany()
+                .HasForeignKey(ele => ele.EmployeeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<EmployeeLeaveEntitlement>()
+                .HasOne(ele => ele.LeaveType)
+                .WithMany()
+                .HasForeignKey(ele => ele.LeaveTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<EmployeeLeaveEntitlement>()
+                .Property(ele => ele.CustomEntitlementDays)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<EmployeeLeaveEntitlement>()
+                .Property(ele => ele.BaseEntitlement)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<EmployeeLeaveEntitlement>()
+                .Property(ele => ele.AnnualIncrement)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<EmployeeLeaveEntitlement>()
+                .Property(ele => ele.MaxEntitlement)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<EmployeeLeaveEntitlement>()
+                .Property(ele => ele.MaxCarryoverDays)
+                .HasPrecision(18, 2);
+
+            // Configure LeaveCarryover relationships
+            modelBuilder.Entity<LeaveCarryover>()
+                .HasOne(lc => lc.Employee)
+                .WithMany()
+                .HasForeignKey(lc => lc.EmployeeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<LeaveCarryover>()
+                .HasOne(lc => lc.LeaveType)
+                .WithMany()
+                .HasForeignKey(lc => lc.LeaveTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<LeaveCarryover>()
+                .HasOne(lc => lc.ApprovedByEmployee)
+                .WithMany()
+                .HasForeignKey(lc => lc.ApprovedBy)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<LeaveCarryover>()
+                .Property(lc => lc.AvailableDays)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<LeaveCarryover>()
+                .Property(lc => lc.CarriedOverDays)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<LeaveCarryover>()
+                .Property(lc => lc.ExpiredDays)
+                .HasPrecision(18, 2);
+
+            // Enhanced EmployeeLeave configurations
+            modelBuilder.Entity<EmployeeLeave>()
+                .Property(el => el.CarryoverDays)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<EmployeeLeave>()
+                .Property(el => el.MaxCarryoverDays)
+                .HasPrecision(18, 2);
+
             // Configure Payroll decimal precision
             modelBuilder.Entity<Payroll>()
                 .Property(p => p.AttendanceDeduction)
@@ -141,13 +236,14 @@ namespace HCMPo.Data
                 .HasForeignKey(pr => pr.ReviewerId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // Seed initial data
-            modelBuilder.Entity<Department>().HasData(
-                new Department { Id = "1", Name = "Human Resources", Description = "HR Department" },
-                new Department { Id = "2", Name = "Information Technology", Description = "IT Department" },
-                new Department { Id = "3", Name = "Finance", Description = "Finance Department" }
-            );
+            // Configure Employee-EmployeeDocument relationship
+            modelBuilder.Entity<EmployeeDocument>()
+                .HasOne(d => d.Employee)
+                .WithMany(e => e.Documents)
+                .HasForeignKey(d => d.EmployeeId)
+                .OnDelete(DeleteBehavior.Cascade);
 
+            // Seed initial data
             modelBuilder.Entity<JobTitle>().HasData(
                 new JobTitle { Id = "1", Title = "HR Manager", Description = "Human Resources Manager" },
                 new JobTitle { Id = "2", Title = "Software Developer", Description = "IT Software Developer" },
@@ -215,6 +311,70 @@ namespace HCMPo.Data
                 new DeductionType { Id = 7, Name = "ProsperityParty", DisplayName = "Prosperity Party", Order = 7 },
                 new DeductionType { Id = 8, Name = "ReturnFromSalary", DisplayName = "Return from Salary", Order = 8 },
                 new DeductionType { Id = 9, Name = "RedCross", DisplayName = "Red Cross", Order = 9 }
+            );
+
+            // Configure new organization structure models
+            modelBuilder.Entity<Directorate>()
+                .HasOne(d => d.ParentDirectorate)
+                .WithMany(d => d.SubDirectorates)
+                .HasForeignKey(d => d.ParentDirectorateId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<EmployeePosition>()
+                .HasOne(ep => ep.Employee)
+                .WithMany()
+                .HasForeignKey(ep => ep.EmployeeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<EmployeePosition>()
+                .HasOne(ep => ep.Directorate)
+                .WithMany()
+                .HasForeignKey(ep => ep.DirectorateId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<EmployeePosition>()
+                .HasOne(ep => ep.OrganizationUnit)
+                .WithMany()
+                .HasForeignKey(ep => ep.OrganizationUnitId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<EmployeePosition>()
+                .HasOne(ep => ep.RoleHierarchy)
+                .WithMany()
+                .HasForeignKey(ep => ep.RoleHierarchyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<EmployeePosition>()
+                .HasOne(ep => ep.SupervisorEmployee)
+                .WithMany()
+                .HasForeignKey(ep => ep.SupervisorEmployeeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Seed initial directorates
+            modelBuilder.Entity<Directorate>().HasData(
+                new Directorate { Id = "1", Name = "Office of the Director General", Code = "OCG", Level = 1 },
+                new Directorate { Id = "2", Name = "Operations Management Directorate", Code = "RMD", Level = 1 },
+                new Directorate { Id = "3", Name = "Member Services Directorate", Code = "COD", Level = 1 },
+                new Directorate { Id = "4", Name = "Benefits Administration Directorate", Code = "TAD", Level = 1 },
+                new Directorate { Id = "5", Name = "Investigation and Intelligence Directorate", Code = "IID", Level = 1 },
+                new Directorate { Id = "6", Name = "Legal Affairs Directorate", Code = "LAD", Level = 1 },
+                new Directorate { Id = "7", Name = "Internal Audit Directorate", Code = "IAD", Level = 1 },
+                new Directorate { Id = "8", Name = "Human Resources Directorate", Code = "HRD", Level = 1 },
+                new Directorate { Id = "9", Name = "Finance and Procurement Directorate", Code = "FPD", Level = 1 },
+                new Directorate { Id = "10", Name = "Information Technology Directorate", Code = "ITD", Level = 1 },
+                new Directorate { Id = "11", Name = "Planning and Performance Directorate", Code = "PPD", Level = 1 },
+                new Directorate { Id = "12", Name = "Corporate Communication Directorate", Code = "CCD", Level = 1 },
+                new Directorate { Id = "13", Name = "Policy and Research Directorate", Code = "RID", Level = 1 },
+                new Directorate { Id = "14", Name = "Regional Operations Directorate", Code = "ROD", Level = 1 }
+            );
+
+            // Seed initial role hierarchies
+            modelBuilder.Entity<RoleHierarchy>().HasData(
+                new RoleHierarchy { Id = "1", RoleName = "Employee", DisplayName = "Employee", HierarchyLevel = 1, MaxApprovalLevel = 0, CanApproveLeave = false, CanManageAttendance = false, CanAccessPayroll = false, CanManageEmployees = false },
+                new RoleHierarchy { Id = "2", RoleName = "TeamLeader", DisplayName = "Team Leader", HierarchyLevel = 2, MaxApprovalLevel = 1, CanApproveLeave = true, CanManageAttendance = true, CanAccessPayroll = false, CanManageEmployees = false },
+                new RoleHierarchy { Id = "3", RoleName = "HR", DisplayName = "Human Resources", HierarchyLevel = 3, MaxApprovalLevel = 2, CanApproveLeave = true, CanManageAttendance = true, CanAccessPayroll = true, CanManageEmployees = true },
+                new RoleHierarchy { Id = "4", RoleName = "Director", DisplayName = "Director", HierarchyLevel = 4, MaxApprovalLevel = 3, CanApproveLeave = true, CanManageAttendance = true, CanAccessPayroll = true, CanManageEmployees = true },
+                new RoleHierarchy { Id = "5", RoleName = "Admin", DisplayName = "Administrator", HierarchyLevel = 5, MaxApprovalLevel = 5, CanApproveLeave = true, CanManageAttendance = true, CanAccessPayroll = true, CanManageEmployees = true }
             );
         }
 

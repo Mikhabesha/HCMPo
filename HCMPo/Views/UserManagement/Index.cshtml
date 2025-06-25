@@ -1,0 +1,1191 @@
+@{
+    ViewData["Title"] = "User Management";
+}
+
+@section Styles {
+    <link href="~/lib/datatables/dataTables.bootstrap5.min.css" rel="stylesheet">
+}
+
+@Html.AntiForgeryToken()
+
+@if (User.IsInRole("Admin"))
+{
+    @* <div class="mb-3"> *@
+    @*     <button class="btn btn-warning" id="fixLinksBtn" type="button"> *@
+    @*         <i class="mdi mdi-link-variant"></i> Fix Employee-User Links (TEMP) *@
+    @*     </button> *@
+    @* </div> *@
+}
+
+<div class="container-fluid px-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-2 text-gray-800">User Management</h1>
+                    <p class="mb-0 text-muted">Unified user and account management for all employees</p>
+                </div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item active">User Management</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <span class="text-white-75 mb-3 lh-1 d-block">Total Users</span>
+                            <h4 class="mb-0" id="totalUsers">@((ViewBag.TotalUsers != null ? ViewBag.TotalUsers : 0))</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <span class="text-white-75 mb-3 lh-1 d-block">Linked to Employees</span>
+                            <h4 class="mb-0" id="linkedUsers">@((ViewBag.LinkedUsers != null ? ViewBag.LinkedUsers : 0))</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-user-check fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <span class="text-white-75 mb-3 lh-1 d-block">Unlinked Employees</span>
+                            <h4 class="mb-0" id="unlinkedEmployees">@((ViewBag.UnlinkedEmployees != null ? ViewBag.UnlinkedEmployees : 0))</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-user-times fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <span class="text-white-75 mb-3 lh-1 d-block">Active Roles</span>
+                            <h4 class="mb-0" id="totalRoles">@((ViewBag.TotalRoles != null ? ViewBag.TotalRoles : 0))</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-user-shield fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        @* <div class="col-md-3">
+                            <button type="button" class="btn btn-success w-100" onclick="createBulkUsers()" id="bulkCreateBtn">
+                                <i class="fas fa-user-plus me-1"></i>
+                                Create User Accounts for All Employees
+                            </button>
+                        </div> *@
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#createUserModal">
+                                <i class="fas fa-user-plus me-1"></i>
+                                Create Individual User
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-info w-100" data-bs-toggle="modal" data-bs-target="#createRoleModal">
+                                <i class="fas fa-user-shield me-1"></i>
+                                Create New Role
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-secondary w-100" onclick="refreshData()">
+                                <i class="fas fa-refresh me-1"></i>
+                                Refresh Data
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="/UserManagement/ArchivedUsers" class="btn btn-dark w-100">
+                                <i class="fas fa-archive me-1"></i>
+                                View Archived Users
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-12">
+            <form class="row g-2 align-items-end" method="get" action="/UserManagement">
+                <div class="col-md-4">
+                    <label for="searchTerm" class="form-label mb-0">Search</label>
+                    <input type="text" class="form-control" id="searchTerm" name="searchTerm" placeholder="Email or Username" value="@ViewBag.SelectedSearchTerm">
+                </div>
+                <div class="col-md-3">
+                    <label for="roleFilter" class="form-label mb-0">Role</label>
+                    <select class="form-select" id="roleFilter" name="roleFilter">
+                        <option value="" selected="@(ViewBag.SelectedRole == null ? "selected" : null)">All Roles</option>
+                        @foreach (var role in ViewBag.AllRoles as List<string> ?? new List<string>())
+                        {
+                            <option value="@role" selected="@(ViewBag.SelectedRole == role ? "selected" : null)">@role</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="statusFilter" class="form-label mb-0">Status</label>
+                    <select class="form-select" id="statusFilter" name="statusFilter">
+                        @{
+                            var statusOptions = new[] { "Active", "OnLeave", "Suspended", "Terminated", "Locked" };
+                        }
+                        <option value="" selected="@(ViewBag.SelectedStatus == null ? "selected" : null)">All Statuses</option>
+                        @foreach (var status in statusOptions)
+                        {
+                            var display = status == "OnLeave" ? "On Leave" : status;
+                            <option value="@status" selected="@(ViewBag.SelectedStatus == status ? "selected" : null)">@display</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search me-1"></i>Search</button>
+                    <button type="button" class="btn btn-outline-secondary w-100" onclick="clearUserFilters()"><i class="fas fa-eraser me-1"></i>Clear</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">System Users</h5>
+                    <button class="btn btn-success btn-sm me-2" onclick="createBulkUsers()" id="bulkCreateBtn2">
+                        <i class="fas fa-user-plus me-1"></i>Create Accounts for Employees
+                    </button>
+                    <button class="btn btn-soft-primary btn-sm" onclick="refreshData()">
+                        <i class="fas fa-refresh me-1"></i>Refresh
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="usersTable">
+                            <thead class="table-dark">
+                            <tr>
+                                <th>Email</th>
+                                <th>Employee</th>
+                                <th>Roles</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewBag.Users != null)
+                            {
+                                    foreach (var user in ViewBag.Users)
+                                {
+                                    <tr>
+                                        <td>@user.Email</td>
+                                        <td>
+                                            @if (user.Employee != null)
+                                            {
+                                                    <span>@user.Employee.FullName (@user.Employee.BadgeNumber) - @user.Employee.OrganizationUnit</span>
+                                            }
+                                            else
+                                            {
+                                                    <span class="text-muted">Unlinked</span>
+                                            }
+                                        </td>
+                                        <td>
+                                                @if (user.Roles != null && user.Roles.Count > 0)
+                                            {
+                                                    foreach (var role in user.Roles)
+                                                {
+                                                        <span class="badge bg-primary me-1">@role</span>
+                                                }
+                                            }
+                                                else
+                                                {
+                                                    <span class="text-muted">None</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (user.IsLocked)
+                                            {
+                                                <span class="badge bg-danger">Locked</span>
+                                            }
+                                                else
+                                            {
+                                                <span class="badge bg-success">Active</span>
+                                            }
+                                        </td>
+                                        <td>
+                                                <div class="btn-group" role="group">
+                                                    @if (user.Employee != null && user.Employee.Id != null)
+                                                    {
+                                                        <a href="/Employees/Details/@user.Employee.Id" class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" title="View Employee Details">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <a href="/Employees/Edit/@user.Employee.Id" class="btn btn-outline-primary btn-sm" data-bs-toggle="tooltip" title="Edit Employee">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        <button class="btn btn-outline-danger btn-sm" onclick="unlinkUserFromEmployee('@user.Id', '@user.Employee.Id')" data-bs-toggle="tooltip" title="Unlink User & Employee">
+                                                            <i class="fas fa-unlink"></i>
+                                                        </button>
+                                                    }
+                                                    else
+                                                    {
+                                                        <button class="btn btn-outline-primary btn-sm" disabled data-bs-toggle="tooltip" title="No linked employee"><i class="fas fa-edit"></i></button>
+                                                    }
+                                                    <button class="btn btn-secondary btn-sm" onclick="openRoleModal('@user.Id', @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(user.Roles ?? new List<string>())), @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.AllRoles ?? new List<string>())))" data-bs-toggle="tooltip" title="Change Role"><i class="fas fa-user-tag"></i></button>
+                                                    <button class="btn btn-warning btn-sm" onclick="resetPassword('@user.Id')" data-bs-toggle="tooltip" title="Reset Password"><i class="fas fa-key"></i></button>
+                                                    <button class="btn btn-danger btn-sm" onclick="lockUnlockUser('@user.Id', @user.IsLocked.ToString().ToLower())" data-bs-toggle="tooltip" title="@(user.IsLocked ? "Unlock this user (allow login)" : "Lock this user (prevent login)")">
+                                                        <i class="fas fa-lock"></i>
+                                                    </button>
+                                                    <button class="btn btn-danger btn-sm" onclick="deleteUser('@user.Id')" data-bs-toggle="tooltip" title="Delete User"><i class="fas fa-trash"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                    <tr><td colspan="5" class="text-center text-muted">No users found.</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create User Modal -->
+<div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createUserModalLabel">Create New User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="/UserManagement/CreateUser" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                                <div class="form-text">Format: firstname@hcm.com</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                                <div class="form-text">Minimum 6 characters</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                    <div class="mb-3">
+                                <label for="employeeId" class="form-label">Link to Employee (Optional)</label>
+                                <select class="form-select" id="employeeId" name="employeeId">
+                                    <option value="">-- Select Employee --</option>
+                        </select>
+                                <div class="form-text">Only shows employees without user accounts</div>
+                    </div>
+                        </div>
+                        <div class="col-md-6">
+                    <div class="mb-3">
+                                <label class="form-label">Roles</label>
+                                <div class="role-checkboxes">
+                                @foreach (var role in (ViewBag.AllRoles as List<string> ?? new List<string>()))
+                                {
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="roles" value="@role" id="role_@role">
+                                            <label class="form-check-label" for="role_@role">@role</label>
+                                    </div>
+                                }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="mdi mdi-account-plus me-1"></i>Create User
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Create Role Modal -->
+<div class="modal fade" id="createRoleModal" tabindex="-1" aria-labelledby="createRoleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createRoleModalLabel">Create New Role</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="roleName" class="form-label">Role Name</label>
+                    <input type="text" class="form-control" id="roleName" placeholder="e.g., Manager, Supervisor">
+                </div>
+                <div class="mb-3">
+                    <label for="roleDescription" class="form-label">Description (Optional)</label>
+                    <textarea class="form-control" id="roleDescription" rows="3" placeholder="Role description..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="createRole()">Create Role</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Roles Modal -->
+<div class="modal fade" id="editRolesModal" tabindex="-1" aria-labelledby="editRolesModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editRolesModalLabel">Edit User Roles</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editUserId">
+                <div class="mb-3">
+                    <label class="form-label">Assign Roles</label>
+                    <div id="editRolesContainer">
+                        <!-- Roles will be populated here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="saveUserRoles()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Role Modal -->
+<div class="modal fade" id="changeRoleModal" tabindex="-1" aria-labelledby="changeRoleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="changeRoleModalLabel">Change User Roles</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="changeRoleForm">
+                    <input type="hidden" id="roleUserId">
+                    <div id="roleCheckboxes" class="mb-3"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitRoleChange()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Manual Admin Role Assignment Utility -->
+@if (User.IsInRole("Admin"))
+{
+    <div class="card mt-5">
+        <div class="card-header bg-warning text-dark">
+            <strong>Admin Utility: Assign Roles to Any User</strong>
+        </div>
+        <div class="card-body">
+            <form id="manualRoleAssignForm" class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label for="manualUserId" class="form-label">Employee Name</label>
+                    <select class="form-select" id="manualUserId" name="manualUserId" required>
+                        <option value="">Select Employee</option>
+                        @foreach (var user in (ViewBag.Users as IEnumerable<dynamic> ?? new List<dynamic>()))
+                        {
+                            if(user.Employee != null)
+                            {
+                                <option value="@user.Id">@user.Employee.FullName</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="manualRoles" class="form-label">Roles</label>
+                    <div id="manualRoles">
+                        @foreach (var role in (ViewBag.AllRoles as List<string> ?? new List<string>()))
+                        {
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="roles" value="@role" id="manual_role_@role">
+                                <label class="form-check-label" for="manual_role_@role">@role</label>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-danger">Assign Roles</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@if (User.IsInRole("Admin"))
+{
+    <form id="makeAdminTLDirectorForm" method="post" class="mb-3">
+        <div class="row mb-2">
+            <div class="col-md-6">
+                <label for="adminEmployeeSelect" class="form-label">Select Employee for Team Leader/Director</label>
+                <select class="form-select" id="adminEmployeeSelect" name="employeeId">
+                    <option value="">Default Admin</option>
+                    @foreach (var emp in (ViewBag.AllEmployees as IEnumerable<dynamic> ?? new List<dynamic>()))
+                    {
+                        <option value="@emp.Id">@emp.FullName (@emp.BadgeNumber) - @emp.OrganizationUnit</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-warning">Make Selected Employee Team Leader & Director For All (Test Only)</button>
+    </form>
+}
+
+@if (User.IsInRole("Admin"))
+{
+    <form id="assignAdminApproverForm" method="post" class="mb-3">
+        <div class="row mb-2">
+            <div class="col-md-6">
+                <label for="approverEmployeeSelect" class="form-label">Select Employee as Approver</label>
+                <select class="form-select" id="approverEmployeeSelect" name="employeeId">
+                    <option value="">Default Admin</option>
+                    @foreach (var emp in (ViewBag.AllEmployees as IEnumerable<dynamic> ?? new List<dynamic>()))
+                    {
+                        <option value="@emp.Id">@emp.FullName (@emp.BadgeNumber) - @emp.OrganizationUnit</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-danger">Assign Selected Employee as Approver for All Pending Leave Requests (Test Only)</button>
+    </form>
+}
+
+@section Scripts {
+    <script src="~/lib/jquery/jquery.min.js"></script>
+    <script src="~/lib/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/lib/datatables/dataTables.bootstrap5.min.js"></script>
+    <script src="~/lib/sweetalert2/sweetalert2.min.js"></script>
+
+    <script>
+        var allRolesForJs = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.AllRoles ?? new List<string>()));
+
+        $(document).ready(function() {
+            console.log('User Management page loaded');
+            
+            $('#usersTable').DataTable({
+                "pageLength": 100,
+                "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+            });
+            
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            loadSystemInfo();
+
+            $('#createUserModal').on('show.bs.modal', function() {
+                console.log('Create user modal opening, loading employees');
+                loadEmployeesForLinking();
+            });
+    
+            $.ajaxSetup({
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                }
+            });
+        });
+
+function resetPassword(userId) {
+    console.log('resetPassword called for', userId);
+    resetUserPassword(userId);
+}
+function lockUnlockUser(userId, isLocked) {
+    console.log('lockUnlockUser called for', userId, isLocked);
+    const action = isLocked ? 'Unlock' : 'Lock';
+    Swal.fire({
+        title: `${action.charAt(0).toUpperCase() + action.slice(1)} User?`,
+        text: isLocked ? 'This will allow the user to log in again.' : 'This will prevent the user from logging in.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: `Yes, ${action.charAt(0).toUpperCase() + action.slice(1)}`,
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: isLocked ? '#28a745' : '#dc3545'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.post('/UserManagement/ToggleUserLock', { userId: userId, lockUser: !isLocked })
+                .done(function(response) {
+                    if (response.success) {
+                        Swal.fire('Success!', response.message, 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', response.message, 'error');
+                    }
+                })
+                .fail(function() {
+                    Swal.fire('Error', 'An error occurred while updating user status.', 'error');
+                });
+        }
+    });
+}
+function deleteUser(userId) {
+    console.log('deleteUser called for', userId);
+    Swal.fire({
+        title: 'Delete User?',
+        text: 'This will deactivate (archive) the user and prevent login. This action can be undone from Archived Users.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Delete',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#dc3545'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.post('/UserManagement/DeactivateUser', { userId: userId })
+                .done(function(response) {
+                    if (response.success) {
+                        Swal.fire('Deleted!', response.message, 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', response.message, 'error');
+                    }
+                })
+                .fail(function() {
+                    Swal.fire('Error', 'An error occurred while deleting the user.', 'error');
+                });
+        }
+    });
+}
+function openRoleModal(userId, userRoles, allRoles) {
+    console.log('openRoleModal called', { userId, userRoles, allRoles });
+    userRoles = userRoles || [];
+    allRoles = allRoles || [];
+    $('#roleUserId').val(userId);
+    let html = '';
+    allRoles.forEach(function(role) {
+        const checked = userRoles && userRoles.includes(role) ? 'checked' : '';
+        html += `<div class='form-check'>
+            <input class='form-check-input' type='checkbox' name='roles' value='${role}' id='role_${role}' ${checked}>
+            <label class='form-check-label' for='role_${role}'>${role}</label>
+        </div>`;
+    });
+    $('#roleCheckboxes').html(html);
+    const modal = new bootstrap.Modal(document.getElementById('changeRoleModal'));
+    modal.show();
+}
+function submitRoleChange() {
+    var userId = $('#roleUserId').val();
+    var roles = [];
+    $('#roleCheckboxes input[name="roles"]:checked').each(function() {
+        roles.push($(this).val());
+    });
+    $.ajax({
+        url: '/UserManagement/UpdateUserRoles',
+        type: 'POST',
+        data: { userId: userId, roles: roles },
+        traditional: true,
+        success: function(response) {
+            if (response.success) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('changeRoleModal'));
+                if (modal) modal.hide();
+                Swal.fire('Success!', 'User roles updated.', 'success').then(() => location.reload());
+            } else {
+                Swal.fire('Error', response.message || 'Failed to update roles.', 'error');
+            }
+        },
+        error: function() {
+            Swal.fire('Error', 'An error occurred while updating roles.', 'error');
+        }
+    });
+}
+        function loadSystemInfo() {
+            console.log('Loading system info');
+            
+            $.get('/UserManagement/SystemInfo', function(data) {
+                console.log('System info loaded:', data);
+                $('#totalUsers').text(data.userCount);
+                $('#linkedUsers').text(data.linkedUsers);
+                $('#unlinkedEmployees').text(data.unlinkedEmployees);
+                $('#totalRoles').text(data.roleCount);
+            }).fail(function(xhr, status, error) {
+                console.error('Failed to load system info:', error);
+            });
+        }
+        function createBulkUsers() {
+            console.log('createBulkUsers function called');
+            
+            Swal.fire({
+                title: 'Create User Accounts?',
+                text: 'This will create user accounts for all employees without user accounts.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Create Accounts',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#198754'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    performBulkUserCreation();
+                }
+            });
+        }
+        function performBulkUserCreation() {
+            console.log('Starting bulk user creation process');
+            
+            // Find all buttons with this function to disable them
+            const buttons = $('button[onclick*="createBulkUsers"]');
+            const originalTexts = [];
+            
+            buttons.each(function(index) {
+                originalTexts[index] = $(this).html();
+                $(this).html('<i class="mdi mdi-loading mdi-spin me-1"></i>Creating...');
+                $(this).prop('disabled', true);
+            });
+
+            // Get the antiforgery token
+            const token = $('input[name="__RequestVerificationToken"]').val();
+            console.log('Using antiforgery token:', token ? 'Found' : 'Not found');
+
+            $.ajax({
+                url: '/UserManagement/CreateAccountsForEmployeesWithoutUsers',
+                type: 'POST',
+                data: {
+                    __RequestVerificationToken: token
+                },
+                dataType: 'json',
+                timeout: 60000, // 60 second timeout
+                success: function(response) {
+                    console.log('Bulk creation response:', response);
+                    
+                    if (response.success) {
+                        Swal.fire({
+                            title: 'Success!',
+                            html: `
+                                <div class="text-start">
+                                    <p class="mb-3">User accounts processed successfully!</p>
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2"><i class="mdi mdi-check-circle text-success me-2"></i><strong>Created:</strong> ${response.created} new accounts</li>
+                                        <li class="mb-2"><i class="mdi mdi-link text-info me-2"></i><strong>Linked:</strong> ${response.linked} existing accounts</li>
+                                        <li class="mb-2"><i class="mdi mdi-alert-circle text-warning me-2"></i><strong>Errors:</strong> ${response.errors}</li>
+                                    </ul>
+                                    ${response.hasPasswordReport ? '<div class="alert alert-info mt-3"><i class="mdi mdi-download me-2"></i>Password report is ready for download.</div>' : ''}
+                                </div>
+                            `,
+                            icon: 'success',
+                            showCancelButton: response.hasPasswordReport,
+                            confirmButtonText: response.hasPasswordReport ? 'Download Password Report' : 'OK',
+                            cancelButtonText: 'Close',
+                            allowOutsideClick: false
+                        }).then((result) => {
+                            if (result.isConfirmed && response.hasPasswordReport) {
+                                window.location.href = '/UserManagement/DownloadPasswordReport';
+                            }
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire('Error', response.message || 'Failed to create user accounts', 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Bulk creation failed:', { xhr, status, error });
+                    
+                    let errorMessage = 'Failed to create user accounts';
+                    if (status === 'timeout') {
+                        errorMessage = 'Request timed out. Please try again.';
+                    } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    
+                    Swal.fire('Error', errorMessage, 'error');
+                },
+                complete: function() {
+                    console.log('Bulk creation request completed, restoring buttons');
+                    
+                    // Restore button states
+                    buttons.each(function(index) {
+                        $(this).html(originalTexts[index]);
+                        $(this).prop('disabled', false);
+                    });
+                }
+            });
+        }
+        function createTestEmployees() {
+            console.log('createTestEmployees function called');
+            
+            Swal.fire({
+                title: 'Create Test Employees?',
+                text: 'This will create 3 test employees for testing purposes.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Create Test Data',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#ffc107'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    performTestEmployeeCreation();
+                }
+            });
+        }
+        function performTestEmployeeCreation() {
+            console.log('Starting test employee creation');
+            
+            const btn = $('#testEmployeesBtn');
+            const originalText = btn.html();
+            btn.html('<i class="mdi mdi-loading mdi-spin me-1"></i>Creating...');
+            btn.prop('disabled', true);
+
+            const token = $('input[name="__RequestVerificationToken"]').val();
+
+            $.ajax({
+                url: '/UserManagement/CreateTestEmployees',
+                type: 'POST',
+                headers: {
+                    'RequestVerificationToken': token
+                },
+                dataType: 'json',
+                success: function(response) {
+                    console.log('Test employee creation response:', response);
+                    
+                    if (response.success) {
+                        Swal.fire('Success!', response.message, 'success').then(() => {
+                            loadSystemInfo();
+                        });
+                    } else {
+                        Swal.fire('Error', response.message, 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Test employee creation failed:', error);
+                    Swal.fire('Error', 'Failed to create test employees', 'error');
+                },
+                complete: function() {
+                    btn.html(originalText);
+                    btn.prop('disabled', false);
+                }
+            });
+        }
+        function createRole() {
+            const roleName = $('#roleName').val();
+            if (!roleName) {
+                Swal.fire('Validation Error', 'Role name is required', 'warning');
+                return;
+            }
+
+            console.log('Creating role:', roleName);
+
+            $.get('/UserManagement/CreateRole', {
+                roleName: roleName,
+                description: $('#roleDescription').val()
+            }).done(function(response) {
+                console.log('Create role response:', response);
+                
+                if (response.success) {
+                    $('#createRoleModal').modal('hide');
+                    Swal.fire('Success', response.message, 'success').then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire('Error', response.message, 'error');
+                }
+            }).fail(function(xhr, status, error) {
+                console.error('Create role failed:', error);
+                Swal.fire('Error', 'Failed to create role', 'error');
+            });
+        }
+
+        function editUserRoles(userId, currentRoles) {
+            console.log('Editing user roles for:', userId, 'Current roles:', currentRoles);
+            
+            $('#editUserId').val(userId);
+            
+            // Populate roles checkboxes
+            let rolesHtml = '';
+            if (allRolesForJs) {
+                allRolesForJs.forEach(function(role) {
+                    const isChecked = currentRoles.includes(role) ? 'checked' : '';
+                    rolesHtml += `
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="editRoles" value="${role}" id="editRole_${role}" ${isChecked}>
+                            <label class="form-check-label" for="editRole_${role}">${role}</label>
+                        </div>
+                    `;
+                });
+            }
+            
+            $('#editRolesContainer').html(rolesHtml);
+            $('#editRolesModal').modal('show');
+        }
+
+        function saveUserRoles() {
+            const userId = $('#editUserId').val();
+            const selectedRoles = [];
+            $('input[name="editRoles"]:checked').each(function() {
+                selectedRoles.push($(this).val());
+            });
+
+            console.log('Saving user roles:', userId, selectedRoles);
+
+            $.post('/UserManagement/UpdateUserRoles', {
+                userId: userId,
+                roles: selectedRoles
+            }).done(function(response) {
+                console.log('Update roles response:', response);
+                
+                if (response.success) {
+                    $('#editRolesModal').modal('hide');
+                    Swal.fire('Success', response.message, 'success').then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire('Error', response.message, 'error');
+                }
+            }).fail(function(xhr, status, error) {
+                console.error('Update roles failed:', error);
+                Swal.fire('Error', 'Failed to update user roles', 'error');
+            });
+        }
+        function toggleUserLock(userId, lockUser) {
+    const action = lockUser === 'true' ? 'Lock' : 'Unlock';
+            
+            console.log('Toggling user lock:', userId, action);
+            
+            Swal.fire({
+        title: `${action} User?`,
+                text: `Are you sure you want to ${action} this user?`,
+                icon: 'warning',
+                showCancelButton: true,
+        confirmButtonText: `Yes, ${action}`,
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/UserManagement/ToggleUserLock', {
+                        userId: userId,
+                        lockUser: lockUser === 'true'
+                    }).done(function(response) {
+                        console.log('Toggle lock response:', response);
+                        
+                        if (response.success) {
+                            Swal.fire('Success', response.message, 'success').then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error', response.message, 'error');
+                        }
+                    }).fail(function(xhr, status, error) {
+                        console.error('Toggle lock failed:', error);
+                        Swal.fire('Error', 'Failed to update user status', 'error');
+                    });
+                }
+            });
+        }
+        function refreshData() {
+            console.log('Refreshing data');
+            location.reload();
+        }
+        function loadEmployeesForLinking() {
+            console.log('Loading employees for linking dropdown');
+            
+    const select = $('#employeeId');
+            select.html('<option value="">-- Loading employees --</option>');
+            
+            $.get('/UserManagement/GetEmployeesWithoutUsers')
+                .done(function(data) {
+                    console.log('Employees loaded:', data);
+                    
+                    if (data.success) {
+                        select.empty();
+                        select.append('<option value="">-- Select Employee to Link --</option>');
+                        
+                        if (data.employees && data.employees.length > 0) {
+                            data.employees.forEach(function(emp) {
+                        select.append(`<option value="${emp.id}">${emp.fullName} (${emp.badgeNumber}) - ${emp.organizationUnit}</option>`);
+                            });
+                            console.log('Added', data.employees.length, 'employees to dropdown');
+                        } else {
+                            select.append('<option value="">-- No employees available --</option>');
+                            console.log('No employees without users found');
+                        }
+                    } else {
+                        select.html('<option value="">-- Error loading employees --</option>');
+                        console.error('Failed to load employees:', data.message);
+                    }
+                })
+                .fail(function(xhr, status, error) {
+                    console.error('Failed to load employees:', error);
+                    select.html('<option value="">-- Error loading employees --</option>');
+                });
+        }
+        function resetUserPassword(userId) {
+            console.log('Resetting password for user:', userId);
+            
+            Swal.fire({
+                title: 'Reset User Password?',
+                text: 'This will generate a new temporary password for the user.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Reset Password',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#dc3545'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/UserManagement/ResetUserPassword', { userId: userId })
+                        .done(function(response) {
+                            console.log('Password reset response:', response);
+                            
+                            if (response.success) {
+                                Swal.fire({
+                                    title: 'Password Reset Successfully!',
+                                    html: `
+                                        <div class="text-start">
+                                            <p>${response.message}</p>
+                                            <div class="alert alert-info mt-3">
+                                                <strong>New Temporary Password:</strong> <code>${response.tempPassword}</code>
+                                                <br><small>Please provide this password to the user</small>
+                                            </div>
+                                        </div>
+                                    `,
+                                    icon: 'success',
+                                    confirmButtonText: 'OK'
+                                });
+                            } else {
+                                Swal.fire('Error', response.message, 'error');
+                            }
+                        })
+                        .fail(function(xhr, status, error) {
+                            console.error('Password reset failed:', error);
+                            Swal.fire('Error', 'Failed to reset password', 'error');
+                        });
+                }
+            });
+        }
+        function linkUserToEmployee(userId) {
+            console.log('Linking user to employee:', userId);
+            
+            // First load employees
+            $.get('/UserManagement/GetEmployeesWithoutUsers')
+                .done(function(data) {
+                    if (data.success && data.employees && data.employees.length > 0) {
+                        // Create select options
+                        let options = '<option value="">-- Select Employee --</option>';
+                        data.employees.forEach(function(emp) {
+                    options += `<option value="${emp.id}">${emp.fullName} (${emp.badgeNumber}) - ${emp.organizationUnit}</option>`;
+                        });
+                        
+                        Swal.fire({
+                            title: 'Link User to Employee',
+                            html: `
+                                <div class="text-start">
+                                    <label for="linkEmployeeSelect" class="form-label">Select Employee:</label>
+                                    <select id="linkEmployeeSelect" class="form-select">
+                                        ${options}
+                                    </select>
+                                </div>
+                            `,
+                            showCancelButton: true,
+                            confirmButtonText: 'Link Employee',
+                            cancelButtonText: 'Cancel',
+                            preConfirm: () => {
+                                const employeeId = document.getElementById('linkEmployeeSelect').value;
+                                if (!employeeId) {
+                                    Swal.showValidationMessage('Please select an employee');
+                                    return false;
+                                }
+                                return employeeId;
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                const employeeId = result.value;
+                                
+                                $.post('/UserManagement/LinkUserToEmployee', {
+                                    userId: userId,
+                                    employeeId: employeeId
+                                }).done(function(response) {
+                                    if (response.success) {
+                                        Swal.fire('Success!', response.message, 'success').then(() => {
+                                            location.reload();
+                                        });
+                                    } else {
+                                        Swal.fire('Error', response.message, 'error');
+                                    }
+                                }).fail(function(xhr, status, error) {
+                                    console.error('Link user failed:', error);
+                                    Swal.fire('Error', 'Failed to link user to employee', 'error');
+                                });
+                            }
+                        });
+                    } else {
+                        Swal.fire('Info', 'No employees available for linking. All employees may already have user accounts.', 'info');
+                    }
+                })
+                .fail(function(xhr, status, error) {
+                    console.error('Failed to load employees:', error);
+                    Swal.fire('Error', 'Failed to load employees for linking', 'error');
+                });
+        }
+function clearUserFilters() {
+    document.getElementById('searchTerm').value = '';
+    document.getElementById('roleFilter').selectedIndex = 0;
+    document.getElementById('statusFilter').selectedIndex = 0;
+    document.querySelector('form[action="/UserManagement"]').submit();
+}
+function editUser(userId) {
+    // For now, show a message. You can later open a modal for editing user details/roles.
+    Swal.fire('Edit User', 'Edit user functionality is not yet implemented.', 'info');
+}
+// Manual admin role assignment utility
+$('#manualRoleAssignForm').on('submit', function(e) {
+    e.preventDefault();
+    var userId = $('#manualUserId').val();
+    var roles = [];
+    $('#manualRoles input[name="roles"]:checked').each(function() {
+        roles.push($(this).val());
+    });
+    if (!userId || roles.length === 0) {
+        Swal.fire('Validation Error', 'Please select an employee and at least one role.', 'warning');
+        return;
+    }
+    $.post('/UserManagement/UpdateUserRoles', { userId: userId, roles: roles })
+        .done(function(response) {
+            if (response.success) {
+                Swal.fire('Success!', 'Roles assigned successfully.', 'success').then(() => location.reload());
+            } else {
+                Swal.fire('Error', response.message || 'Failed to assign roles.', 'error');
+            }
+        })
+        .fail(function() {
+            Swal.fire('Error', 'An error occurred while assigning roles.', 'error');
+        });
+});
+$('#makeAdminTLDirectorForm').on('submit', function(e) {
+    e.preventDefault();
+    const employeeId = $('#adminEmployeeSelect').val();
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'This will make the selected employee Team Leader and Director for ALL organization units and employees. This is for testing only!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, do it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.post('/UserManagement/MakeAdminTeamLeaderAndDirectorForAll', { employeeId: employeeId })
+                .done(function(response) {
+                    if (response.success) {
+                        Swal.fire('Success!', response.message, 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', response.message, 'error');
+                    }
+                })
+                .fail(function() {
+                    Swal.fire('Error', 'An error occurred while updating roles.', 'error');
+                });
+        }
+    });
+});
+$('#assignAdminApproverForm').on('submit', function(e) {
+    e.preventDefault();
+    const employeeId = $('#approverEmployeeSelect').val();
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'This will assign the selected employee as approver for ALL pending leave requests. This is for testing only!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, do it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.post('/UserManagement/AssignAdminAsApproverForAllPendingLeaveRequests', { employeeId: employeeId })
+                .done(function(response) {
+                    if (response.success) {
+                        Swal.fire('Success!', response.message, 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', response.message, 'error');
+                    }
+                })
+                .fail(function() {
+                    Swal.fire('Error', 'An error occurred while updating approvers.', 'error');
+                });
+        }
+    });
+});
+function unlinkUserFromEmployee(userId, employeeId) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'This will unlink the user from the employee. This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Unlink',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.post('/UserManagement/UnlinkUserFromEmployee', { userId: userId, employeeId: employeeId })
+                .done(function(response) {
+                    if (response.success) {
+                        Swal.fire('Success!', response.message, 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', response.message, 'error');
+                    }
+                })
+                .fail(function() {
+                    Swal.fire('Error', 'An error occurred while unlinking.', 'error');
+                });
+        }
+    });
+}
+</script>
+}

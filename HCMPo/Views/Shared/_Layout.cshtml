@@ -1,6 +1,7 @@
 ﻿@using HCMPo
 @using HCMPo.Models
 @using Microsoft.AspNetCore.Identity
+@using HCMPo.Helpers
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
@@ -11,12 +12,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - HCM Portal</title>
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />
+    <link rel="stylesheet" href="~/lib/font-awesome-cdn/all.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/ethiopian-datepicker.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/payrollreport.css" />
+    <link rel="stylesheet" href="~/css/payrollslip.css" />
+    <link rel="stylesheet" href="~/lib/sweetalert2/sweetalert2.min.css" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
@@ -28,7 +31,7 @@
     </div>
 
     <!-- Sidebar -->
-    <div class="sidebar" style="overflow-y: auto; max-height: 100vh;">
+    <div class="sidebar">
         <div class="sidebar-header">
             <img src="~/images/logo.jpg" alt="Logo" class="logo" />
             <h4>HCM Portal</h4>
@@ -36,10 +39,10 @@
         <div class="sidebar-user">
             @if (User.Identity.IsAuthenticated)
             {
-                <img src="@ViewBag.UserPhoto" alt="Profile" class="user-photo" />
+                @await Component.InvokeAsync("UserProfilePhoto", new { a_class = "rounded-circle mb-2", size = 80 })
                 <div class="user-info">
-                    <h6>@ViewBag.UserName</h6>
-                    <small>@ViewBag.UserRole</small>
+                    <h6>@User.Identity.Name</h6>
+                    <small>@User.Claims.FirstOrDefault(c => c.Type == "JobTitle")?.Value</small>
                 </div>
             }
         </div>
@@ -52,94 +55,155 @@
                         <span>Dashboard</span>
                     </a>
                 </li>
+                
                 @if (User.IsInRole("HR") || User.IsInRole("Admin"))
                 {
-                    <li class="nav-item">
-                        <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Employees" ? "active" : "")" 
-                           asp-controller="Employees" asp-action="Index">
+                    <!-- Employee Management Section -->
+                    <li class="nav-item has-submenu">
+                        <a class="nav-link submenu-toggle @(ViewContext.RouteData.Values["Controller"].ToString() == "Employees" ? "active" : "")" 
+                           href="#" data-bs-toggle="collapse" data-bs-target="#employeeSubmenu" aria-expanded="false">
                             <i class="fas fa-users"></i>
-                            <span>Employees</span>
+                            <span>Employee Management</span>
+                            <i class="fas fa-chevron-down submenu-arrow"></i>
                         </a>
+                        <div class="collapse @(ViewContext.RouteData.Values["Controller"].ToString() == "Employees" ? "show" : "")" id="employeeSubmenu">
+                            <ul class="submenu">
+                                <li><a class="nav-link" asp-controller="Employees" asp-action="Index"><i class="fas fa-list"></i> All Employees</a></li>
+                                <li><a class="nav-link" asp-controller="Employees" asp-action="Create"><i class="fas fa-user-plus"></i> Add Employee</a></li>
+                                <li><a class="nav-link" asp-controller="EmployeeDocuments" asp-action="Index"><i class="fas fa-file-alt"></i> Documents</a></li>
+                            </ul>
+                        </div>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Attendances" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")" 
-                           asp-controller="Attendances" asp-action="Index">
-                            <i class="fas fa-list-ul"></i>
-                            <span>View Attendance Log</span>
+
+                    <!-- Attendance Section -->
+                    <li class="nav-item has-submenu">
+                        <a class="nav-link submenu-toggle @(ViewContext.RouteData.Values["Controller"].ToString() == "Attendances" ? "active" : "")" 
+                           href="#" data-bs-toggle="collapse" data-bs-target="#attendanceSubmenu" aria-expanded="false">
+                            <i class="fas fa-clock"></i>
+                            <span>Attendance</span>
+                            <i class="fas fa-chevron-down submenu-arrow"></i>
                         </a>
+                        <div class="collapse @(ViewContext.RouteData.Values["Controller"].ToString() == "Attendances" ? "show" : "")" id="attendanceSubmenu">
+                            <ul class="submenu">
+                                <li><a class="nav-link" asp-controller="Attendances" asp-action="Index"><i class="fas fa-list-ul"></i> Attendance Log</a></li>
+                                <li><a class="nav-link" asp-controller="Attendances" asp-action="Summary"><i class="fas fa-chart-pie"></i> Summary Report</a></li>
+                                <li><a class="nav-link" asp-controller="Attendances" asp-action="Create"><i class="fas fa-plus"></i> Manual Entry</a></li>
+                            </ul>
+                        </div>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Summary" ? "active" : "")" 
-                           asp-controller="Attendances" asp-action="Summary">
-                            <i class="fas fa-chart-pie"></i> <span>Attendance Summary</span>
-                        </a>
-                    </li>
-                    @* <li class="nav-item"> *@
-                    @*     <a class="nav-link text-dark @(ViewContext.RouteData.Values["Action"].ToString() == "TestZKTimeConnection" ? "active" : "")"  *@
-                    @*        asp-controller="Attendances" asp-action="TestZKTimeConnection"> *@
-                    @*         <i class="fas fa-database"></i> Test ZKTime Connection *@
-                    @*     </a> *@
-                    @* </li> *@
-                    <li class="nav-item">
-                        <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Payroll" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")" 
-                           asp-controller="Payroll" asp-action="Index">
+
+                    <!-- Payroll Section -->
+                    <li class="nav-item has-submenu">
+                        <a class="nav-link submenu-toggle @(ViewContext.RouteData.Values["Controller"].ToString() == "Payroll" || ViewContext.RouteData.Values["Controller"].ToString() == "PayrollSlip" ? "active" : "")" 
+                           href="#" data-bs-toggle="collapse" data-bs-target="#payrollSubmenu" aria-expanded="false">
                             <i class="fas fa-money-bill-wave"></i>
-                            <span>View Payroll History</span>
+                            <span>Payroll</span>
+                            <i class="fas fa-chevron-down submenu-arrow"></i>
                         </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Payroll" && ViewContext.RouteData.Values["Action"].ToString() == "Declarations" ? "active" : "")" 
-                           asp-controller="Payroll" asp-action="Declarations">
-                            <i class="fas fa-calculator"></i>
-                            <span>Payroll Declarations</span>
-                        </a>
+                        <div class="collapse @(ViewContext.RouteData.Values["Controller"].ToString() == "Payroll" || ViewContext.RouteData.Values["Controller"].ToString() == "PayrollSlip" ? "show" : "")" id="payrollSubmenu">
+                            <ul class="submenu">
+                                <li><a class="nav-link" asp-controller="Payroll" asp-action="Index"><i class="fas fa-history"></i> Payroll History</a></li>
+                                <li><a class="nav-link" asp-controller="Payroll" asp-action="Declarations"><i class="fas fa-file-invoice"></i> Declarations</a></li>
+                                <li class="submenu-divider"></li>
+                                <li><a class="nav-link" asp-controller="PayrollSlip" asp-action="Index"><i class="fas fa-file-invoice-dollar"></i> Payroll Slips</a></li>
+                                <li><a class="nav-link" asp-controller="PayrollSlip" asp-action="Summary"><i class="fas fa-chart-bar"></i> Slip Summary</a></li>
+                                @if (User.IsInRole("HR") || User.IsInRole("Admin"))
+                                {
+                                    <li><a class="nav-link" asp-controller="PayrollSlip" asp-action="StampManagement"><i class="fas fa-stamp"></i> Manage Stamps</a></li>
+                                }
+                                <li class="submenu-divider"></li>
+                                <li><a class="nav-link" asp-controller="AllowanceTypes" asp-action="Index"><i class="fas fa-plus-circle"></i> Allowance Types</a></li>
+                                <li><a class="nav-link" asp-controller="DeductionTypes" asp-action="Index"><i class="fas fa-minus-circle"></i> Deduction Types</a></li>
+                            </ul>
+                        </div>
                     </li>
                 }
-                <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Leave" ? "active" : "")" 
-                       asp-controller="Leave" asp-action="Index">
+
+                <!-- Leave Management Section (Available to All Users) -->
+                <li class="nav-item has-submenu">
+                    <a class="nav-link submenu-toggle @(ViewContext.RouteData.Values["Controller"].ToString() == "LeaveRequests" || ViewContext.RouteData.Values["Controller"].ToString() == "Leave" ? "active" : "")" 
+                       href="#" data-bs-toggle="collapse" data-bs-target="#leaveSubmenu" aria-expanded="false">
                         <i class="fas fa-calendar-alt"></i>
-                        <span>Leave</span>
+                        <span>Leave Management</span>
                         @if (ViewBag.PendingLeaveCount > 0)
                         {
                             <span class="badge bg-warning">@ViewBag.PendingLeaveCount</span>
                         }
+                        <i class="fas fa-chevron-down submenu-arrow"></i>
                     </a>
+                    <div class="collapse @(ViewContext.RouteData.Values["Controller"].ToString() == "LeaveRequests" || ViewContext.RouteData.Values["Controller"].ToString() == "Leave" ? "show" : "")" id="leaveSubmenu">
+                        <ul class="submenu">
+                            <li><a class="nav-link" asp-controller="LeaveRequests" asp-action="Index"><i class="fas fa-list"></i> My Leave Requests</a></li>
+                            <li><a class="nav-link" asp-controller="LeaveRequests" asp-action="Create"><i class="fas fa-plus"></i> Request Leave</a></li>
+                            <li><a class="nav-link" asp-controller="LeaveRequests" asp-action="MyBalance"><i class="fas fa-chart-pie"></i> My Leave Balance</a></li>
+                            <li><a class="nav-link" asp-controller="LeaveRequests" asp-action="Calendar"><i class="fas fa-calendar"></i> Leave Calendar</a></li>
+                            @if (User.IsInRole("HR") || User.IsInRole("Admin"))
+                            {
+                                <li class="submenu-divider"></li>
+                                <li><a class="nav-link" asp-controller="LeaveRequests" asp-action="ManageEntitlements"><i class="fas fa-user-cog"></i> Manage Entitlements</a></li>
+                                <li><a class="nav-link" asp-controller="LeaveRequests" asp-action="ManageCarryovers"><i class="fas fa-exchange-alt"></i> Manage Carryovers</a></li>
+                                <li><a class="nav-link" asp-controller="LeaveRequests" asp-action="Reports"><i class="fas fa-chart-bar"></i> Leave Reports</a></li>
+                            }
+                        </ul>
+                    </div>
                 </li>
+
                 @if (User.IsInRole("HR") || User.IsInRole("Admin"))
                 {
+                    <!-- Configuration Section -->
                     <li class="nav-item mt-3">
-                        <span class="sidebar-section-header">Settings</span>
+                        <span class="sidebar-section-header">Configuration</span>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="PayrollConfiguration" asp-action="Index">
-                            <i class="fas fa-cogs"></i> Payroll Configuration
+                    <li class="nav-item has-submenu">
+                        <a class="nav-link submenu-toggle" href="#" data-bs-toggle="collapse" data-bs-target="#configSubmenu" aria-expanded="false">
+                            <i class="fas fa-cogs"></i>
+                            <span>System Settings</span>
+                            <i class="fas fa-chevron-down submenu-arrow"></i>
                         </a>
+                        <div class="collapse" id="configSubmenu">
+                            <ul class="submenu">
+                                <li><a class="nav-link" asp-controller="PayrollConfiguration" asp-action="Index"><i class="fas fa-calculator"></i> Payroll Config</a></li>
+                                <li><a class="nav-link" asp-controller="TaxSettings" asp-action="Index"><i class="fas fa-balance-scale"></i> Tax Settings</a></li>
+                                <li><a class="nav-link" asp-controller="UserManagement" asp-action="Index"><i class="fas fa-users-cog"></i> User Management</a></li>
+                                <li><a class="nav-link" asp-controller="EmployeeManagement" asp-action="Index"><i class="fas fa-users"></i> Employee Management</a></li>
+                            </ul>
+                        </div>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="TaxSettings" asp-action="Index">
-                            <i class="fas fa-balance-scale"></i> Tax Settings
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Employees" asp-action="Taxes" asp-route-id="EMPLOYEE_ID_PLACEHOLDER">
-                            <i class="fas fa-percent"></i> Employee Taxes
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="DeductionTypes" asp-action="Index">
-                            <i class="fas fa-minus-circle"></i> Deduction Types
-                        </a>
-                    </li>
+
+                    <!-- Reports Section -->
                     <li class="nav-item mt-3">
                         <span class="sidebar-section-header">Reports</span>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="PayrollReport" asp-action="Index">
-                            <i class="fas fa-file-alt"></i> Payroll Report
+                    <li class="nav-item has-submenu">
+                        <a class="nav-link submenu-toggle" href="#" data-bs-toggle="collapse" data-bs-target="#reportsSubmenu" aria-expanded="false">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Reports</span>
+                            <i class="fas fa-chevron-down submenu-arrow"></i>
                         </a>
+                        <div class="collapse" id="reportsSubmenu">
+                            <ul class="submenu">
+                                <li><a class="nav-link" asp-controller="PayrollReport" asp-action="Index"><i class="fas fa-file-invoice-dollar"></i> Payroll Reports</a></li>
+                                <li><a class="nav-link" asp-controller="LeaveRequests" asp-action="Reports"><i class="fas fa-calendar-check"></i> Leave Reports</a></li>
+                                <li><a class="nav-link" asp-controller="Attendances" asp-action="Summary"><i class="fas fa-clock"></i> Attendance Reports</a></li>
+                            </ul>
+                        </div>
                     </li>
                 }
+
+                <li class="nav-item has-submenu">
+                    <a class="nav-link submenu-toggle @(ViewContext.RouteData.Values["Controller"].ToString() == "OrganizationUnit" || ViewContext.RouteData.Values["Controller"].ToString() == "JobTitles" ? "active" : "")" 
+                       href="#" data-bs-toggle="collapse" data-bs-target="#orgConfigSubmenu" aria-expanded="false">
+                        <i class="fas fa-sitemap"></i>
+                        <span>Org Configuration</span>
+                        <i class="fas fa-chevron-down submenu-arrow"></i>
+                    </a>
+                    <div class="collapse @(ViewContext.RouteData.Values["Controller"].ToString() == "OrganizationUnit" || ViewContext.RouteData.Values["Controller"].ToString() == "JobTitles" ? "show" : "")" id="orgConfigSubmenu">
+                        <ul class="submenu">
+                            <li><a class="nav-link" asp-controller="OrganizationUnit" asp-action="Index"><i class="fas fa-building"></i> Organization Units</a></li>
+                            <li><a class="nav-link" asp-controller="JobTitles" asp-action="Index"><i class="fas fa-user-tie"></i> Job Titles</a></li>
+                        </ul>
+                    </div>
+                </li>
             </ul>
         </nav>
     </div>
@@ -153,24 +217,23 @@
                     <i class="fas fa-bars"></i>
                 </button>
                 <div class="navbar-nav ms-auto">
+                    <div class="d-flex align-items-center">
+                        <!-- Notifications Dropdown -->
                     <div class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="notificationsDropdown" role="button" 
-                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <a class="nav-link text-dark" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-bell"></i>
-                            @if (ViewBag.NotificationCount > 0)
-                            {
-                                <span class="badge bg-danger">@ViewBag.NotificationCount</span>
-                            }
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notification-badge" style="display: none;"></span>
                         </a>
-                        <div class="dropdown-menu dropdown-menu-end notifications-dropdown" 
-                             aria-labelledby="notificationsDropdown">
+                            <div class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="notificationDropdown" id="notification-dropdown-menu">
                             @await Component.InvokeAsync("NotificationsDropdown")
                         </div>
                     </div>
+
+                        <!-- Profile Dropdown -->
                     <div class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" 
                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="@ViewBag.UserPhoto" alt="Profile" class="user-photo-small" />
+                                @await Component.InvokeAsync("UserProfilePhoto", new { a_class = "rounded-circle me-2", size = 32 })
                         </a>
                         <div class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                             <a class="dropdown-item" asp-controller="Profile" asp-action="Index">
@@ -185,6 +248,7 @@
                                     <i class="fas fa-sign-out-alt"></i> Logout
                                 </button>
                             </form>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -201,6 +265,7 @@
     <footer class="footer mt-auto py-3 bg-light border-top">
         <div class="container text-center">
             <span class="text-muted">&copy; @DateTime.Now.Year HCM Portal. All rights reserved.</span>
+            <span class="text-muted ms-2">| @DateTime.Now.ToString("MMM dd, yyyy") <small class="text-muted">(@EthiopianCalendarHelper.FormatEthiopianShort(DateTime.Now))</small></span>
             <span class="footer-links ms-3">
                 <!-- Add your future footer links here -->
                 <a href="#" class="text-muted me-2">Privacy Policy</a>
@@ -218,9 +283,11 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/sweetalert2/sweetalert2.min.js"></script>
     <script src="~/lib/font-awesome/js/all.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+    <script src="~/js/signalr/dist/browser/signalr.min.js"></script>
+    @RenderSection("Scripts", required: false)
 
     <script>
         // Page loader
@@ -240,6 +307,94 @@
         // Sidebar toggle
         $('.sidebar-toggle').click(function() {
             $('body').toggleClass('sidebar-collapsed');
+            $('.sidebar').toggleClass('show');
+        });
+
+        // Enhanced submenu toggle functionality with animations
+        $('.submenu-toggle').click(function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            var target = $(this).attr('data-bs-target');
+            var $target = $(target);
+            var $submenu = $target.find('.submenu');
+            var $arrow = $(this).find('.submenu-arrow');
+            var isCurrentlyOpen = $submenu.hasClass('show');
+            
+            // Close all other submenus first
+            $('.collapse .submenu').not($submenu).removeClass('show');
+            $('.submenu-toggle').not(this).attr('aria-expanded', 'false');
+            $('.submenu-arrow').not($arrow).css('transform', 'rotate(0deg)');
+            
+            // Toggle current submenu with enhanced animation
+            if (isCurrentlyOpen) {
+                $submenu.removeClass('show');
+                $(this).attr('aria-expanded', 'false');
+                $arrow.css('transform', 'rotate(0deg)');
+            } else {
+                $submenu.addClass('show');
+                $(this).attr('aria-expanded', 'true');
+                $arrow.css('transform', 'rotate(180deg)');
+                
+                // Animate submenu items with staggered delay
+                $submenu.find('li').each(function(index) {
+                    var $item = $(this);
+                    setTimeout(function() {
+                        $item.css('transform', 'translateX(0)');
+                    }, index * 50);
+                });
+            }
+        });
+
+        // Prevent submenu collapse when clicking submenu items
+        $('.submenu .nav-link').click(function(e) {
+            e.stopPropagation();
+            
+            // Store the current submenu state in localStorage to preserve it
+            var $submenu = $(this).closest('.submenu');
+            var $collapse = $submenu.closest('.collapse');
+            var submenuId = $collapse.attr('id');
+            
+            if (submenuId) {
+                localStorage.setItem('openSubmenu', submenuId);
+            }
+        });
+
+        // Auto-expand submenus if current page is in submenu or restore from localStorage
+        $(document).ready(function() {
+            var openSubmenuId = localStorage.getItem('openSubmenu');
+            var hasActiveSubmenuLink = false;
+            
+            // First check if current page has an active submenu link
+            $('.submenu .nav-link').each(function() {
+                if ($(this).hasClass('active')) {
+                    var $submenuList = $(this).closest('.submenu');
+                    var $collapse = $submenuList.closest('.collapse');
+                    var $toggle = $('[data-bs-target="#' + $collapse.attr('id') + '"]');
+                    
+                    $submenuList.addClass('show');
+                    $toggle.attr('aria-expanded', 'true');
+                    $toggle.find('.submenu-arrow').css('transform', 'rotate(180deg)');
+                    hasActiveSubmenuLink = true;
+                    
+                    // Update localStorage with current active submenu
+                    localStorage.setItem('openSubmenu', $collapse.attr('id'));
+                }
+            });
+            
+            // If no active submenu link but we have a stored submenu, restore it
+            if (!hasActiveSubmenuLink && openSubmenuId) {
+                var $storedCollapse = $('#' + openSubmenuId);
+                if ($storedCollapse.length) {
+                    var $storedSubmenu = $storedCollapse.find('.submenu');
+                    var $storedToggle = $('[data-bs-target="#' + openSubmenuId + '"]');
+                    
+                    $storedSubmenu.addClass('show');
+                    $storedCollapse.addClass('show').collapse('show');
+                    $storedToggle.attr('aria-expanded', 'true');
+                    $storedToggle.find('.submenu-arrow').css('transform', 'rotate(180deg)');
+                }
+            }
         });
 
         // Add loading indicator to forms
@@ -247,9 +402,134 @@
             showTaskSpinner();
         });
 
-        // Add loading indicator to links
-        $('a:not([data-bs-toggle])').click(function() {
-            showTaskSpinner();
+        // Add loading indicator to links (but not submenu toggles)
+        $('a:not([data-bs-toggle]):not(.submenu-toggle)').click(function() {
+            if ($(this).attr('href') !== '#') {
+                showTaskSpinner();
+            }
+        });
+
+        // Mobile sidebar handling
+        $(document).click(function(e) {
+            if ($(window).width() <= 768) {
+                if (!$(e.target).closest('.sidebar, .sidebar-toggle').length) {
+                    $('.sidebar').removeClass('show');
+                    $('body').removeClass('sidebar-collapsed');
+                }
+            }
+        });
+
+        function adjustEthiopianDayDropdown(yearSelector, monthSelector, daySelector) {
+            var year = parseInt($(yearSelector).val(), 10) || 0;
+            var month = parseInt($(monthSelector).val(), 10) || 0;
+            var maxDay = 30;
+            if (month === 13) {
+                // Ethiopian leap year: (year % 4) == 3
+                maxDay = (year % 4 === 3) ? 6 : 5;
+            }
+            var selectedDay = parseInt($(daySelector).val(), 10) || 0;
+
+            $(daySelector).empty();
+            $(daySelector).append('<option value="">ቀን ይምረጡ</option>');
+            for (var d = 1; d <= maxDay; d++) {
+                var selected = (d === selectedDay && selectedDay <= maxDay) ? 'selected' : '';
+                $(daySelector).append('<option value="' + d + '" ' + selected + '>' + d + '</option>');
+            }
+            if (selectedDay > maxDay) {
+                $(daySelector).val('');
+            }
+        }
+
+        $(document).ready(function() {
+            $('.ethiopian-date-picker').each(function() {
+                var picker = $(this);
+                var yearSel = picker.find('.eth-year');
+                var monthSel = picker.find('.eth-month');
+                var daySel = picker.find('.eth-day');
+
+                function updateDays() {
+                    adjustEthiopianDayDropdown(yearSel, monthSel, daySel);
+                }
+
+                monthSel.on('change', updateDays);
+                yearSel.on('change', updateDays);
+
+                // Initialize on page load
+                updateDays();
+            });
+        });
+
+        $(document).ready(function () {
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/notificationHub")
+                .build();
+
+            async function start() {
+                try {
+                    await connection.start();
+                    console.log("SignalR Connected.");
+                    updateNotificationCount();
+                } catch (err) {
+                    console.log(err);
+                    setTimeout(start, 5000);
+                }
+            };
+
+            connection.onclose(async () => {
+                await start();
+            });
+
+            // Listen for notification count updates
+            connection.on("UpdateBadgeCount", function (count, type) {
+                updateBadge(count, type);
+            });
+
+            // Listen for new notifications to refresh dropdown
+            connection.on("ReceiveNotification", function(message) {
+                // Refresh the dropdown content
+                $('#notification-dropdown-menu').load('/Profile/NotificationsDropdown');
+                updateNotificationCount(); 
+            });
+
+            function updateNotificationCount() {
+                $.get('/Profile/GetUnreadNotificationSummary', function (data) {
+                    updateBadge(data.count, data.type);
+                });
+            }
+
+            function updateBadge(count, type) {
+                const badge = $('#notification-badge');
+                if (count > 0) {
+                    badge.text(count).show();
+                } else {
+                    badge.hide();
+                }
+
+                // Reset badge color
+                badge.removeClass('bg-danger bg-success bg-warning bg-info bg-primary');
+
+                // Set new badge color based on the type of the most recent notification
+                switch (type) {
+                    case 'Leave':
+                        badge.addClass('bg-success'); // Green for leave
+                        break;
+                    case 'Payroll':
+                        badge.addClass('bg-primary'); // Blue for payroll
+                        break;
+                    case 'Attendance':
+                        badge.addClass('bg-warning'); // Yellow for attendance
+                        break;
+                    case 'System':
+                        badge.addClass('bg-danger'); // Red for system alerts
+                        break;
+                    default: // 'Info' and any other types
+                        badge.addClass('bg-info'); // Default to info blue
+                        break;
+                }
+            }
+            
+            // Initial load
+            start();
         });
     </script>
 
@@ -275,38 +555,284 @@
         }
         .footer {
             flex-shrink: 0;
-            position: sticky;
-            bottom: 0;
+            margin-top: auto;
             width: 100%;
-            z-index: 1000;
+            background-color: #f8f9fa;
+            border-top: 1px solid #dee2e6;
         }
         .footer-links a {
             text-decoration: none;
         }
         .sidebar-section-header {
-            font-size: 0.95rem;
-            font-weight: bold;
-            color: #888;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #6c757d;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-left: 1rem;
-        }
-        /* Remove previous 3D and background styles, add only a thin shadow for separation */
-        .sidebar-nav .nav-item .nav-link {
-            box-shadow: 0 1px 0 rgba(0,0,0,0.07);
-            border-radius: 0;
-            margin-bottom: 0;
-            background: none;
-            transition: none;
+            letter-spacing: 1.2px;
+            margin: 15px 20px 8px 20px;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
             position: relative;
         }
-        .sidebar-nav .nav-item .nav-link:hover, .sidebar-nav .nav-item .nav-link.active {
-            box-shadow: 0 1px 0 rgba(0,0,0,0.12);
-            background: none;
+        
+        .sidebar-section-header::before {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 30px;
+            height: 2px;
+            background: linear-gradient(90deg, #1976d2, #42a5f5);
+            border-radius: 1px;
+        }
+        /* Main navigation link styling */
+        .sidebar-nav .nav-item .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #495057;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 2px 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 1px solid #dee2e6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .sidebar-nav .nav-item .nav-link:hover {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            color: #1976d2;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-color: #90caf9;
+        }
+        
+        .sidebar-nav .nav-item .nav-link.active {
+            background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(25,118,210,0.3);
+            border-color: #1565c0;
+        }
+        
+        .sidebar-nav .nav-item .nav-link i {
+            width: 20px;
+            margin-right: 12px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+        
+        .sidebar-nav .nav-item .nav-link span {
+            flex: 1;
+            font-weight: 500;
+        }
+        
+        .sidebar-nav .nav-item .nav-link .badge {
+            font-size: 0.7em;
+            padding: 3px 6px;
+            border-radius: 10px;
+            margin-left: 8px;
+        }
+        
+        .sidebar-nav .nav-item .nav-link.active .badge {
+            background-color: rgba(255,255,255,0.2) !important;
+            color: white;
         }
         .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
             overflow-y: auto;
             max-height: 100vh;
+            z-index: 1000;
+            width: 280px;
+            background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
+            border-right: 1px solid #dee2e6;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+            color: white;
+            text-align: center;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .sidebar-header h4 {
+            margin: 10px 0 0 0;
+            font-weight: 600;
+            font-size: 1.2em;
+        }
+        
+        .sidebar-header .logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .sidebar-user {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e9ecef;
+            background: rgba(25,118,210,0.05);
+        }
+        
+        .sidebar-user .user-photo {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid #dee2e6;
+        }
+        
+        .sidebar-user .user-info h6 {
+            margin: 0;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .sidebar-user .user-info small {
+            color: #6c757d;
+        }
+        
+        /* Main content adjustment for fixed sidebar */
+        .main-content {
+            margin-left: 280px;
+        }
+        
+        /* Submenu styles */
+        .has-submenu .submenu-toggle {
+            position: relative;
+        }
+        
+        .submenu-arrow {
+            position: absolute;
+            right: 15px;
+            transition: transform 0.3s ease;
+            font-size: 0.8em;
+        }
+        
+        .submenu-toggle[aria-expanded="true"] .submenu-arrow {
+            transform: rotate(180deg);
+        }
+        
+        .submenu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background-color: rgba(0,0,0,0.05);
+            border-left: 2px solid #e9ecef;
+            margin-left: 15px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+        }
+        
+        .submenu.show {
+            max-height: 500px;
+            opacity: 1;
+            padding: 5px 0;
+        }
+        
+        .submenu li {
+            margin: 0;
+            transform: translateX(-20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .submenu.show li {
+            transform: translateX(0);
+        }
+        
+        .submenu .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 8px 15px 8px 35px;
+            font-size: 0.85em;
+            color: #6c757d;
+            border-left: 3px solid transparent;
+            border-radius: 4px;
+            margin: 1px 10px 1px 15px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            position: relative;
+        }
+        
+        .submenu .nav-link::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 4px;
+            background-color: #dee2e6;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+        
+        .submenu .nav-link:hover {
+            background-color: rgba(25,118,210,0.1);
+            color: #1976d2;
+            border-left-color: #1976d2;
+            transform: translateX(5px);
+        }
+        
+        .submenu .nav-link:hover::before {
+            background-color: #1976d2;
+            transform: translateY(-50%) scale(1.5);
+        }
+        
+        .submenu .nav-link.active {
+            background-color: rgba(25,118,210,0.15);
+            color: #1976d2;
+            border-left-color: #1976d2;
+            font-weight: 600;
+        }
+        
+        .submenu .nav-link.active::before {
+            background-color: #1976d2;
+            transform: translateY(-50%) scale(1.3);
+        }
+        
+        .submenu .nav-link i {
+            width: 16px;
+            margin-right: 8px;
+            font-size: 0.8em;
+        }
+        
+        .submenu-divider {
+            height: 1px;
+            background-color: rgba(0,0,0,0.1);
+            margin: 5px 20px;
+        }
+        
+        /* Responsive adjustments */
+        @@media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            body.sidebar-collapsed .sidebar {
+                transform: translateX(0);
+            }
+        }
+        
+        /* Improved sidebar scrolling */
+        .sidebar-nav {
+            padding-bottom: 100px; /* Add space at bottom */
         }
     </style>
 </body>

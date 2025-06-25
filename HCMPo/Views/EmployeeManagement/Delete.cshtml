@@ -1,0 +1,141 @@
+@model HCMPo.Models.Employee
+
+@{
+    ViewData["Title"] = "Archive Employee";
+}
+
+<div class="container-fluid px-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-2 text-gray-800">Archive Employee</h1>
+                    <p class="mb-0 text-muted">Archive this employee. They will be moved to archived users and cannot access the system.</p>
+                </div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/EmployeeManagement">Employee Management</a></li>
+                        <li class="breadcrumb-item active">Archive Employee</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user-times text-danger"></i>
+                        Archive Employee: @Model.FullName
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-exclamation-triangle"></i> Warning</h6>
+                        <p class="mb-0">This action will archive the employee. They will be moved to archived users and their account will be deactivated. This is a soft delete and can be reversed later.</p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Employee Information</h6>
+                            <dl class="row">
+                                <dt class="col-sm-4">Full Name</dt>
+                                <dd class="col-sm-8">@Model.FullName</dd>
+
+                                <dt class="col-sm-4">Badge Number</dt>
+                                <dd class="col-sm-8">@Model.BadgeNumber</dd>
+
+                                <dt class="col-sm-4">Email</dt>
+                                <dd class="col-sm-8">@Model.Email</dd>
+
+                                <dt class="col-sm-4">Phone</dt>
+                                <dd class="col-sm-8">@Model.PhoneNumber</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Employment Details</h6>
+                            <dl class="row">
+                                <dt class="col-sm-4">Department</dt>
+                                <dd class="col-sm-8">@(Model.OrganizationUnit?.Name ?? "N/A")</dd>
+
+                                <dt class="col-sm-4">Job Title</dt>
+                                <dd class="col-sm-8">@(Model.JobTitle?.Title ?? "N/A")</dd>
+
+                                <dt class="col-sm-4">Hire Date</dt>
+                                <dd class="col-sm-8">@Model.HireDate.ToString("MMM dd, yyyy")</dd>
+
+                                <dt class="col-sm-4">Status</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge bg-@(Model.Status == EmploymentStatus.Active ? "success" : "secondary")">
+                                        @Model.Status
+                                    </span>
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="button" class="btn btn-danger" onclick="archiveEmployee('@Model.Id', '@Model.FullName')">
+                            <i class="fas fa-archive"></i> Archive Employee
+                        </button>
+                        <a href="/EmployeeManagement" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to List
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function archiveEmployee(employeeId, employeeName) {
+            Swal.fire({
+                title: 'Archive Employee?',
+                html: `Are you sure you want to archive <strong>${employeeName}</strong>?<br><br>
+                       <small class="text-muted">This will deactivate their account and move them to archived users. This action can be reversed later.</small>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, Archive',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading state
+                    Swal.fire({
+                        title: 'Archiving...',
+                        text: 'Please wait while we archive the employee.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // Make AJAX call to archive employee
+                    $.post('/EmployeeManagement/ArchiveEmployee', { employeeId: employeeId })
+                        .done(function(response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    title: 'Archived!',
+                                    text: response.message,
+                                    icon: 'success',
+                                    confirmButtonText: 'OK'
+                                }).then(() => {
+                                    window.location.href = '/EmployeeManagement';
+                                });
+                            } else {
+                                Swal.fire('Error', response.message, 'error');
+                            }
+                        })
+                        .fail(function() {
+                            Swal.fire('Error', 'An error occurred while archiving the employee.', 'error');
+                        });
+                }
+            });
+        }
+    </script>
+} 

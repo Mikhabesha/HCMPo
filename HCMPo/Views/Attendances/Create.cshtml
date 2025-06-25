@@ -1,69 +1,366 @@
 @model HCMPo.Models.Attendance
 @using HCMPo.Models // For AttendanceStatus enum
+@using HCMPo.Helpers
 
 @{
-    ViewData["Title"] = "Manual Attendance Entry";
+    ViewData["Title"] = "የማንዋል ምዝገባ (Manual Attendance Entry)";
 }
 
-<h1>@ViewData["Title"]</h1>
-
-<h4>Add New Attendance Record</h4>
-<hr />
-<div class="row">
-    <div class="col-md-8">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-            <div class="mb-3">
-                <label asp-for="EmployeeId" class="form-label">Employee</label>
-                <select asp-for="EmployeeId" class="form-select" asp-items="ViewBag.EmployeeId">
-                    <option value="">-- Select Employee --</option>
-                </select>
-                <span asp-validation-for="EmployeeId" class="text-danger"></span>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label asp-for="CheckInTime" class="form-label"></label>
-                    <input asp-for="CheckInTime" class="form-control" type="datetime-local" />
-                    <span asp-validation-for="CheckInTime" class="text-danger"></span>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-clock me-2"></i>@ViewData["Title"]
+                    </h4>
                 </div>
-                <div class="col-md-6">
-                    <label asp-for="CheckOutTime" class="form-label"></label>
-                    <input asp-for="CheckOutTime" class="form-control" type="datetime-local" />
-                    <span asp-validation-for="CheckOutTime" class="text-danger"></span>
+                <div class="card-body">
+                    @if (ViewData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>@ViewData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+                    
+                    <form asp-action="Create" id="attendanceForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <!-- Employee Selection -->
+                        <div class="mb-3">
+                            <label class="form-label">ሰራተኞች (Employees) *</label>
+                            <div class="card">
+                                <div class="card-header py-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="selectAllEmployees">
+                                        <label class="form-check-label fw-bold" for="selectAllEmployees">
+                                            <i class="fas fa-users me-1"></i>Select All Employees
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="max-height: 200px; overflow-y: auto;">
+                                    @if (ViewBag.EmployeeId != null)
+                                    {
+                                        @foreach (var employee in ViewBag.EmployeeId as SelectList)
+                                        {
+                                            <div class="form-check">
+                                                <input class="form-check-input employee-checkbox" type="checkbox" 
+                                                       name="SelectedEmployeeIds" value="@employee.Value" id="emp_@employee.Value">
+                                                <label class="form-check-label" for="emp_@employee.Value">
+                                                    @employee.Text
+                                                </label>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                            <span class="text-danger" id="employeeSelectionError"></span>
+                        </div>
+
+                        <!-- Ethiopian Date Selection -->
+                        <div class="mb-4">
+                            @{
+                                ViewBag.Id = "attendanceDate";
+                                ViewBag.Name = "AttendanceDate";
+                                ViewBag.Label = "የአቴንዳንስ ቀን (Attendance Date) *";
+                                ViewBag.Required = true;
+                            }
+                            @await Html.PartialAsync("_EthiopianDatePicker")
+                            <span asp-validation-for="CheckInTime" class="text-danger"></span>
+                        </div>
+
+                        <!-- Time Slot Selection -->
+                        <div class="mb-4">
+                            <label class="form-label">የአሻራ ጊዜ (Time Slots) *</label>
+                            <div class="mb-2">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="selectAllSlots">
+                                    <i class="fas fa-check-double me-1"></i>Select All Slots
+                                </button>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="card border time-slot-card">
+                                        <div class="card-body text-center">
+                                            <input type="checkbox" class="btn-check time-slot-checkbox" name="timeSlots" id="morningSlot" value="morning">
+                                            <label class="btn btn-outline-primary w-100" for="morningSlot">
+                                                <i class="fas fa-sun me-2"></i>
+                                                <div><strong>ጠዋት (Morning)</strong></div>
+                                                <small>07:00 - 08:30</small>
+                                            </label>
+                                            <div class="mt-2 time-picker-container" id="morningTimeContainer" style="display: none;">
+                                                <label class="form-label small">Morning Time:</label>
+                                                <select class="form-select form-select-sm" name="MorningTime" id="morningTimeSelect">
+                                                    <option value="">Select time</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card border time-slot-card">
+                                        <div class="card-body text-center">
+                                            <input type="checkbox" class="btn-check time-slot-checkbox" name="timeSlots" id="afternoonSlot" value="afternoon">
+                                            <label class="btn btn-outline-warning w-100" for="afternoonSlot">
+                                                <i class="fas fa-sun me-2"></i>
+                                                <div><strong>ቀትር (Afternoon)</strong></div>
+                                                <small>12:15 - 13:45</small>
+                                            </label>
+                                            <div class="mt-2 time-picker-container" id="afternoonTimeContainer" style="display: none;">
+                                                <label class="form-label small">Afternoon Time:</label>
+                                                <select class="form-select form-select-sm" name="AfternoonTime" id="afternoonTimeSelect">
+                                                    <option value="">Select time</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card border time-slot-card">
+                                        <div class="card-body text-center">
+                                            <input type="checkbox" class="btn-check time-slot-checkbox" name="timeSlots" id="eveningSlot" value="evening">
+                                            <label class="btn btn-outline-info w-100" for="eveningSlot">
+                                                <i class="fas fa-moon me-2"></i>
+                                                <div><strong>ማታ (Evening)</strong></div>
+                                                <small>15:45 - 17:15</small>
+                                            </label>
+                                            <div class="mt-2 time-picker-container" id="eveningTimeContainer" style="display: none;">
+                                                <label class="form-label small">Evening Time:</label>
+                                                <select class="form-select form-select-sm" name="EveningTime" id="eveningTimeSelect">
+                                                    <option value="">Select time</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="text-danger" id="timeSlotError"></span>
+                        </div>
+
+                        <!-- Debug Info -->
+                        <div class="alert alert-info" id="debugInfo" style="display: none;">
+                            <strong>Debug Info:</strong><br>
+                            Ethiopian Date: <span id="debugEthDate"></span><br>
+                            Converted Gregorian Date: <span id="debugGregorianDate"></span><br>
+                            Final DateTime: <span id="debugFinalDateTime"></span>
+                        </div>
+
+                        <!-- Status Selection -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Status" class="form-label">ሁኔታ (Status) *</label>
+                                <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<AttendanceStatus>()">
+                                     <option value="">-- ሁኔታ ይምረጡ (Select Status) --</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+                             <div class="col-md-6">
+                                <label asp-for="StatusReason" class="form-label">የሁኔታ ምክንያት (Status Reason)</label>
+                                <input asp-for="StatusReason" class="form-control" placeholder="Optional reason for status..." />
+                                <span asp-validation-for="StatusReason" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Manual Entry Reason -->
+                        <div class="mb-3">
+                            <label asp-for="ManualEntryReason" class="form-label">የእጅ ምዝገባ ምክንያት (Reason for Manual Entry) *</label>
+                            <textarea asp-for="ManualEntryReason" class="form-control" rows="3" placeholder="Please explain why this attendance record is being entered manually..." required></textarea>
+                            <span asp-validation-for="ManualEntryReason" class="text-danger"></span>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Create Record
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
-
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label asp-for="Status" class="form-label"></label>
-                    <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<AttendanceStatus>()">
-                         <option value="">-- Select Status --</option>
-                    </select>
-                    <span asp-validation-for="Status" class="text-danger"></span>
+        </div>
+        
+        <!-- Help Panel -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Time Slot Information
+                    </h5>
                 </div>
-                 <div class="col-md-6">
-                    <label asp-for="StatusReason" class="form-label">Status Reason (Optional)</label>
-                    <input asp-for="StatusReason" class="form-control" />
-                    <span asp-validation-for="StatusReason" class="text-danger"></span>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6><i class="fas fa-sun text-warning me-2"></i>Morning Slot</h6>
+                        <p class="small text-muted">07:00 - 08:30<br>Regular work start time</p>
+                    </div>
+                    <div class="mb-3">
+                        <h6><i class="fas fa-sun text-info me-2"></i>Afternoon Slot</h6>
+                        <p class="small text-muted">12:15 - 13:45<br>After lunch break</p>
+                    </div>
+                    <div class="mb-3">
+                        <h6><i class="fas fa-moon text-primary me-2"></i>Evening Slot</h6>
+                        <p class="small text-muted">15:45 - 17:15<br>End of work day</p>
+                    </div>
+                    <hr>
+                    <h6><i class="fas fa-exclamation-triangle text-warning me-2"></i>Note</h6>
+                    <p class="small text-muted">Manual attendance entries require proper justification and will be reviewed by HR.</p>
                 </div>
             </div>
-
-            <div class="mb-3">
-                <label asp-for="ManualEntryReason" class="form-label">Reason for Manual Entry</label>
-                <textarea asp-for="ManualEntryReason" class="form-control" rows="3"></textarea>
-                <span asp-validation-for="ManualEntryReason" class="text-danger"></span>
-            </div>
-
-            <div class="form-group mt-4">
-                <input type="submit" value="Create Record" class="btn btn-primary" />
-                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function() {
+            // Handle select all employees
+            $('#selectAllEmployees').on('change', function() {
+                $('.employee-checkbox').prop('checked', $(this).is(':checked'));
+            });
+            
+            // Update select all checkbox when individual checkboxes change
+            $('.employee-checkbox').on('change', function() {
+                var totalCheckboxes = $('.employee-checkbox').length;
+                var checkedCheckboxes = $('.employee-checkbox:checked').length;
+                $('#selectAllEmployees').prop('checked', totalCheckboxes === checkedCheckboxes);
+            });
+            
+            // Handle select all time slots
+            $('#selectAllSlots').on('click', function() {
+                $('.time-slot-checkbox').prop('checked', true).trigger('change');
+            });
+            
+            // Handle time slot selection
+            $('.time-slot-checkbox').on('change', function() {
+                var slotValue = $(this).val();
+                var containerId = slotValue + 'TimeContainer';
+                var selectId = slotValue + 'TimeSelect';
+                
+                if ($(this).is(':checked')) {
+                    $('#' + containerId).show();
+                    populateTimeOptions(slotValue, selectId);
+                } else {
+                    $('#' + containerId).hide();
+                    $('#' + selectId).empty().append('<option value="">Select time</option>');
+                }
+            });
+
+            function populateTimeOptions(slot, selectId) {
+                var times = getTimesForSlot(slot);
+                var $select = $('#' + selectId);
+                $select.empty().append('<option value="">Select time</option>');
+                times.forEach(function(time) {
+                    $select.append('<option value="' + time + '">' + time + '</option>');
+                });
+            }
+
+            function getTimesForSlot(slot) {
+                if (slot === 'morning') {
+                    return ["07:00", "07:15", "07:30", "07:45", "08:00", "08:15", "08:30"];
+                } else if (slot === 'afternoon') {
+                    return ["12:15", "12:30", "12:45", "13:00", "13:15", "13:30", "13:45"];
+                } else if (slot === 'evening') {
+                    return ["15:45", "16:00", "16:15", "16:30", "16:45", "17:00", "17:15"];
+                }
+                return [];
+            }
+
+            // Form validation and submission
+            $('#attendanceForm').on('submit', function(e) {
+                var isValid = true;
+                
+                // Clear previous errors
+                $('#employeeSelectionError').text('');
+                $('#timeSlotError').text('');
+                
+                // Get the Ethiopian date components
+                var ethYear = $('#attendanceDateYear').val();
+                var ethMonth = $('#attendanceDateMonth').val();
+                var ethDay = $('#attendanceDateDay').val();
+                
+                // Validate employees selection
+                var selectedEmployees = $('.employee-checkbox:checked').length;
+                if (selectedEmployees === 0) {
+                    $('#employeeSelectionError').text('Please select at least one employee.');
+                    isValid = false;
+                }
+                
+                // Validate date
+                if (!ethYear || !ethMonth || !ethDay) {
+                    $('#timeSlotError').text('Please select a valid date.');
+                    isValid = false;
+                }
+                
+                // Validate time slots and times
+                var selectedSlots = $('.time-slot-checkbox:checked');
+                if (selectedSlots.length === 0) {
+                    $('#timeSlotError').text('Please select at least one time slot.');
+                    isValid = false;
+                } else {
+                    // Validate that each selected slot has a time selected
+                    var hasEmptyTime = false;
+                    selectedSlots.each(function() {
+                        var slot = $(this).val();
+                        var timeValue = $('#' + slot + 'TimeSelect').val();
+                        if (!timeValue) {
+                            hasEmptyTime = true;
+                        }
+                    });
+                    
+                    if (hasEmptyTime) {
+                        $('#timeSlotError').text('Please select a time for each selected time slot.');
+                        isValid = false;
+                    }
+                }
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                // Show debug info
+                $('#debugEthDate').text(ethYear + '/' + ethMonth + '/' + ethDay);
+                $('#debugInfo').show();
+                
+                // Form will submit normally - server will handle conversion
+                console.log('Submitting form with multiple employees and time slots...');
+            });
+        });
+    </script>
 }
+
+<!-- Note: CheckInTime will be calculated server-side from Ethiopian date components -->
+
+<style>
+    .btn-check:checked + .btn {
+        background-color: var(--bs-primary);
+        border-color: var(--bs-primary);
+        color: white;
+    }
+    
+    .card.border:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transition: box-shadow 0.3s ease;
+    }
+    
+    .btn-check:checked + .btn-outline-primary {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    
+    .btn-check:checked + .btn-outline-warning {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: #000;
+    }
+    
+    .btn-check:checked + .btn-outline-info {
+        background-color: #0dcaf0;
+        border-color: #0dcaf0;
+        color: #000;
+    }
+</style>
+

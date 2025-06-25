@@ -1,4 +1,5 @@
-@model HCMPo.Models.EmployeeDocument
+@model HCMPo.ViewModels.EmployeeDocumentUploadViewModel
+@using HCMPo.Helpers
 
 @{
     ViewData["Title"] = "Upload Document";
@@ -8,38 +9,70 @@
     <div class="row">
         <div class="col-md-8">
             <h2>@ViewData["Title"]</h2>
-            <h4>Employee: @ViewData["EmployeeName"]</h4>
+            <h4>Employee: @(ViewData["EmployeeName"] ?? "Unknown")</h4>
             <hr />
 
             <form asp-action="Create" enctype="multipart/form-data">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <input type="hidden" asp-for="EmployeeId" />
+                @if (ViewData["EmployeeName"] != null)
+                {
+                    <div class="form-group">
+                        <label class="control-label">Employee</label>
+                        <input type="text" class="form-control" value="@ViewData["EmployeeName"]" readonly />
+                        <input type="hidden" asp-for="EmployeeId" />
+                    </div>
+                }
+                else
+                {
+                    <div class="form-group">
+                        <label asp-for="EmployeeId" class="control-label">Employee</label>
+                        <select asp-for="EmployeeId" class="form-control" asp-items="ViewBag.Employees" required>
+                            <option value="">-- Select Employee --</option>
+                        </select>
+                        <span asp-validation-for="EmployeeId" class="text-danger"></span>
+                    </div>
+                }
 
                 <div class="form-group">
-                    <label asp-for="DocumentType" class="control-label"></label>
-                    <input asp-for="DocumentType" class="form-control" />
+                    <label for="DocumentType" class="control-label">Document Name/Type</label>
+                    <select asp-for="DocumentType" class="form-control" required>
+                        <option value="">-- Select Document Type --</option>
+                        @foreach (var type in HCMPo.Models.EmployeeDocument.DocumentTypeOptions)
+                        {
+                            if (Model.DocumentType == type)
+                            {
+                                <option value="@type" selected="selected">@type</option>
+                            }
+                            else
+                            {
+                                <option value="@type">@type</option>
+                            }
+                        }
+                    </select>
                     <span asp-validation-for="DocumentType" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
-                    <label asp-for="Description" class="control-label"></label>
-                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                    <label asp-for="Description" class="control-label">Description</label>
+                    <textarea asp-for="Description" class="form-control" rows="3" required></textarea>
                     <span asp-validation-for="Description" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
-                    <label asp-for="ExpiryDate" class="control-label"></label>
-                    <input asp-for="ExpiryDate" class="form-control" type="date" />
+                    <label class="control-label">Expiry Date (የማለቂያ ቀን)</label>
+                    @await Html.PartialAsync("_EthiopianDatePicker", new { Id = "ExpiryDate", Name = "ExpiryDate", Label = "", IsRequired = false, ShowGregorian = true, InitialDate = (DateTime?)Model.ExpiryDate, Placeholder = "Select expiry date" })
+                    <input asp-for="ExpiryDate" type="hidden" />
                     <span asp-validation-for="ExpiryDate" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
-                    <label class="control-label">Document File</label>
+                    <label asp-for="DocumentFile" class="control-label">Document File</label>
                     <div class="custom-file">
-                        <input type="file" class="custom-file-input" id="DocumentFile" name="DocumentFile" required>
+                        <input asp-for="DocumentFile" class="custom-file-input" id="DocumentFile" required />
                         <label class="custom-file-label" for="DocumentFile">Choose file</label>
                     </div>
                     <small class="form-text text-muted">Maximum file size: 10MB</small>
+                    <span asp-validation-for="DocumentFile" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
@@ -54,15 +87,3 @@
         </div>
     </div>
 </div>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    <script>
-        $(document).ready(function () {
-            $('.custom-file-input').on('change', function () {
-                var fileName = $(this).val().split('\\').pop();
-                $(this).next('.custom-file-label').html(fileName);
-            });
-        });
-    </script>
-} 

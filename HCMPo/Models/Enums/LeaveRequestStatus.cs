@@ -11,6 +11,8 @@ namespace HCMPo.Models.Enums
         HRApproved,
         HRRejected,
         Cancelled,
-        Completed
-    }
+        Completed,
+        Rejected,
+        Approved 
+}
 } 

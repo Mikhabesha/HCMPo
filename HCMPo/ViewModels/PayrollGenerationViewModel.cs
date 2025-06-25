@@ -9,7 +9,7 @@ namespace HCMPo.ViewModels
     public class PayrollGenerationViewModel
     {
         [Required]
-        public string EmployeeId { get; set; }
+        public string EmployeeId { get; set; } = string.Empty;
 
         [Required]
         [DataType(DataType.Date)]
@@ -25,21 +25,26 @@ namespace HCMPo.ViewModels
 
         public List<AllowanceItem> Allowances { get; set; } = new List<AllowanceItem>();
         public List<DeductionItem> Deductions { get; set; } = new List<DeductionItem>();
+
+        // Additional properties for PayrollController
+        public List<string>? SelectedEmployeeIds { get; set; }
+        public string StartDateEt { get; set; } = string.Empty;
+        public string EndDateEt { get; set; } = string.Empty;
     }
 
     public class AllowanceItem
     {
         public int AllowanceTypeId { get; set; }
-        public string AllowanceTypeName { get; set; }
+        public string AllowanceTypeName { get; set; } = string.Empty;
         public decimal Amount { get; set; }
-        public string Remarks { get; set; }
+        public string Remarks { get; set; } = string.Empty;
     }
 
     public class DeductionItem
     {
         public int DeductionTypeId { get; set; }
-        public string DeductionTypeName { get; set; }
+        public string DeductionTypeName { get; set; } = string.Empty;
         public decimal Amount { get; set; }
-        public string Remarks { get; set; }
+        public string Remarks { get; set; } = string.Empty;
     }
 } 

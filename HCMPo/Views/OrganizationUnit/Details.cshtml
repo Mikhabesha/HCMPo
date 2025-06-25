@@ -1,0 +1,23 @@
+@model HCMPo.Models.OrganizationUnit
+@{
+    ViewData["Title"] = "Organization Unit Details";
+}
+<h2>Organization Unit Details</h2>
+<dl class="row">
+    <dt class="col-sm-3">Name</dt>
+    <dd class="col-sm-9">@Model.Name</dd>
+    <dt class="col-sm-3">Type</dt>
+    <dd class="col-sm-9">@Model.Type</dd>
+    <dt class="col-sm-3">Parent</dt>
+    <dd class="col-sm-9">@Model.Parent?.Name ?? "-"</dd>
+    <dt class="col-sm-3">Is Active</dt>
+    <dd class="col-sm-9">@Model.IsActive</dd>
+    <dt class="col-sm-3">Description</dt>
+    <dd class="col-sm-9">@Model.Description</dd>
+    <dt class="col-sm-3">Created At</dt>
+    <dd class="col-sm-9">@Model.CreatedAt</dd>
+    <dt class="col-sm-3">Modified At</dt>
+    <dd class="col-sm-9">@Model.ModifiedAt</dd>
+</dl>
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
+<a asp-action="Index" class="btn btn-secondary">Back to List</a> 

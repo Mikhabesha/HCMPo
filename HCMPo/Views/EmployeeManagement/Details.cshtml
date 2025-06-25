@@ -1,0 +1,325 @@
+@model HCMPo.Models.Employee
+@using HCMPo.Helpers
+
+@{
+    ViewData["Title"] = $"Employee Details - {Model.FullName}";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-user"></i>
+                        Employee Details - @Model.FullName
+                    </h3>
+                    <div class="card-tools">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to List
+                        </a>
+                        @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+                        {
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                        }
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Delete
+                            </a>
+                        }
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Employee Photo Section -->
+                        <div class="col-md-3 text-center">
+                            @if (!string.IsNullOrEmpty(Model.PhotoUrl))
+                            {
+                                <img src="@Model.PhotoUrl" alt="Employee Photo" class="img-fluid rounded-circle" style="max-width: 200px;" />
+                            }
+                            else
+                            {
+                                <div class="bg-secondary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 200px; height: 200px;">
+                                    <i class="fas fa-user fa-5x text-white"></i>
+                                </div>
+                            }
+                            <h3 class="mt-3">@Model.FullName</h3>
+                            <p class="text-muted">Badge: @Model.BadgeNumber</p>
+                            <span class="badge badge-@(Model.Status == EmploymentStatus.Active ? "success" : "warning") badge-lg">
+                                @Model.Status
+                            </span>
+
+                            <!-- User Account Status -->
+                            <div class="mt-3">
+                                @if (!string.IsNullOrEmpty(Model.ApplicationUserId))
+                                {
+                                    <div class="alert alert-success">
+                                        <i class="fas fa-user-check"></i> Has User Account
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-user-times"></i> No User Account
+                                    </div>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <button class="btn btn-sm btn-primary" onclick="createUserAccount('@Model.Id')">
+                                            <i class="fas fa-user-plus"></i> Create User Account
+                                        </button>
+                                    }
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Employee Details Section -->
+                        <div class="col-md-9">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5 class="text-primary mb-3">
+                                        <i class="fas fa-user"></i> Personal Information
+                                    </h5>
+                                    
+                                    <dl class="row">
+                                        <dt class="col-sm-4">First Name:</dt>
+                                        <dd class="col-sm-8">@Model.FirstName</dd>
+                                        
+                                        <dt class="col-sm-4">Last Name:</dt>
+                                        <dd class="col-sm-8">@Model.LastName</dd>
+                                        
+                                        <dt class="col-sm-4">Email:</dt>
+                                        <dd class="col-sm-8">
+                                            <a href="mailto:@Model.Email">@Model.Email</a>
+                                        </dd>
+                                        
+                                        <dt class="col-sm-4">Phone:</dt>
+                                        <dd class="col-sm-8">
+                                            <a href="tel:@Model.PhoneNumber">@Model.PhoneNumber</a>
+                                        </dd>
+                                        
+                                        <dt class="col-sm-4">Gender:</dt>
+                                        <dd class="col-sm-8">@Model.Gender</dd>
+                                        
+                                        <dt class="col-sm-4">Date of Birth:</dt>
+                                        <dd class="col-sm-8">@Html.Raw(EthiopianCalendarHelper.FormatDateWithEthiopian(Model.DateOfBirth))</dd>
+                                        
+                                        @if (!string.IsNullOrEmpty(Model.AmharicFirstName) || !string.IsNullOrEmpty(Model.AmharicLastName))
+                                        {
+                                            <dt class="col-sm-4">Amharic Name:</dt>
+                                            <dd class="col-sm-8">@Model.AmharicFirstName @Model.AmharicLastName</dd>
+                                        }
+                                    </dl>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <h5 class="text-primary mb-3">
+                                        <i class="fas fa-briefcase"></i> Employment Information
+                                    </h5>
+                                    
+                                    <dl class="row">
+                                        <dt class="col-sm-4">Badge Number:</dt>
+                                        <dd class="col-sm-8">@Model.BadgeNumber</dd>
+                                        
+                                        <dt class="col-sm-4">Department/Directorate:</dt>
+                                        <dd class="col-sm-8">@(Model.OrganizationUnit?.Name ?? "N/A")</dd>
+                                        
+                                        <dt class="col-sm-4">Job Title:</dt>
+                                        <dd class="col-sm-8">@(Model.JobTitle?.Title ?? "N/A")</dd>
+                                        
+                                        <dt class="col-sm-4">Position:</dt>
+                                        <dd class="col-sm-8">@Model.Position</dd>
+                                        
+                                        <dt class="col-sm-4">Hire Date:</dt>
+                                        <dd class="col-sm-8">@Html.Raw(EthiopianCalendarHelper.FormatDateWithEthiopian(Model.HireDate))</dd>
+                                        
+                                        <dt class="col-sm-4">Employment Date:</dt>
+                                        <dd class="col-sm-8">@Html.Raw(EthiopianCalendarHelper.FormatDateWithEthiopian(Model.EmploymentDate))</dd>
+                                        
+                                        <dt class="col-sm-4">Basic Salary:</dt>
+                                        <dd class="col-sm-8">@Model.BasicSalary.ToString("C")</dd>
+                                        
+                                        <dt class="col-sm-4">Status:</dt>
+                                        <dd class="col-sm-8">
+                                            <span class="badge badge-@(Model.Status == EmploymentStatus.Active ? "success" : "warning")">
+                                                @Model.Status
+                                            </span>
+                                        </dd>
+                                        
+                                        @if (Model.SupervisorId != null && Model.Supervisor != null)
+                                        {
+                                            <dt class="col-sm-4">Supervisor:</dt>
+                                            <dd class="col-sm-8">@Model.Supervisor.FullName</dd>
+                                        }
+                                    </dl>
+                                </div>
+                            </div>
+
+                            <!-- Additional Information -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <h5 class="text-primary mb-3 mt-3">
+                                        <i class="fas fa-info-circle"></i> Additional Information
+                                    </h5>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <dl class="row">
+                                        @if (!string.IsNullOrEmpty(Model.Address))
+                                        {
+                                            <dt class="col-sm-4">Address:</dt>
+                                            <dd class="col-sm-8">@Model.Address</dd>
+                                        }
+                                        
+                                        @if (!string.IsNullOrEmpty(Model.City))
+                                        {
+                                            <dt class="col-sm-4">City:</dt>
+                                            <dd class="col-sm-8">@Model.City</dd>
+                                        }
+                                        
+                                        @if (!string.IsNullOrEmpty(Model.BankName))
+                                        {
+                                            <dt class="col-sm-4">Bank Name:</dt>
+                                            <dd class="col-sm-8">@Model.BankName</dd>
+                                        }
+                                        
+                                        @if (!string.IsNullOrEmpty(Model.BankAccountNumber))
+                                        {
+                                            <dt class="col-sm-4">Account Number:</dt>
+                                            <dd class="col-sm-8">@Model.BankAccountNumber</dd>
+                                        }
+                                    </dl>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <dl class="row">
+                                        @if (!string.IsNullOrEmpty(Model.TinNumber))
+                                        {
+                                            <dt class="col-sm-4">TIN Number:</dt>
+                                            <dd class="col-sm-8">@Model.TinNumber</dd>
+                                        }
+                                        
+                                        @if (Model.TerminationDate.HasValue)
+                                        {
+                                            <dt class="col-sm-4">Termination Date:</dt>
+                                            <dd class="col-sm-8">@Html.Raw(EthiopianCalendarHelper.FormatDateWithEthiopian(Model.TerminationDate.Value))</dd>
+                                        }
+                                    </dl>
+                                </div>
+                            </div>
+
+                            <!-- Audit Information -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <h5 class="text-primary mb-3 mt-3">
+                                        <i class="fas fa-history"></i> Audit Information
+                                    </h5>
+                                    
+                                    <dl class="row">
+                                        <dt class="col-sm-2">Created:</dt>
+                                        <dd class="col-sm-4">@Html.Raw(EthiopianCalendarHelper.FormatDateWithEthiopian(Model.CreatedAt, "MMM dd, yyyy HH:mm")) by @Model.CreatedBy</dd>
+                                        
+                                        @if (Model.ModifiedAt.HasValue)
+                                        {
+                                            <dt class="col-sm-2">Last Modified:</dt>
+                                            <dd class="col-sm-4">@Html.Raw(EthiopianCalendarHelper.FormatDateWithEthiopian(Model.ModifiedAt.Value, "MMM dd, yyyy HH:mm")) by @Model.ModifiedBy</dd>
+                                        }
+                                        
+                                        <dt class="col-sm-2">Is Active:</dt>
+                                        <dd class="col-sm-4">
+                                            <span class="badge badge-@(Model.IsActive ? "success" : "danger")">
+                                                @(Model.IsActive ? "Active" : "Inactive")
+                                            </span>
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions Card -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-bolt"></i> Quick Actions
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-info"><i class="fas fa-calendar-check"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Attendance</span>
+                                    <span class="info-box-number">
+                                        <a href="/Attendances?employeeId=@Model.Id" class="btn btn-sm btn-info">View Records</a>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-success"><i class="fas fa-plane"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Leave Requests</span>
+                                    <span class="info-box-number">
+                                        <a href="/LeaveRequests?employeeId=@Model.Id" class="btn btn-sm btn-success">View Leaves</a>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-warning"><i class="fas fa-money-bill"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Payroll</span>
+                                    <span class="info-box-number">
+                                        <a href="/PayrollSlip?employeeId=@Model.Id" class="btn btn-sm btn-warning">View Payslips</a>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-primary"><i class="fas fa-file-alt"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Documents</span>
+                                    <span class="info-box-number">
+                                        <a href="/EmployeeDocuments?employeeId=@Model.Id" class="btn btn-sm btn-primary">View Docs</a>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function createUserAccount(employeeId) {
+            if (!confirm('Create a user account for this employee?')) {
+                return;
+            }
+            
+            $.post('/EmployeeManagement/CreateUserAccount', { employeeId: employeeId })
+                .done(function(result) {
+                    if (result.success) {
+                        alert('User account created successfully!\nTemporary password: ' + result.tempPassword);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                })
+                .fail(function() {
+                    alert('Error creating user account. Please try again.');
+                });
+        }
+    </script>
+} 

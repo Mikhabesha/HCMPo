@@ -1,0 +1,34 @@
+@model HCMPo.Models.JobTitle
+@{
+    ViewData["Title"] = "Job Title Details";
+}
+
+<h2>Job Title Details</h2>
+
+<dl class="row">
+    <dt class="col-sm-3">Title</dt>
+    <dd class="col-sm-9">@Model.Title</dd>
+    
+    <dt class="col-sm-3">Description</dt>
+    <dd class="col-sm-9">@Model.Description</dd>
+    
+    <dt class="col-sm-3">Grade</dt>
+    <dd class="col-sm-9">@Model.Grade</dd>
+    
+    <dt class="col-sm-3">Organization Unit</dt>
+    <dd class="col-sm-9">@Model.OrganizationUnit?.Name</dd>
+    
+    <dt class="col-sm-3">Is Active</dt>
+    <dd class="col-sm-9">@Model.IsActive</dd>
+    
+    <dt class="col-sm-3">Created At</dt>
+    <dd class="col-sm-9">@Model.CreatedAt</dd>
+    
+    <dt class="col-sm-3">Modified At</dt>
+    <dd class="col-sm-9">@Model.ModifiedAt</dd>
+</dl>
+
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
+    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+</div> 

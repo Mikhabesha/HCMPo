@@ -1,4 +1,5 @@
 @model IEnumerable<HCMPo.Models.Attendance>
+@using HCMPo.Helpers
 
 @{
     ViewData["Title"] = "Attendance Records";
@@ -58,14 +59,12 @@
                             <tr>
                                 <td>@item.Employee?.FullName</td>
                                 <td>
-                                    @item.CheckInTime.ToString("g")
-                                    <small class="text-muted d-block">@item.CheckInTimeEt</small>
+                                    @Html.Raw(EthiopianCalendarHelper.FormatDateWithEthiopian(item.CheckInTime, "g"))
                                 </td>
                                 <td>
                                     @if (item.CheckOutTime.HasValue)
                                     {
-                                        @item.CheckOutTime.Value.ToString("g")
-                                        <small class="text-muted d-block">@item.CheckOutTimeEt</small>
+                                        @Html.Raw(EthiopianCalendarHelper.FormatDateWithEthiopian(item.CheckOutTime.Value, "g"))
                                     }
                                     else
                                     {

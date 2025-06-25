@@ -22,7 +22,7 @@
     <thead>
         <tr>
             <th>Name</th>
-            <th>Department</th>
+            <th>Department/Directorate</th>
             <th>Job Title</th>
         </tr>
     </thead>
@@ -31,7 +31,7 @@
         {
             <tr>
                 <td>@emp.FullName</td>
-                <td>@emp.Department?.Name</td>
+                <td>@emp.OrganizationUnit?.Name</td>
                 <td>@emp.JobTitle?.Title</td>
             </tr>
         }

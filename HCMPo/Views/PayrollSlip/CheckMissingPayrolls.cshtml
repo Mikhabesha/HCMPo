@@ -1,0 +1,55 @@
+@model IEnumerable<HCMPo.Models.Employee>
+@{
+    ViewBag.Title = "Missing Payroll Records";
+    var payPeriodStart = ViewBag.PayPeriodStart as DateTime?;
+    var payPeriodEnd = ViewBag.PayPeriodEnd as DateTime?;
+    var missingCount = ViewBag.MissingCount as int? ?? 0;
+    var totalEmployees = ViewBag.TotalEmployees as int? ?? 0;
+}
+
+<h2>Missing Payroll Records</h2>
+<p>
+    <strong>Pay Period:</strong>
+    @if (payPeriodStart != null && payPeriodEnd != null)
+    {
+        @payPeriodStart.Value.ToString("yyyy-MM-dd")  @payPeriodEnd.Value.ToString("yyyy-MM-dd")
+    }
+    else
+    {
+        <span>Unknown</span>
+    }
+    <br />
+    <strong>Missing Employees:</strong> @missingCount / @totalEmployees
+</p>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-success">No missing payroll records. All employees have payrolls for this period.</div>
+}
+else
+{
+    <div class="alert alert-warning">The following employees do not have payroll records for this period:</div>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Badge Number</th>
+                    <th>Department/Directorate</th>
+                    <th>Job Title</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var emp in Model)
+            {
+                <tr>
+                    <td>@emp.FullName</td>
+                    <td>@emp.BadgeNumber</td>
+                    <td>@emp.OrganizationUnit?.Name</td>
+                    <td>@emp.JobTitle?.Title</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+} 

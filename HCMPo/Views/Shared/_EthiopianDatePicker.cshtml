@@ -1,0 +1,75 @@
+@using HCMPo.Helpers
+@model dynamic
+@{
+    var id = Model.Id as string ?? "ethiopianDate";
+    var name = Model.Name as string ?? "EthiopianDate";
+    var label = Model.Label as string ?? "Ethiopian Date";
+    var isRequired = Model.IsRequired as bool? ?? false;
+    var showGregorian = Model.ShowGregorian as bool? ?? true;
+    var placeholder = Model.Placeholder as string ?? "የካቲት ቀን ይምረጡ";
+
+    var initialDate = Model.InitialDate as DateTime?;
+    int? selectedYear = null;
+    int? selectedMonth = null;
+    int? selectedDay = null;
+
+    // Convert to Ethiopian if an initial date is provided
+    if (initialDate.HasValue)
+    {
+        var etDate = HCMPo.Helpers.EthiopianCalendarHelper.FromGregorianDate(initialDate.Value);
+        selectedYear = etDate.Year;
+        selectedMonth = etDate.Month;
+        selectedDay = etDate.Day;
+    }
+}
+
+<div class="mb-3 ethiopian-date-picker" data-id="@id" data-name="@name">
+    <label class="form-label">
+        @label
+        @if (isRequired)
+        {
+            <span class="text-danger">*</span>
+        }
+    </label>
+    
+    <div class="row g-2">
+        <div class="col-md-4">
+            <select class="form-select eth-year" name="@(name)Year" id="@(id)Year" @(isRequired ? "required" : "")>
+                <option value="">Year</option>
+                @for (int year = 2010; year <= 2030; year++)
+                {
+                    <option value="@year" selected="@(year == selectedYear)">@year</option>
+                }
+            </select>
+        </div>
+        
+        <div class="col-md-4">
+            <select class="form-select eth-month" name="@(name)Month" id="@(id)Month" @(isRequired ? "required" : "")>
+                <option value="">Month</option>
+                @for (int m = 1; m <= 13; m++)
+                {
+                    var monthName = HCMPo.Helpers.EthiopianCalendarHelper.GetAmharicMonthName(m);
+                    <option value="@m" selected="@(m == selectedMonth)">@m - @monthName</option>
+                }
+            </select>
+        </div>
+        
+        <div class="col-md-4">
+            <select class="form-select eth-day" name="@(name)Day" id="@(id)Day" @(isRequired ? "required" : "")>
+                <option value="">Day</option>
+            </select>
+        </div>
+    </div>
+    
+    @if (showGregorian)
+    {
+        <div class="mt-2">
+            <small class="text-muted">
+                <span class="formatted-date"></span>
+                <span class="gregorian-equivalent"></span>
+            </small>
+        </div>
+    }
+    
+    <div class="invalid-feedback" id="@(id)Validation"></div>
+</div>

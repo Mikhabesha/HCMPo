@@ -1,0 +1,88 @@
+@model List<HCMPo.ViewModels.PayrollSlipViewModel>
+@{
+    ViewData["Title"] = "Send to Bank";
+    // Use ViewBag values for date ranges
+    string etStart = ViewBag.PayPeriodStartEt ?? "";
+    string etEnd = ViewBag.PayPeriodEndEt ?? "";
+    string gregStart = ViewBag.PayPeriodStart != null ? ((DateTime)ViewBag.PayPeriodStart).ToString("MMM dd, yyyy") : "";
+    string gregEnd = ViewBag.PayPeriodEnd != null ? ((DateTime)ViewBag.PayPeriodEnd).ToString("MMM dd, yyyy") : "";
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/payrollslip.css" />
+</head>
+<body>
+    <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 10px;">
+        <span class="timestamp" style="font-size: 0.95rem; color: #555;">Printed on: @DateTime.Now.ToString("MMM dd, yyyy, h:mm tt")</span>
+    </div>
+    <div class="text-center mb-2">
+        <h2 style="font-weight:bold; color:#007bff; margin-bottom:0;">POESSA Monthly Salary Payroll Report</h2>
+    </div>
+    <!-- <div style="font-size:0.95rem; color:#b00; margin-bottom:10px;">
+        <b>DEBUG:</b> PayPeriodStart: @ViewBag.PayPeriodStart | PayPeriodEnd: @ViewBag.PayPeriodEnd | PayPeriodStartEt: @ViewBag.PayPeriodStartEt | PayPeriodEndEt: @ViewBag.PayPeriodEndEt
+    </div> -->
+    <div style="display: flex; justify-content: center; align-items: baseline; gap: 32px; margin-bottom: 18px; font-size: 0.98rem; flex-wrap: nowrap; white-space: nowrap;">
+        <div>
+            <span style="font-weight: 500; color: #444;">Ethiopian Period:</span>
+            <span class="ethiopian-date" style="margin-left: 6px; font-size:0.95em;">@etStart - @etEnd</span>
+        </div>
+        <div>
+            <span style="font-weight: 500; color: #444;">Gregorian Period:</span>
+            <span style="margin-left: 6px; font-size:0.95em;">@gregStart - @gregEnd</span>
+        </div>
+    </div>
+    <div class="d-flex justify-content-end mb-3">
+        <button class="print-btn" onclick="window.print()">
+            <i class="fas fa-print"></i> Print
+        </button>
+    </div>
+    <table class="modern-table" style="width:100%;">
+        <thead>
+            <tr>
+                <th class="number-col">#</th>
+                <th>Employee Name</th>
+                <th>Account Number</th>
+                <th>Bank Name</th>
+                <th>Amount Payable</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                <tr>
+                    <td class="number-col">@(i + 1)</td>
+                    <td>@Model[i].EmployeeName</td>
+                    <td>@Model[i].BankAccountNumber</td>
+                    <td>@Model[i].BankName</td>
+                    <td>@Model[i].NetSalary.ToString("N2") ETB</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div class="payroll-footer" style="margin-top:40px; font-size:0.95rem; color:#444;">
+        <div style="margin-bottom: 18px;">
+            <b>Confidential:</b> This payroll report is for internal use only. Unauthorized distribution is prohibited.
+        </div>
+        <div style="margin-bottom: 30px;">
+            <b>Signature: ____________________________</b>
+        </div>
+        <div class="page-number" style="text-align:right; font-size:0.9rem; color:#888;">
+            Page <span class="pageNumber"></span> of <span class="totalPages"></span>
+        </div>
+    </div>
+    <script>
+        // For page numbers in print (works in some browsers with CSS Paged Media)
+        window.onload = function() {
+            if (window.matchMedia('print').matches) {
+                document.querySelectorAll('.pageNumber').forEach(function(el, idx) {
+                    el.textContent = idx + 1;
+                });
+            }
+        };
+    </script>
+
+</body>
+</html> 

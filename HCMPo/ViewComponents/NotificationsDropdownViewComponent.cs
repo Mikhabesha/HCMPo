@@ -2,35 +2,41 @@ using Microsoft.AspNetCore.Mvc;
 using HCMPo.Models;
 using Microsoft.EntityFrameworkCore;
 using HCMPo.Data;
+using System.Security.Claims;
+using HCMPo.Services;
+using HCMPo.ViewModels;
 
 namespace HCMPo.ViewComponents
 {
     public class NotificationsDropdownViewComponent : ViewComponent
     {
         private readonly ApplicationDbContext _context;
+        private readonly INotificationService _notificationService;
 
-        public NotificationsDropdownViewComponent(ApplicationDbContext context)
+        public NotificationsDropdownViewComponent(ApplicationDbContext context, INotificationService notificationService)
         {
             _context = context;
+            _notificationService = notificationService;
         }
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            var currentUser = await _context.Users
-                .FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
-
-            if (currentUser == null)
+            var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
             {
-                return View("Default", new List<Notification>());
+                return Content("");
             }
 
-            var notifications = await _context.Notifications
-                .Where(n => n.UserId == currentUser.Id && !n.IsRead)
-                .OrderByDescending(n => n.CreatedAt)
-                .Take(5)
-                .ToListAsync();
+            var notifications = await _notificationService.GetUserNotificationsAsync(userId, true, 5);
+            var unreadCount = await _notificationService.GetUnreadCountAsync(userId);
+            
+            var model = new NotificationsDropdownViewModel
+            {
+                Notifications = notifications,
+                UnreadCount = unreadCount
+            };
 
-            return View("Default", notifications);
+            return View(model);
         }
     }
 } 

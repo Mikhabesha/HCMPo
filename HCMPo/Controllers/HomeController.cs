@@ -29,7 +29,7 @@ namespace HCMPo.Controllers
         {
             // For dashboard statistics
             ViewBag.EmployeeCount = await _context.Employees.CountAsync();
-            ViewBag.DepartmentCount = await _context.Departments.CountAsync();
+            ViewBag.DepartmentCount = await _context.OrganizationUnits.CountAsync(ou => ou.Type == OrganizationUnitType.Department);
             ViewBag.PendingLeaveRequests = await _context.LeaveRequests
                 .Where(lr => lr.Status == LeaveRequestStatus.Submitted)
                 .CountAsync();
@@ -58,6 +58,34 @@ namespace HCMPo.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        // Troubleshooting endpoint for "Request Too Long" errors
+        [HttpGet]
+        public IActionResult ClearSession()
+        {
+            try
+            {
+                // Clear session data
+                HttpContext.Session.Clear();
+                
+                // Clear authentication cookies
+                foreach (var cookie in Request.Cookies.Keys)
+                {
+                    if (cookie.Contains("Identity") || cookie.Contains("Auth") || cookie.Contains("Session"))
+                    {
+                        Response.Cookies.Delete(cookie);
+                    }
+                }
+                
+                TempData["SuccessMessage"] = "Session and cookies cleared successfully. Please log in again.";
+                return RedirectToAction("Login", "Account");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error clearing session: {ex.Message}";
+                return RedirectToAction("Index");
+            }
         }
 
         [Authorize]

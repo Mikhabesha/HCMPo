@@ -14,7 +14,7 @@ namespace HCMPo.Models.ViewModels
 
         [Required]
         [Display(Name = "Start Date (ET)")]
-        public string StartDateEt { get; set; }
+        public string StartDateEt { get; set; } = string.Empty;
 
         [Required]
         [Display(Name = "End Date")]
@@ -23,7 +23,7 @@ namespace HCMPo.Models.ViewModels
 
         [Required]
         [Display(Name = "End Date (ET)")]
-        public string EndDateEt { get; set; }
+        public string EndDateEt { get; set; } = string.Empty;
 
         [Display(Name = "Select Employees")]
         public List<string> SelectedEmployeeIds { get; set; }

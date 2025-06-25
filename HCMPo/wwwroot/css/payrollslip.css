@@ -1,0 +1,687 @@
+/* Payroll Slip Module Styles */
+
+.slip-preview {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 10px 0;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.slip-header {
+    text-align: center;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.slip-section {
+    margin: 15px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #007bff;
+}
+
+.slip-section h6 {
+    color: #007bff;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.slip-detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px dotted #dee2e6;
+}
+
+.slip-detail-row:last-child {
+    border-bottom: none;
+}
+
+.slip-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.slip-value {
+    color: #212529;
+    font-family: 'Courier New', monospace;
+}
+
+.stamp-preview {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    background: #f8f9fa;
+    margin: 10px 0;
+}
+
+.stamp-item {
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.stamp-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.stamp-upload-area {
+    border: 2px dashed #007bff;
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.stamp-upload-area:hover {
+    background: #e3f2fd;
+    border-color: #0056b3;
+}
+
+.stamp-upload-area.dragover {
+    background: #bbdefb;
+    border-color: #1976d2;
+}
+
+.slip-filter-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+}
+
+.slip-summary-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 1px solid #e3f2fd;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.slip-summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.export-button-group {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+.ethiopian-date-highlight {
+    color: #ff9800;
+    font-weight: bold;
+    font-style: italic;
+}
+
+.payroll-amount {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.net-salary-highlight {
+    background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+    border: 2px solid #4caf50;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #2e7d32;
+    margin: 15px 0;
+}
+
+.stamp-position-preview {
+    position: relative;
+    min-height: 200px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background: #fafafa;
+    margin: 10px 0;
+}
+
+.stamp-position-indicator {
+    position: absolute;
+    opacity: 0.8;
+    border: 2px dashed #007bff;
+    border-radius: 4px;
+    padding: 5px;
+    background: rgba(0,123,255,0.1);
+}
+
+.stamp-position-indicator.top-left {
+    top: 10px;
+    left: 10px;
+}
+
+.stamp-position-indicator.top-right {
+    top: 10px;
+    right: 10px;
+}
+
+.stamp-position-indicator.bottom-left {
+    bottom: 10px;
+    left: 10px;
+}
+
+.stamp-position-indicator.bottom-right {
+    bottom: 10px;
+    right: 10px;
+}
+
+.stamp-position-indicator.center {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Print-friendly styles */
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 10mm;
+    }
+    body {
+        background: white;
+        padding: 0;
+        font-size: 11px;
+        width: 100vw;
+        max-width: 100vw;
+    }
+    .slip-container {
+        box-shadow: none;
+        margin: 0;
+        padding: 10px;
+        page-break-inside: avoid;
+        width: 100%;
+        max-width: 100%;
+    }
+    footer.footer, .footer, .main-footer, .site-footer, .footer-links, .header {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+    }
+    .btn, .print-btn, .no-print {
+        display: none !important;
+    }
+    ::-webkit-scrollbar { display: none !important; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .slip-detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .slip-value {
+        margin-top: 5px;
+        font-weight: 600;
+    }
+    
+    .export-button-group {
+        text-align: center;
+    }
+    
+    .export-button-group .btn {
+        margin: 2px;
+        width: calc(50% - 4px);
+    }
+}
+
+/* Loading states */
+.slip-loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.slip-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* Chart container styles */
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin: 20px 0;
+}
+
+/* Status badges */
+.status-badge {
+    font-size: 0.8em;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.status-active {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status-inactive {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Form enhancements */
+.form-floating {
+    margin-bottom: 1rem;
+}
+
+.form-floating > .form-select {
+    padding-top: 1.625rem;
+    padding-bottom: 0.625rem;
+}
+
+.btn-group-justified {
+    display: flex;
+    width: 100%;
+}
+
+.btn-group-justified .btn {
+    flex: 1;
+}
+
+.sticky-payroll-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #1565c0 !important;
+    color: #fff !important;
+    border-bottom: 3px solid #1976d2;
+    box-shadow: 0 2px 8px rgba(21,101,192,0.08);
+}
+.sticky-payroll-header .card-title {
+    color: #fff !important;
+}
+
+/* Pagination Styles */
+.pagination .page-link {
+    color: #1565c0;
+    border-color: #e9ecef;
+    padding: 0.5rem 0.75rem;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #1565c0;
+    border-color: #1565c0;
+    color: white;
+}
+
+.pagination .page-link:hover {
+    color: #0d47a1;
+    background-color: #e3f2fd;
+    border-color: #bbdefb;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #6c757d;
+    background-color: #fff;
+    border-color: #dee2e6;
+}
+
+.pagination-info {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+/* Table Header Styling */
+.table-dark {
+    background-color: #1565c0 !important;
+    color: #fff !important;
+}
+
+.table-dark th {
+    background-color: #1565c0 !important;
+    color: #fff !important;
+    border-color: #1976d2 !important;
+    font-weight: 600;
+    padding: 12px 8px;
+}
+
+/* --- Send To Bank Table Styles --- */
+.send-to-bank-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+.send-to-bank-table th, .send-to-bank-table td {
+    border: 1px solid #dee2e6;
+    padding: 8px 12px;
+    text-align: left;
+}
+.send-to-bank-table th {
+    background: #007bff;
+    color: #fff;
+}
+.send-to-bank-table tr:nth-child(even) {
+    background: #f8f9fa;
+}
+.print-btn {
+    background: #28a745;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(40,167,69,0.08);
+    transition: background 0.2s;
+}
+.print-btn:hover, .print-btn:focus {
+    background: #218838;
+    color: #fff;
+}
+/* @media print {
+    .print-btn { display: none; }
+} */
+
+/* --- Payroll Report Slip Styles (migrated from ReportSlip.cshtml) --- */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f8f9fa;
+    color: #333;
+    font-size: 12px;
+}
+
+.slip-container {
+    background: white;
+    margin: 0 auto 30px;
+    padding: 25px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    max-width: 900px;
+    position: relative;
+    page-break-after: always;
+}
+
+.slip-container:last-child {
+    page-break-after: avoid;
+}
+
+.header {
+    text-align: center;
+    border-bottom: 3px solid #dc3545;
+    padding-bottom: 20px;
+    margin-bottom: 25px;
+}
+
+.company-logo {
+    max-height: 70px;
+    margin-bottom: 10px;
+}
+
+.company-name {
+    font-size: 24px;
+    font-weight: bold;
+    color: #dc3545;
+    margin: 10px 0;
+}
+
+.company-details {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.5;
+}
+
+.slip-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #6f42c1;
+    margin: 15px 0;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.employee-section {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    margin: 15px 0;
+    border-left: 4px solid #dc3545;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #dc3545;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.details-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin: 10px 0;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px dotted #ccc;
+    font-size: 11px;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.detail-value {
+    color: #212529;
+    font-weight: 500;
+}
+
+.amount {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+}
+
+.salary-section {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    padding: 15px;
+    border-radius: 6px;
+    margin: 15px 0;
+    border: 2px solid #ff9800;
+}
+
+.deductions-section {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+    padding: 15px;
+    border-radius: 6px;
+    margin: 15px 0;
+    border: 2px solid #f44336;
+}
+
+.allowances-section {
+    background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+    padding: 15px;
+    border-radius: 6px;
+    margin: 15px 0;
+    border: 2px solid #4caf50;
+}
+
+.summary-section {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    padding: 15px;
+    border-radius: 6px;
+    margin: 15px 0;
+    border: 2px solid #2196f3;
+}
+
+.net-salary {
+    font-size: 20px;
+    font-weight: bold;
+    color: #1976d2;
+    text-align: center;
+    padding: 12px;
+    background: white;
+    border-radius: 6px;
+    margin-top: 10px;
+    border: 2px dashed #2196f3;
+}
+
+.ethiopian-date {
+    color: #ff9800;
+    font-weight: bold;
+    font-style: italic;
+}
+
+.stamp {
+    position: absolute;
+    opacity: 0.7;
+}
+
+.stamp.top-left { top: 80px; left: 40px; }
+.stamp.top-right { top: 80px; right: 40px; }
+.stamp.bottom-left { bottom: 40px; left: 40px; }
+.stamp.bottom-right { bottom: 40px; right: 40px; }
+.stamp.center { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+.footer {
+    text-align: center;
+    margin-top: 25px;
+    padding-top: 15px;
+    border-top: 2px solid #dee2e6;
+    font-size: 10px;
+    color: #6c757d;
+}
+
+.breakdown-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 11px;
+}
+
+.breakdown-table th,
+.breakdown-table td {
+    border: 1px solid #ddd;
+    padding: 6px;
+    text-align: left;
+}
+
+.breakdown-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+    color: #333;
+}
+
+.breakdown-table .amount-col {
+    text-align: right;
+    font-family: 'Courier New', monospace;
+}
+
+.calculation-section {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 15px;
+    margin: 15px 0;
+}
+
+.calculation-step {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.calculation-step:last-child {
+    border-bottom: none;
+    font-weight: bold;
+    background: #e9ecef;
+    margin: 5px -15px -15px;
+    padding: 10px 15px;
+}
+
+/* @media print {
+    @page {
+        size: A4 portrait;
+        margin: 10mm;
+    }
+    body {
+        background: white;
+        padding: 0;
+        font-size: 9px;
+        width: 100vw;
+        max-width: 100vw;
+        zoom: 0.6;
+    }
+    .slip-container {
+        box-shadow: none;
+        margin: 0;
+        padding: 10px;
+        page-break-inside: avoid;
+        width: 100%;
+        max-width: 100%;
+    }
+} */
+/* --- End Payroll Report Slip Styles --- */
+
+#minimal-print-slip { display: none; }
+body.minimal-print-mode .slip-container,
+body.minimal-print-mode .d-flex,
+body.minimal-print-mode .footer,
+body.minimal-print-mode .employee-section,
+body.minimal-print-mode .salary-section,
+body.minimal-print-mode .deductions-section,
+body.minimal-print-mode .summary-section,
+body.minimal-print-mode .allowances-section {
+    display: none !important;
+}
+body.minimal-print-mode #minimal-print-slip {
+    display: block !important;
+}
+/* @media print {
+    body.minimal-print-mode .slip-container,
+    body.minimal-print-mode .d-flex,
+    body.minimal-print-mode .footer,
+    body.minimal-print-mode .employee-section,
+    body.minimal-print-mode .salary-section,
+    body.minimal-print-mode .deductions-section,
+    body.minimal-print-mode .summary-section,
+    body.minimal-print-mode .allowances-section {
+        display: none !important;
+    }
+    body.minimal-print-mode #minimal-print-slip {
+        display: block !important;
+    }
+}  */

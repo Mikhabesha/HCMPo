@@ -9,6 +9,11 @@ using System.IO;
 using Microsoft.AspNetCore.Authorization;
 using System.Text;
 using Rotativa.AspNetCore;
+using HCMPo.Models;
+using HCMPo.Services;
+using HCMPo.Models.ViewModels;
+using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 namespace HCMPo.Controllers
 {
@@ -16,14 +21,18 @@ namespace HCMPo.Controllers
     public class PayrollReportController : Controller
     {
         private readonly ApplicationDbContext _context;
-        public PayrollReportController(ApplicationDbContext context)
+        private readonly TaxCalculationService _taxService;
+        private readonly ILogger<PayrollReportController> _logger;
+
+        public PayrollReportController(ApplicationDbContext context, TaxCalculationService taxService, ILogger<PayrollReportController> logger)
         {
             _context = context;
+            _taxService = taxService;
+            _logger = logger;
         }
 
-        public async Task<IActionResult> Index(DateTime? start = null, DateTime? end = null, string employeeId = null, string departmentId = null, string payPeriod = null)
+        public async Task<IActionResult> Index(string payPeriod = null, string employeeId = null, string organizationUnitId = null)
         {
-            // First get the grouped data from database
             var payPeriodsData = await _context.Payrolls
                 .GroupBy(p => new {
                     p.PayPeriodStart,
@@ -38,7 +47,6 @@ namespace HCMPo.Controllers
                 .OrderByDescending(p => p.PayPeriodStart)
                 .ToListAsync();
 
-            // Then format the data in memory
             var payPeriods = payPeriodsData.Select(p => new {
                 Value = p.PayPeriodStart.ToString("yyyy-MM-dd") + "," + p.PayPeriodEnd.ToString("yyyy-MM-dd"),
                 Text = (p.PayPeriodStartEt?.Trim() ?? "") + " - " + (p.PayPeriodEndEt?.Trim() ?? "")
@@ -46,36 +54,89 @@ namespace HCMPo.Controllers
 
             ViewBag.PayPeriods = payPeriods;
 
-            var payrolls = _context.Payrolls.Include(p => p.Employee).AsQueryable();
-            if (!string.IsNullOrEmpty(payPeriod))
+            var employeesQuery = _context.Employees.Include(e => e.OrganizationUnit).AsQueryable();
+
+            if (!string.IsNullOrEmpty(employeeId))
             {
-                var parts = payPeriod.Split(',');
-                if (parts.Length == 2)
-                {
-                    if (DateTime.TryParse(parts[0], out var startG) && DateTime.TryParse(parts[1], out var endG))
-                    {
-                        payrolls = payrolls.Where(p => p.PayPeriodStart == startG && p.PayPeriodEnd == endG);
-                    }
-                }
+                employeesQuery = employeesQuery.Where(e => e.Id == employeeId);
             }
-            if (start.HasValue) payrolls = payrolls.Where(p => p.PayPeriodStart >= start);
-            if (end.HasValue) payrolls = payrolls.Where(p => p.PayPeriodEnd <= end);
-            if (!string.IsNullOrEmpty(employeeId)) payrolls = payrolls.Where(p => p.EmployeeId == employeeId);
-            if (!string.IsNullOrEmpty(departmentId)) payrolls = payrolls.Where(p => p.Employee.DepartmentId == departmentId);
-            var list = await payrolls.ToListAsync();
-            ViewBag.Employees = await _context.Employees.Select(e => new { e.Id, e.FullName }).ToListAsync();
-            ViewBag.Departments = await _context.Departments.Select(d => new { d.Id, d.Name }).ToListAsync();
-            ViewBag.DeductionTypes = await _context.DeductionTypes.Where(dt => dt.IsActive).OrderBy(dt => dt.Order).ToListAsync();
-            return View(list);
+            if (!string.IsNullOrEmpty(organizationUnitId))
+            {
+                employeesQuery = employeesQuery.Where(e => e.OrganizationUnitId == organizationUnitId);
+            }
+
+            var employees = await employeesQuery.Where(e => e.IsActive).ToListAsync();
+            var reportViewModels = new List<PayrollReportViewModel>();
+            var deductionTypes = await _context.DeductionTypes.Where(dt => dt.IsActive).OrderBy(dt => dt.Order).ToListAsync();
+            var allowanceTypes = await _context.AllowanceTypes.Where(at => at.IsActive).ToListAsync();
+
+            ViewBag.DeductionTypes = deductionTypes;
+            ViewBag.AllowanceTypes = allowanceTypes;
+
+            foreach (var employee in employees)
+            {
+                var employeeAllowances = await _context.EmployeeAllowances
+                    .Where(ea => ea.EmployeeId == employee.Id)
+                    .Include(ea => ea.AllowanceType)
+                    .Where(ea => ea.AllowanceType.IsActive)
+                    .ToListAsync();
+
+                var totalAllowance = employeeAllowances.Sum(a => a.Amount);
+                var grossSalary = employee.BasicSalary + totalAllowance;
+
+                var incomeTax = await _taxService.CalculateIncomeTaxAsync(grossSalary);
+                var pensionEmployee = _taxService.CalculatePensionDeduction(grossSalary);
+                var pensionEmployer = grossSalary * 0.11m;
+
+                var employeeDeductions = await _context.EmployeeDeductions
+                    .Where(ed => ed.EmployeeId == employee.Id)
+                    .Include(ed => ed.DeductionType)
+                    .Where(ed => ed.DeductionType.IsActive)
+                    .ToListAsync();
+
+                var reportDeductions = new List<DeductionViewModel>();
+                decimal otherDeductionsAmount = 0;
+                foreach (var deductionType in deductionTypes)
+                {
+                    var employeeDeduction = employeeDeductions.FirstOrDefault(ed => ed.DeductionTypeId == deductionType.Id);
+                    var amount = employeeDeduction?.Amount ?? 0;
+                    reportDeductions.Add(new DeductionViewModel { DeductionName = deductionType.Name, Amount = amount });
+                    otherDeductionsAmount += amount;
+                }
+
+                var totalDeductions = incomeTax + pensionEmployee + otherDeductionsAmount;
+                var netPay = grossSalary - totalDeductions;
+
+                reportViewModels.Add(new PayrollReportViewModel
+                {
+                    EmployeeId = employee.Id,
+                    BadgeNumber = employee.BadgeNumber,
+                    EmployeeName = employee.FullName,
+                    BasicSalary = employee.BasicSalary,
+                    TotalAllowance = totalAllowance,
+                    GrossSalary = grossSalary,
+                    PensionEmployer = pensionEmployer,
+                    IncomeTax = incomeTax,
+                    PensionEmployee = pensionEmployee,
+                    Deductions = reportDeductions,
+                    TotalDeductions = totalDeductions,
+                    NetPay = netPay
+                });
+            }
+
+            ViewBag.Employees = await _context.Employees.Where(e => e.IsActive).Select(e => new { e.Id, FullName = e.FirstName + " " + e.LastName }).ToListAsync();
+            ViewBag.OrganizationUnits = await _context.OrganizationUnits.Select(ou => new { ou.Id, ou.Name }).ToListAsync();
+
+            return View(reportViewModels);
         }
 
-        public async Task<IActionResult> ExportExcel(DateTime? start = null, DateTime? end = null, string employeeId = null, string departmentId = null)
+        public async Task<IActionResult> ExportExcel(DateTime? start = null, DateTime? end = null, string employeeId = null, string organizationUnitId = null)
         {
             var payrolls = _context.Payrolls.Include(p => p.Employee).AsQueryable();
             if (start.HasValue) payrolls = payrolls.Where(p => p.PayPeriodStart >= start);
             if (end.HasValue) payrolls = payrolls.Where(p => p.PayPeriodEnd <= end);
             if (!string.IsNullOrEmpty(employeeId)) payrolls = payrolls.Where(p => p.EmployeeId == employeeId);
-            if (!string.IsNullOrEmpty(departmentId)) payrolls = payrolls.Where(p => p.Employee.DepartmentId == departmentId);
+            if (!string.IsNullOrEmpty(organizationUnitId)) payrolls = payrolls.Where(p => p.Employee.OrganizationUnitId == organizationUnitId);
             var list = await payrolls.ToListAsync();
             using var package = new ExcelPackage();
             var ws = package.Workbook.Worksheets.Add("Payroll");
@@ -98,13 +159,13 @@ namespace HCMPo.Controllers
             return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Payroll.xlsx");
         }
 
-        public async Task<IActionResult> ExportCsv(DateTime? start = null, DateTime? end = null, string employeeId = null, string departmentId = null)
+        public async Task<IActionResult> ExportCsv(DateTime? start = null, DateTime? end = null, string employeeId = null, string organizationUnitId = null)
         {
             var payrolls = _context.Payrolls.Include(p => p.Employee).AsQueryable();
             if (start.HasValue) payrolls = payrolls.Where(p => p.PayPeriodStart >= start);
             if (end.HasValue) payrolls = payrolls.Where(p => p.PayPeriodEnd <= end);
             if (!string.IsNullOrEmpty(employeeId)) payrolls = payrolls.Where(p => p.EmployeeId == employeeId);
-            if (!string.IsNullOrEmpty(departmentId)) payrolls = payrolls.Where(p => p.Employee.DepartmentId == departmentId);
+            if (!string.IsNullOrEmpty(organizationUnitId)) payrolls = payrolls.Where(p => p.Employee.OrganizationUnitId == organizationUnitId);
             var list = await payrolls.ToListAsync();
             var sb = new StringBuilder();
             sb.AppendLine("Employee,Basic Salary,Net Salary,Total Deductions,Pay Period");
@@ -115,13 +176,13 @@ namespace HCMPo.Controllers
             return File(Encoding.UTF8.GetBytes(sb.ToString()), "text/csv", "Payroll.csv");
         }
 
-        public async Task<IActionResult> ExportPdf(DateTime? start = null, DateTime? end = null, string employeeId = null, string departmentId = null)
+        public async Task<IActionResult> ExportPdf(DateTime? start = null, DateTime? end = null, string employeeId = null, string organizationUnitId = null)
         {
             var payrolls = _context.Payrolls.Include(p => p.Employee).AsQueryable();
             if (start.HasValue) payrolls = payrolls.Where(p => p.PayPeriodStart >= start);
             if (end.HasValue) payrolls = payrolls.Where(p => p.PayPeriodEnd <= end);
             if (!string.IsNullOrEmpty(employeeId)) payrolls = payrolls.Where(p => p.EmployeeId == employeeId);
-            if (!string.IsNullOrEmpty(departmentId)) payrolls = payrolls.Where(p => p.Employee.DepartmentId == departmentId);
+            if (!string.IsNullOrEmpty(organizationUnitId)) payrolls = payrolls.Where(p => p.Employee.OrganizationUnitId == organizationUnitId);
             var list = await payrolls.ToListAsync();
             return new ViewAsPdf("PdfReport", list) { FileName = "Payroll.pdf" };
         }

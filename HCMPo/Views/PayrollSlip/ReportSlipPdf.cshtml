@@ -1,0 +1,494 @@
+@model List<HCMPo.ViewModels.PayrollSlipViewModel>
+@{
+    Layout = null;
+    var config = Model.FirstOrDefault()?.SlipConfiguration;
+    var stamp = Model.FirstOrDefault()?.ActiveStamp;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Payroll Report Slip</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            font-size: 10px;
+            line-height: 1.3;
+        }
+        
+        .slip-container {
+            margin: 0;
+            padding: 15px;
+            position: relative;
+            page-break-after: always;
+            min-height: 900px;
+        }
+        
+        .slip-container:last-child {
+            page-break-after: avoid;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #dc3545;
+            padding-bottom: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .company-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #dc3545;
+            margin: 5px 0;
+        }
+        
+        .company-details {
+            font-size: 9px;
+            color: #666;
+        }
+        
+        .slip-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #6f42c1;
+            margin: 10px 0;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        
+        .section {
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        
+        .section-header {
+            background: #f8f9fa;
+            padding: 6px 10px;
+            border-bottom: 1px solid #ddd;
+            font-weight: bold;
+            font-size: 9px;
+            color: #495057;
+        }
+        
+        .section-body {
+            padding: 8px 10px;
+        }
+        
+        .row {
+            display: table;
+            width: 100%;
+            margin: 3px 0;
+        }
+        
+        .col {
+            display: table-cell;
+            vertical-align: top;
+            padding: 2px 4px;
+            width: 50%;
+        }
+        
+        .col-3 {
+            width: 33.33%;
+        }
+        
+        .label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 8px;
+        }
+        
+        .value {
+            color: #212529;
+            font-size: 9px;
+        }
+        
+        .amount {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        
+        .ethiopian-date {
+            color: #ff9800;
+            font-weight: bold;
+        }
+        
+        .breakdown-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 5px 0;
+            font-size: 8px;
+        }
+        
+        .breakdown-table th,
+        .breakdown-table td {
+            border: 1px solid #ddd;
+            padding: 3px;
+            text-align: left;
+        }
+        
+        .breakdown-table th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+            font-size: 8px;
+        }
+        
+        .breakdown-table .amount-col {
+            text-align: right;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .calculation-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            margin: 8px 0;
+        }
+        
+        .calc-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 0;
+            border-bottom: 1px dotted #ccc;
+        }
+        
+        .calc-row:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            background: #e9ecef;
+            margin: 3px -8px -8px;
+            padding: 5px 8px;
+        }
+        
+        .net-amount {
+            text-align: center;
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            padding: 8px;
+            margin: 10px 0;
+            font-size: 12px;
+            font-weight: bold;
+            color: #1976d2;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #dee2e6;
+            font-size: 7px;
+            color: #6c757d;
+        }
+        
+        .stamp {
+            position: absolute;
+            opacity: 0.7;
+        }
+        
+        .stamp.top-left { top: 60px; left: 20px; }
+        .stamp.top-right { top: 60px; right: 20px; }
+        .stamp.bottom-left { bottom: 20px; left: 20px; }
+        .stamp.bottom-right { bottom: 20px; right: 20px; }
+        .stamp.center { top: 30%; left: 50%; transform: translate(-50%, -50%); }
+    </style>
+</head>
+<body>
+    @foreach (var slip in Model)
+    {
+        <div class="slip-container">
+            <!-- Stamp -->
+            @if (stamp != null && stamp.ApplyOnReportSlip)
+            {
+                <div class="stamp @stamp.Position">
+                    <img src="@stamp.FilePath" width="@stamp.Width" height="@stamp.Height" alt="Official Stamp" />
+                </div>
+            }
+
+            <!-- Header -->
+            <div class="header">
+                <div class="company-name">@(config?.CompanyName ?? "HCM Portal Company")</div>
+                <div class="company-details">
+                    @if (!string.IsNullOrEmpty(config?.CompanyAddress))
+                    {
+                        <div>@config.CompanyAddress</div>
+                    }
+                    @if (!string.IsNullOrEmpty(config?.CompanyPhone) || !string.IsNullOrEmpty(config?.CompanyEmail))
+                    {
+                        <div>
+                            @if (!string.IsNullOrEmpty(config?.CompanyPhone))
+                            {
+                                <span>Tel: @config.CompanyPhone</span>
+                            }
+                            @if (!string.IsNullOrEmpty(config?.CompanyEmail))
+                            {
+                                <span> | Email: @config.CompanyEmail</span>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="slip-title">@(config?.ReportSlipTitle ?? "Detailed Payroll Report Slip")</div>
+
+            <!-- Employee Information -->
+            <div class="section">
+                <div class="section-header">EMPLOYEE INFORMATION</div>
+                <div class="section-body">
+                    <div class="row">
+                        <div class="col-3">
+                            <div class="label">Employee Name:</div>
+                            <div class="value">@slip.EmployeeName</div>
+                        </div>
+                        <div class="col-3">
+                            <div class="label">Badge Number:</div>
+                            <div class="value">@slip.BadgeNumber</div>
+                        </div>
+                        <div class="col-3">
+                            <div class="label">Employee ID:</div>
+                            <div class="value">@slip.EmployeeId</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3">
+                            <div class="label">Department/Directorate:</div>
+                            <div class="value">@slip.OrganizationUnit</div>
+                        </div>
+                        <div class="col-3">
+                            <div class="label">Position:</div>
+                            <div class="value">@slip.Position</div>
+                        </div>
+                        <div class="col-3">
+                            <div class="label">Report Generated:</div>
+                            <div class="value">@DateTime.Now.ToString("MMM dd, yyyy HH:mm")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pay Period -->
+            <div class="section">
+                <div class="section-header">PAY PERIOD & ATTENDANCE</div>
+                <div class="section-body">
+                    <div class="row">
+                        <div class="col">
+                            <div class="label">Ethiopian Calendar:</div>
+                            <div class="value ethiopian-date">@slip.PayPeriodStartEt - @slip.PayPeriodEndEt</div>
+                        </div>
+                        <div class="col">
+                            <div class="label">Gregorian Calendar:</div>
+                            <div class="value">@slip.PayPeriodStart.ToString("MMM dd, yyyy") - @slip.PayPeriodEnd.ToString("MMM dd, yyyy")</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3">
+                            <div class="label">Working Days:</div>
+                            <div class="value">@slip.WorkingDays</div>
+                        </div>
+                        <div class="col-3">
+                            <div class="label">Days Worked:</div>
+                            <div class="value">@slip.DaysWorked.ToString("N1")</div>
+                        </div>
+                        <div class="col-3">
+                            <div class="label">Attendance Rate:</div>
+                            <div class="value">@((slip.DaysWorked / slip.WorkingDays * 100).ToString("N1"))%</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3">
+                            <div class="label">Absent Days:</div>
+                            <div class="value">@slip.AbsentDays</div>
+                        </div>
+                        <div class="col-3">
+                            <div class="label">Late Days:</div>
+                            <div class="value">@slip.LateDays</div>
+                        </div>
+                        <div class="col-3">
+                            <div class="label">Daily Rate:</div>
+                            <div class="value amount">@((slip.BasicSalary / 30).ToString("N2")) ETB</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Salary Calculation -->
+            <div class="section">
+                <div class="section-header">SALARY CALCULATION</div>
+                <div class="section-body">
+                    <div class="calculation-box">
+                        <div class="calc-row">
+                            <span>Monthly Basic Salary:</span>
+                            <span class="amount">@slip.BasicSalary.ToString("N2") ETB</span>
+                        </div>
+                        <div class="calc-row">
+                            <span>Prorated Salary (@slip.DaysWorked.ToString("N1") days):</span>
+                            <span class="amount">@((slip.BasicSalary / 30 * slip.DaysWorked).ToString("N2")) ETB</span>
+                        </div>
+                        <div class="calc-row">
+                            <span>Total Allowances:</span>
+                            <span class="amount">+ @slip.Allowances.ToString("N2") ETB</span>
+                        </div>
+                        <div class="calc-row">
+                            <span>GROSS SALARY:</span>
+                            <span class="amount">@slip.GrossSalary.ToString("N2") ETB</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Allowances Breakdown -->
+            @if (slip.DetailedAllowances.Any())
+            {
+                <div class="section">
+                    <div class="section-header">ALLOWANCES BREAKDOWN</div>
+                    <div class="section-body">
+                        <table class="breakdown-table">
+                            <thead>
+                                <tr>
+                                    <th>Allowance Type</th>
+                                    <th>Amount (ETB)</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var allowance in slip.DetailedAllowances)
+                                {
+                                    <tr>
+                                        <td>@allowance.AllowanceType?.Name</td>
+                                        <td class="amount-col">@allowance.Amount.ToString("N2")</td>
+                                        <td>@allowance.Remarks</td>
+                                    </tr>
+                                }
+                                <tr style="background-color: #e8f5e8; font-weight: bold;">
+                                    <td>TOTAL ALLOWANCES</td>
+                                    <td class="amount-col">@slip.Allowances.ToString("N2")</td>
+                                    <td>-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+
+            <!-- Deductions Breakdown -->
+            <div class="section">
+                <div class="section-header">DEDUCTIONS BREAKDOWN</div>
+                <div class="section-body">
+                    <table class="breakdown-table">
+                        <thead>
+                            <tr>
+                                <th>Deduction Type</th>
+                                <th>Rate/Amount</th>
+                                <th>Amount (ETB)</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Income Tax</td>
+                                <td>Variable Rate</td>
+                                <td class="amount-col">@slip.IncomeTax.ToString("N2")</td>
+                                <td>Based on tax brackets</td>
+                            </tr>
+                            <tr>
+                                <td>Employee Pension</td>
+                                <td>7% of Gross</td>
+                                <td class="amount-col">@slip.PensionDeduction.ToString("N2")</td>
+                                <td>Mandatory contribution</td>
+                            </tr>
+                            @if (slip.DetailedDeductions.Any())
+                            {
+                                @foreach (var deduction in slip.DetailedDeductions)
+                                {
+                                    <tr>
+                                        <td>@deduction.DeductionType?.Name</td>
+                                        <td>Fixed Amount</td>
+                                        <td class="amount-col">@deduction.Amount.ToString("N2")</td>
+                                        <td>@deduction.Remarks</td>
+                                    </tr>
+                                }
+                            }
+                            <tr style="background-color: #ffebee; font-weight: bold;">
+                                <td>TOTAL DEDUCTIONS</td>
+                                <td>-</td>
+                                <td class="amount-col">@slip.TotalDeductions.ToString("N2")</td>
+                                <td>-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Final Calculation -->
+            <div class="section">
+                <div class="section-header">NET SALARY CALCULATION</div>
+                <div class="section-body">
+                    <div class="calculation-box">
+                        <div class="calc-row">
+                            <span>Gross Salary:</span>
+                            <span class="amount">@slip.GrossSalary.ToString("N2") ETB</span>
+                        </div>
+                        <div class="calc-row">
+                            <span>Total Deductions:</span>
+                            <span class="amount">- @slip.TotalDeductions.ToString("N2") ETB</span>
+                        </div>
+                        <div class="calc-row">
+                            <span>NET SALARY:</span>
+                            <span class="amount">@slip.NetSalary.ToString("N2") ETB</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="net-amount">
+                FINAL NET SALARY: @slip.NetSalary.ToString("N2") ETB
+            </div>
+
+            <!-- Summary Statistics -->
+            <div class="section">
+                <div class="section-header">ADDITIONAL INFORMATION</div>
+                <div class="section-body">
+                    <div class="row">
+                        <div class="col-3">
+                            <div class="label">Daily Net Rate:</div>
+                            <div class="value amount">@((slip.NetSalary / slip.DaysWorked).ToString("N2")) ETB</div>
+                        </div>
+                        <div class="col-3">
+                            <div class="label">Effective Tax Rate:</div>
+                            <div class="value">@((slip.IncomeTax / slip.GrossSalary * 100).ToString("N1"))%</div>
+                        </div>
+                        <div class="col-3">
+                            <div class="label">Take-home Rate:</div>
+                            <div class="value">@((slip.NetSalary / slip.GrossSalary * 100).ToString("N1"))%</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="label">Employer Pension (11%):</div>
+                            <div class="value amount">@((slip.GrossSalary * 0.11m).ToString("N2")) ETB</div>
+                        </div>
+                        <div class="col">
+                            <div class="label">Total Employment Cost:</div>
+                            <div class="value amount">@((slip.GrossSalary + slip.GrossSalary * 0.11m).ToString("N2")) ETB</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
+                <p><strong>CONFIDENTIAL PAYROLL REPORT</strong> - This document contains sensitive financial information</p>
+                <p>Generated: @DateTime.Now.ToString("MMM dd, yyyy HH:mm") | Ethiopian Calendar: @slip.PayPeriodStartEt - @slip.PayPeriodEndEt</p>
+                <p>For HR and Management Use Only | Not for External Distribution</p>
+                @if (!string.IsNullOrEmpty(config?.FooterText))
+                {
+                    <p>@config.FooterText</p>
+                }
+            </div>
+        </div>
+    }
+</body>
+</html> 

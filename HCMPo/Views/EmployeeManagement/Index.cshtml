@@ -1,0 +1,339 @@
+@model IEnumerable<HCMPo.Models.Employee>
+
+@{
+    ViewData["Title"] = "Employee Management";
+}
+
+@section Styles {
+    <link href="~/lib/datatables/dataTables.bootstrap5.min.css" rel="stylesheet">
+}
+
+<div class="container-fluid px-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-2 text-gray-800">Employee Management</h1>
+                    <p class="mb-0 text-muted">Unified employee management across all systems</p>
+                </div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item active">Employee Management</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <span class="text-white-75 mb-3 lh-1 d-block">Total Employees</span>
+                            <h4 class="mb-0">@Model.Count()</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <span class="text-white-75 mb-3 lh-1 d-block">With User Accounts</span>
+                            <h4 class="mb-0">@Model.Count(e => e.ApplicationUser != null)</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-user-check fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <span class="text-white-75 mb-3 lh-1 d-block">Without Accounts</span>
+                            <h4 class="mb-0">@Model.Count(e => e.ApplicationUser == null)</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-user-times fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <span class="text-white-75 mb-3 lh-1 d-block">Active Status</span>
+                            <h4 class="mb-0">@Model.Count(e => e.Status == HCMPo.Models.EmploymentStatus.Active)</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-user-plus fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <a asp-action="Create" class="btn btn-success w-100">
+                                    <i class="fas fa-user-plus me-1"></i>
+                                    Add New Employee
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="/UserManagement" class="btn btn-primary w-100">
+                                    <i class="fas fa-users-cog me-1"></i>
+                                    Manage User Accounts
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="button" class="btn btn-info w-100" onclick="syncToAttendanceDb()">
+                                    <i class="fas fa-sync me-1"></i>
+                                    Sync to Attendance DB
+                                </button>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="button" class="btn btn-secondary w-100" onclick="refreshData()">
+                                    <i class="fas fa-refresh me-1"></i>
+                                    Refresh Data
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Hidden form for anti-forgery token -->
+    <form id="af-token-form" style="display:none;">
+        @Html.AntiForgeryToken()
+    </form>
+
+    @if (User.IsInRole("Admin"))
+    {
+        <button id="merge-duplicates-btn" class="btn btn-danger" style="margin-bottom:10px;">Merge Duplicate Employees</button>
+        <script>
+            document.getElementById('merge-duplicates-btn').onclick = function() {
+                .then(r => r.json())
+                .then(data => alert(data.message || 'Done!'))
+                        let data = JSON.parse(text);
+                        alert(data.message || 'Done!');
+                    } catch (e) {
+                        alert('Server error: ' + text);
+                    }
+                })
+                .catch(e => alert('Error: ' + e));
+            };
+        </script>
+    }
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Employees (@Model.Count())</h5>
+                    @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+                    {
+                        <a asp-action="Create" class="btn btn-success btn-sm">
+                            <i class="fas fa-plus me-1"></i>Add Employee
+                        </a>
+                    }
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="employeesTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Badge #</th>
+                                    <th>Full Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Department</th>
+                                    <th>Job Title</th>
+                                    <th>Status</th>
+                                    <th>User Account</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var employee in Model)
+                                {
+                                    <tr>
+                                        <td><strong>@employee.BadgeNumber</strong></td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="me-2">
+                                                    <span class="badge bg-primary rounded-circle p-2">
+                                                        @(string.IsNullOrEmpty(employee.FirstName) ? "?" : employee.FirstName.Substring(0, 1))@(string.IsNullOrEmpty(employee.LastName) ? "?" : employee.LastName.Substring(0, 1))
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <strong>@employee.FullName</strong>
+                                                    <div class="text-muted small">Hired: @employee.HireDate.ToString("MMM dd, yyyy")</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>@employee.Email</td>
+                                        <td>@employee.PhoneNumber</td>
+                                        <td>@(employee.OrganizationUnit?.Name ?? "N/A")</td>
+                                        <td>@(employee.JobTitle?.Title ?? "N/A")</td>
+                                        <td>
+                                            <span class="badge bg-@(employee.Status == HCMPo.Models.EmploymentStatus.Active ? "success" : "warning")">
+                                                @employee.Status
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @if (employee.ApplicationUser != null)
+                                            {
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check"></i> Linked
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger">
+                                                    <i class="fas fa-times"></i> No Account
+                                                </span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a asp-action="Details" asp-route-id="@employee.Id" class="btn btn-outline-info btn-sm" title="View Details">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+                                                {
+                                                    <a asp-action="Edit" asp-route-id="@employee.Id" class="btn btn-outline-primary btn-sm" title="Edit">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                }
+                                                @if (User.IsInRole("Admin"))
+                                                {
+                                                    @if (employee.ApplicationUser == null)
+                                                    {
+                                                        <button onclick="createUserAccount('@employee.Id')" class="btn btn-outline-success btn-sm" title="Create User Account">
+                                                            <i class="fas fa-user-plus"></i>
+                                                        </button>
+                                                    }
+                                                    <a asp-action="Delete" asp-route-id="@employee.Id" class="btn btn-outline-danger btn-sm" title="Delete">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery/jquery.min.js"></script>
+    <script src="~/lib/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/lib/datatables/dataTables.bootstrap5.min.js"></script>
+    <script src="~/lib/sweetalert2/sweetalert2.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#employeesTable').DataTable({
+                "pageLength": 100,
+                "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                "order": [[0, "asc"]] // Order by Badge #
+            });
+        });
+
+        function createUserAccount(employeeId) {
+            Swal.fire({
+                title: 'Create User Account?',
+                text: 'This will create a user account for this employee with a temporary password.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Create Account',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#28a745'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/EmployeeManagement/CreateUserAccount', { employeeId: employeeId }, function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                title: 'Success!',
+                                html: `
+                                    <div class="text-start">
+                                        <p>${response.message}</p>
+                                        <div class="alert alert-info mt-3">
+                                            <strong>Temporary Password:</strong> <code>${response.tempPassword}</code>
+                                            <br><small>Please provide this password to the employee</small>
+                                        </div>
+                                    </div>
+                                `,
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error', response.message, 'error');
+                        }
+                    }).fail(function() {
+                        Swal.fire('Error', 'An error occurred while creating the user account', 'error');
+                    });
+                }
+            });
+        }
+
+        function syncToAttendanceDb() {
+            Swal.fire('Info', 'Attendance sync happens automatically when employees are created/updated.', 'info');
+        }
+
+        function refreshData() {
+            location.reload();
+        }
+    </script>
+} 
